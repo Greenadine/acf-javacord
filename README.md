@@ -1,6 +1,7 @@
 
 # ACF Javacord
 ![](https://img.shields.io/github/v/release/Greenadine/acf-javacord)
+![](https://img.shields.io/badge/acf-v0.5.0-blue)
 ![](https://img.shields.io/badge/javacord-v3.1.2-blue)
 ![](https://img.shields.io/github/license/Greenadine/acf-javacord)
 <br>
