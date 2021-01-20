@@ -22,7 +22,7 @@ import java.util.HashMap;
 import java.util.Locale;
 import java.util.Map;
 
-public class JavacordCommandPermissionResolver implements co.aikar.commands.CommandPermissionResolver {
+public class JavacordCommandPermissionResolver implements CommandPermissionResolver {
     private Map<String, Integer> discordPermissionValues;
 
     public JavacordCommandPermissionResolver() {
@@ -33,7 +33,7 @@ public class JavacordCommandPermissionResolver implements co.aikar.commands.Comm
     }
 
     @Override
-    public boolean hasPermission(co.aikar.commands.JavacordCommandManager manager, co.aikar.commands.JavacordCommandEvent event, String permission) {
+    public boolean hasPermission(JavacordCommandManager manager, JavacordCommandEvent event, String permission) {
         // Explicitly return true if the user is the bot's owner. They are always allowed.
         if (manager.getBotOwnerId() == event.getIssuer().getMessageAuthor().getId()) {
             return true;

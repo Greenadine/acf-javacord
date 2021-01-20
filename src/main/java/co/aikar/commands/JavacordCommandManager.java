@@ -29,67 +29,67 @@ import java.util.logging.Logger;
 
 public class JavacordCommandManager extends CommandManager<
         MessageCreateEvent,
-        co.aikar.commands.JavacordCommandEvent,
+        JavacordCommandEvent,
         String,
         MessageFormatter<String>,
-        co.aikar.commands.JavacordCommandExecutionContext,
-        co.aikar.commands.JavacordConditionContext
+        JavacordCommandExecutionContext,
+        JavacordConditionContext
         > {
 
     private final DiscordApi api;
-    protected co.aikar.commands.JavacordCommandCompletions completions;
-    protected co.aikar.commands.JavacordCommandContexts contexts;
-    protected co.aikar.commands.JavacordLocales locales;
-    protected Map<String, co.aikar.commands.JavacordRootCommand> commands = new HashMap<>();
+    protected JavacordCommandCompletions completions;
+    protected JavacordCommandContexts contexts;
+    protected JavacordLocales locales;
+    protected Map<String, JavacordRootCommand> commands = new HashMap<>();
     private Logger logger;
-    private co.aikar.commands.CommandConfig defaultConfig;
-    private co.aikar.commands.CommandConfigProvider configProvider;
-    private co.aikar.commands.CommandPermissionResolver permissionResolver;
+    private CommandConfig defaultConfig;
+    private CommandConfigProvider configProvider;
+    private CommandPermissionResolver permissionResolver;
     private long botOwner = 0L;
 
     public JavacordCommandManager(DiscordApi api) { this(api, null); }
 
-    public JavacordCommandManager(DiscordApi api, co.aikar.commands.JavacordOptions options) {
+    public JavacordCommandManager(DiscordApi api, JavacordOptions options) {
         if (options == null) {
-            options = new co.aikar.commands.JavacordOptions();
+            options = new JavacordOptions();
         }
         this.api = api;
         this.permissionResolver = options.permissionResolver;
-        this.defaultConfig = options.defaultConfig != null ? new co.aikar.commands.JavacordCommandConfig() : options.defaultConfig;
+        this.defaultConfig = options.defaultConfig != null ? new JavacordCommandConfig() : options.defaultConfig;
         this.configProvider = options.configProvider;
-        this.defaultFormatter = new co.aikar.commands.JavacordMessageFormatter();
-        this.completions = new co.aikar.commands.JavacordCommandCompletions(this);
+        this.defaultFormatter = new JavacordMessageFormatter();
+        this.completions = new JavacordCommandCompletions(this);
         this.logger = Logger.getLogger(this.getClass().getSimpleName());
 
         initializeBotOwner();
-        api.addMessageCreateListener(new co.aikar.commands.JavacordListener(this));
+        api.addMessageCreateListener(new JavacordListener(this));
 
         getCommandConditions().addCondition("owneronly", context -> {
             if (context.getIssuer().getEvent().getMessageAuthor().getId() != getBotOwnerId()) {
-                throw new ConditionFailedException(co.aikar.commands.JavacordMessageKeys.OWNER_ONLY);
+                throw new ConditionFailedException(JavacordMessageKeys.OWNER_ONLY);
             }
         });
 
         getCommandConditions().addCondition("serveronly", context -> {
             if (context.getIssuer().getEvent().getChannel().getType() != ChannelType.SERVER_TEXT_CHANNEL) {
-                throw new ConditionFailedException(co.aikar.commands.JavacordMessageKeys.SERVER_ONLY);
+                throw new ConditionFailedException(JavacordMessageKeys.SERVER_ONLY);
             }
         });
 
         getCommandConditions().addCondition("privateonly", context -> {
             if (context.getIssuer().getEvent().getChannel().getType() != ChannelType.PRIVATE_CHANNEL) {
-                throw new ConditionFailedException(co.aikar.commands.JavacordMessageKeys.PRIVATE_ONLY);
+                throw new ConditionFailedException(JavacordMessageKeys.PRIVATE_ONLY);
             }
         });
 
         getCommandConditions().addCondition("grouponly", context -> {
             if (context.getIssuer().getEvent().getChannel().getType() != ChannelType.GROUP_CHANNEL) {
-                throw new ConditionFailedException(co.aikar.commands.JavacordMessageKeys.GROUP_ONLY);
+                throw new ConditionFailedException(JavacordMessageKeys.GROUP_ONLY);
             }
         });
     }
 
-    public static co.aikar.commands.JavacordOptions options() { return new co.aikar.commands.JavacordOptions(); }
+    public static JavacordOptions options() { return new JavacordOptions(); }
 
     void initializeBotOwner() {
         if (botOwner == 0L) {
@@ -117,34 +117,34 @@ public class JavacordCommandManager extends CommandManager<
         this.logger = logger;
     }
 
-    public co.aikar.commands.CommandConfig getDefaultConfig() {
+    public CommandConfig getDefaultConfig() {
         return defaultConfig;
     }
 
-    public void setDefaultConfig(co.aikar.commands.CommandConfig defaultConfig) {
+    public void setDefaultConfig(CommandConfig defaultConfig) {
         this.defaultConfig = defaultConfig;
     }
 
-    public co.aikar.commands.CommandConfigProvider getConfigProvider() {
+    public CommandConfigProvider getConfigProvider() {
         return configProvider;
     }
 
-    public void setConfigProvider(co.aikar.commands.CommandConfigProvider configProvider) {
+    public void setConfigProvider(CommandConfigProvider configProvider) {
         this.configProvider = configProvider;
     }
 
-    public co.aikar.commands.CommandPermissionResolver getPermissionResolver() {
+    public CommandPermissionResolver getPermissionResolver() {
         return permissionResolver;
     }
 
-    public void setPermissionResolver(co.aikar.commands.CommandPermissionResolver permissionResolver) {
+    public void setPermissionResolver(CommandPermissionResolver permissionResolver) {
         this.permissionResolver = permissionResolver;
     }
 
     @Override
     public CommandContexts<?> getCommandContexts() {
         if (this.contexts == null) {
-            this.contexts = new co.aikar.commands.JavacordCommandContexts(this);
+            this.contexts = new JavacordCommandContexts(this);
         }
         return this.contexts;
     }
@@ -159,7 +159,7 @@ public class JavacordCommandManager extends CommandManager<
         command.onRegister(this);
         for (Map.Entry<String, RootCommand> entry : command.registeredCommands.entrySet()) {
             String commandName = entry.getKey().toLowerCase(Locale.ENGLISH);
-            co.aikar.commands.JavacordRootCommand cmd = (co.aikar.commands.JavacordRootCommand) entry.getValue();
+            JavacordRootCommand cmd = (JavacordRootCommand) entry.getValue();
             if (!cmd.isRegistered) {
                 cmd.isRegistered = true;
                 commands.put(commandName, cmd);
@@ -170,7 +170,7 @@ public class JavacordCommandManager extends CommandManager<
     public void unregisterCommand(BaseCommand command) {
         for (Map.Entry<String, RootCommand> entry : command.registeredCommands.entrySet()) {
             String javacordCommandName = entry.getKey().toLowerCase(Locale.ENGLISH);
-            co.aikar.commands.JavacordRootCommand javacordCommand = (co.aikar.commands.JavacordRootCommand) entry.getValue();
+            JavacordRootCommand javacordCommand = (JavacordRootCommand) entry.getValue();
             javacordCommand.getSubCommands().values().removeAll(command.subCommands.values());
         }
     }
@@ -181,20 +181,20 @@ public class JavacordCommandManager extends CommandManager<
     }
 
     public boolean isCommandIssuer(Class<?> type) {
-        return co.aikar.commands.JavacordCommandEvent.class.isAssignableFrom(type);
+        return JavacordCommandEvent.class.isAssignableFrom(type);
     }
 
     @Override
-    public co.aikar.commands.JavacordCommandEvent getCommandIssuer(Object issuer) {
+    public JavacordCommandEvent getCommandIssuer(Object issuer) {
         if (!(issuer instanceof MessageCreateEvent)) {
             throw new IllegalArgumentException(issuer.getClass().getName() + " is not a MessageCreateEvent.");
         }
-        return new co.aikar.commands.JavacordCommandEvent(this, (MessageCreateEvent) issuer);
+        return new JavacordCommandEvent(this, (MessageCreateEvent) issuer);
     }
 
     @Override
     public RootCommand createRootCommand(String cmd) {
-        return new co.aikar.commands.JavacordRootCommand(this, cmd);
+        return new JavacordRootCommand(this, cmd);
     }
 
     @Override
@@ -205,7 +205,7 @@ public class JavacordCommandManager extends CommandManager<
     @Override
     public Locales getLocales() {
         if (this.locales == null) {
-            this.locales = new co.aikar.commands.JavacordLocales(this);
+            this.locales = new JavacordLocales(this);
             this.locales.loadLanguages();
         }
         return this.locales;
@@ -213,7 +213,7 @@ public class JavacordCommandManager extends CommandManager<
 
     @Override
     public CommandExecutionContext createCommandContext(RegisteredCommand command, CommandParameter parameter, CommandIssuer sender, List<String> args, int i, Map<String, Object> passedArgs) {
-        return new co.aikar.commands.JavacordCommandExecutionContext(command, parameter, (co.aikar.commands.JavacordCommandEvent) sender, args, i, passedArgs);
+        return new JavacordCommandExecutionContext(command, parameter, (JavacordCommandEvent) sender, args, i, passedArgs);
     }
 
     @Override
@@ -238,7 +238,7 @@ public class JavacordCommandManager extends CommandManager<
         Message message = event.getMessage();
         String msg = message.getContent();
 
-        co.aikar.commands.CommandConfig config = getCommandConfig(event);
+        CommandConfig config = getCommandConfig(event);
 
         String prefixFound = null;
         for (String prefix : config.getCommandPrefixes()) {
@@ -256,7 +256,7 @@ public class JavacordCommandManager extends CommandManager<
             return;
         }
         String cmd = args[0].toLowerCase(Locale.ENGLISH);
-        co.aikar.commands.JavacordRootCommand rootCommand = this.commands.get(cmd);
+        JavacordRootCommand rootCommand = this.commands.get(cmd);
         if (rootCommand == null) {
             return;
         }
@@ -268,10 +268,10 @@ public class JavacordCommandManager extends CommandManager<
         rootCommand.execute(this.getCommandIssuer(event), cmd, args);
     }
 
-    private co.aikar.commands.CommandConfig getCommandConfig(MessageCreateEvent event) {
-        co.aikar.commands.CommandConfig config = this.defaultConfig;
+    private CommandConfig getCommandConfig(MessageCreateEvent event) {
+        CommandConfig config = this.defaultConfig;
         if (this.configProvider != null) {
-            co.aikar.commands.CommandConfig provider = this.configProvider.provide(event);
+            CommandConfig provider = this.configProvider.provide(event);
             if (provider != null) {
                 config = provider;
             }
@@ -281,8 +281,8 @@ public class JavacordCommandManager extends CommandManager<
 
     @Override
     public String getCommandPrefix(CommandIssuer issuer) {
-        MessageCreateEvent event = ((co.aikar.commands.JavacordCommandEvent) issuer).getEvent();
-        co.aikar.commands.CommandConfig commandConfig = getCommandConfig(event);
+        MessageCreateEvent event = ((JavacordCommandEvent) issuer).getEvent();
+        CommandConfig commandConfig = getCommandConfig(event);
         List<String> prefixes = commandConfig.getCommandPrefixes();
         return prefixes.isEmpty() ? "" : prefixes.get(0);
     }

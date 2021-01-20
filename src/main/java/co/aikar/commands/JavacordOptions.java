@@ -20,26 +20,26 @@ import org.javacord.api.DiscordApi;
 import org.jetbrains.annotations.NotNull;
 
 public class JavacordOptions {
-    co.aikar.commands.CommandConfig defaultConfig = new co.aikar.commands.JavacordCommandConfig();
-    co.aikar.commands.CommandConfigProvider configProvider = null;
-    co.aikar.commands.CommandPermissionResolver permissionResolver = new co.aikar.commands.JavacordCommandPermissionResolver();
+    CommandConfig defaultConfig = new JavacordCommandConfig();
+    CommandConfigProvider configProvider = null;
+    CommandPermissionResolver permissionResolver = new JavacordCommandPermissionResolver();
 
     public JavacordOptions() {}
 
-    public JavacordOptions defaultConfig(@NotNull co.aikar.commands.CommandConfig defaultConfig) {
+    public JavacordOptions defaultConfig(@NotNull CommandConfig defaultConfig) {
         this.defaultConfig = defaultConfig;
         return this;
     }
 
-    public JavacordOptions configProvider(@NotNull co.aikar.commands.CommandConfigProvider configProvider) {
+    public JavacordOptions configProvider(@NotNull CommandConfigProvider configProvider) {
         this.configProvider = configProvider;
         return this;
     }
 
-    public JavacordOptions permissionResolver(@NotNull co.aikar.commands.CommandPermissionResolver permissionResolver) {
+    public JavacordOptions permissionResolver(@NotNull CommandPermissionResolver permissionResolver) {
         this.permissionResolver = permissionResolver;
         return this;
     }
 
-    public co.aikar.commands.JavacordCommandManager create(DiscordApi api) { return new co.aikar.commands.JavacordCommandManager(api, this); }
+    public JavacordCommandManager create(DiscordApi api) { return new JavacordCommandManager(api, this); }
 }

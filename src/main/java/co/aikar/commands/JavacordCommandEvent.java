@@ -33,9 +33,9 @@ import java.util.concurrent.CompletableFuture;
 public class JavacordCommandEvent implements CommandIssuer {
 
     private MessageCreateEvent event;
-    private co.aikar.commands.JavacordCommandManager manager;
+    private JavacordCommandManager manager;
 
-    public JavacordCommandEvent(co.aikar.commands.JavacordCommandManager manager, MessageCreateEvent event) {
+    public JavacordCommandEvent(JavacordCommandManager manager, MessageCreateEvent event) {
         this.manager = manager;
         this.event = event;
     }
@@ -65,7 +65,7 @@ public class JavacordCommandEvent implements CommandIssuer {
 
     @Override
     public boolean hasPermission(String permission) {
-        co.aikar.commands.CommandPermissionResolver permissionResolver = this.manager.getPermissionResolver();
+        CommandPermissionResolver permissionResolver = this.manager.getPermissionResolver();
         return permissionResolver == null || permissionResolver.hasPermission(manager, this, permission);
     }
 

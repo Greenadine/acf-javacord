@@ -16,6 +16,6 @@
 
 package co.aikar.commands;
 
-public class JavacordConditionContext extends ConditionContext<co.aikar.commands.JavacordCommandEvent> {
-    JavacordConditionContext(co.aikar.commands.JavacordCommandEvent issuer, String config) { super(issuer, config); }
+public class JavacordConditionContext extends ConditionContext<JavacordCommandEvent> {
+    JavacordConditionContext(JavacordCommandEvent issuer, String config) { super(issuer, config); }
 }

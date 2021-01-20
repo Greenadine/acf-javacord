@@ -26,12 +26,12 @@ public class JavacordRootCommand implements RootCommand {
 
     private final String name;
     boolean isRegistered = false;
-    private co.aikar.commands.JavacordCommandManager manager;
+    private JavacordCommandManager manager;
     private BaseCommand defCommand;
     private SetMultimap<String, RegisteredCommand> subCommands = HashMultimap.create();
     private List<BaseCommand> children = new ArrayList<>();
 
-    JavacordRootCommand(co.aikar.commands.JavacordCommandManager manager, String name) {
+    JavacordRootCommand(JavacordCommandManager manager, String name) {
         this.manager = manager;
         this.name = name;
     }

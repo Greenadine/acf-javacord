@@ -36,16 +36,16 @@ import java.util.Collection;
 import java.util.List;
 import java.util.Optional;
 
-public class JavacordCommandContexts extends CommandContexts<co.aikar.commands.JavacordCommandExecutionContext> {
+public class JavacordCommandContexts extends CommandContexts<JavacordCommandExecutionContext> {
 
-    private final co.aikar.commands.JavacordCommandManager manager;
+    private final JavacordCommandManager manager;
     private final DiscordApi api;
 
-    public JavacordCommandContexts(co.aikar.commands.JavacordCommandManager manager) {
+    public JavacordCommandContexts(JavacordCommandManager manager) {
         super(manager);
         this.manager = manager;
         this.api = this.manager.getApi();
-        this.registerIssuerOnlyContext(co.aikar.commands.JavacordCommandEvent.class, CommandExecutionContext::getIssuer);
+        this.registerIssuerOnlyContext(JavacordCommandEvent.class, CommandExecutionContext::getIssuer);
         this.registerIssuerOnlyContext(MessageCreateEvent.class, c -> c.issuer.getIssuer());
         this.registerIssuerOnlyContext(Message.class, c -> c.issuer.getIssuer().getMessage());
         this.registerIssuerOnlyContext(ChannelType.class, c -> c.issuer.getIssuer().getChannel().getType());
@@ -53,7 +53,7 @@ public class JavacordCommandContexts extends CommandContexts<co.aikar.commands.J
         this.registerIssuerOnlyContext(Server.class, c -> {
             MessageCreateEvent event = c.issuer.getIssuer();
             if (!event.getServer().isPresent()) {
-                throw new InvalidCommandArgument(co.aikar.commands.JavacordMessageKeys.SERVER_ONLY, false);
+                throw new InvalidCommandArgument(JavacordMessageKeys.SERVER_ONLY, false);
             } else {
                 return event.getServer().get();
             }
@@ -75,19 +75,19 @@ public class JavacordCommandContexts extends CommandContexts<co.aikar.commands.J
                         ? c.issuer.getIssuer().getServer().get().getTextChannelsByName(arg)
                         : api.getServerTextChannelsByName(arg);
                 if (channels.size() > 1) {
-                    throw new InvalidCommandArgument(co.aikar.commands.JavacordMessageKeys.TOO_MANY_CHANNELS_WITH_NAME, false);
+                    throw new InvalidCommandArgument(JavacordMessageKeys.TOO_MANY_CHANNELS_WITH_NAME, false);
                 } else if (channels.size() == 1) {
                     channel = Optional.of(ACFUtil.getFirstElement(channels));
                 }
             }
             if (!channel.isPresent()) {
-                throw new InvalidCommandArgument(co.aikar.commands.JavacordMessageKeys.COULD_NOT_FIND_CHANNEL, false);
+                throw new InvalidCommandArgument(JavacordMessageKeys.COULD_NOT_FIND_CHANNEL, false);
             }
             return channel.get();
         });
         this.registerContext(ServerTextChannel.class, c -> {
             if (!c.issuer.getIssuer().getServer().isPresent()) {
-                throw new InvalidCommandArgument(co.aikar.commands.JavacordMessageKeys.SERVER_ONLY, false);
+                throw new InvalidCommandArgument(JavacordMessageKeys.SERVER_ONLY, false);
             }
             if (c.hasAnnotation(Author.class)) {
                 //noinspection all
@@ -106,13 +106,13 @@ public class JavacordCommandContexts extends CommandContexts<co.aikar.commands.J
                         ? c.issuer.getIssuer().getServer().get().getTextChannelsByName(arg)
                         : api.getServerTextChannelsByName(arg);
                 if (channels.size() > 1) {
-                    throw new InvalidCommandArgument(co.aikar.commands.JavacordMessageKeys.TOO_MANY_CHANNELS_WITH_NAME, false);
+                    throw new InvalidCommandArgument(JavacordMessageKeys.TOO_MANY_CHANNELS_WITH_NAME, false);
                 } else if (channels.size() == 1) {
                     channel = Optional.of(ACFUtil.getFirstElement(channels));
                 }
             }
             if (!channel.isPresent()) {
-                throw new InvalidCommandArgument(co.aikar.commands.JavacordMessageKeys.COULD_NOT_FIND_CHANNEL, false);
+                throw new InvalidCommandArgument(JavacordMessageKeys.COULD_NOT_FIND_CHANNEL, false);
             }
             return channel.get();
         });
@@ -134,20 +134,20 @@ public class JavacordCommandContexts extends CommandContexts<co.aikar.commands.J
             } else {
                 Collection<User> users = api.getCachedUsersByNameIgnoreCase(arg);
                 if (users.size() > 1) {
-                    throw new InvalidCommandArgument(co.aikar.commands.JavacordMessageKeys.TOO_MANY_USERS_WITH_NAME, false);
+                    throw new InvalidCommandArgument(JavacordMessageKeys.TOO_MANY_USERS_WITH_NAME, false);
                 }
                 if (!users.isEmpty()) {
                     user = ACFUtil.getFirstElement(users);
                 }
             }
             if (user == null) {
-                throw new InvalidCommandArgument(co.aikar.commands.JavacordMessageKeys.COULD_NOT_FIND_USER, false);
+                throw new InvalidCommandArgument(JavacordMessageKeys.COULD_NOT_FIND_USER, false);
             }
             return user;
         });
         this.registerContext(Member.class, c -> {
             if (!c.issuer.getIssuer().getServer().isPresent()) {
-                throw new InvalidCommandArgument(co.aikar.commands.JavacordMessageKeys.SERVER_ONLY, false);
+                throw new InvalidCommandArgument(JavacordMessageKeys.SERVER_ONLY, false);
             }
 
             if (c.hasAnnotation(SelfUser.class)) {
@@ -167,17 +167,17 @@ public class JavacordCommandContexts extends CommandContexts<co.aikar.commands.J
             } else {
                 Collection<User> users = api.getCachedUsersByNameIgnoreCase(arg);
                 if (users.size() > 1) {
-                    throw new InvalidCommandArgument(co.aikar.commands.JavacordMessageKeys.TOO_MANY_USERS_WITH_NAME, false);
+                    throw new InvalidCommandArgument(JavacordMessageKeys.TOO_MANY_USERS_WITH_NAME, false);
                 }
                 if (!users.isEmpty()) {
                     user = ACFUtil.getFirstElement(users);
                 }
             }
             if (user == null) {
-                throw new InvalidCommandArgument(co.aikar.commands.JavacordMessageKeys.COULD_NOT_FIND_USER, false);
+                throw new InvalidCommandArgument(JavacordMessageKeys.COULD_NOT_FIND_USER, false);
             }
             if (!c.issuer.getIssuer().getServer().get().isMember(user)) {
-                throw new InvalidCommandArgument(co.aikar.commands.JavacordMessageKeys.USER_NOT_MEMBER_OF_SERVER, false);
+                throw new InvalidCommandArgument(JavacordMessageKeys.USER_NOT_MEMBER_OF_SERVER, false);
             }
 
             return new Member(user, c.issuer.getIssuer().getServer().get());
@@ -206,7 +206,7 @@ public class JavacordCommandContexts extends CommandContexts<co.aikar.commands.J
                             : new ArrayList<>(api.getRolesByNameIgnoreCase(arg));
 
                     if (roles.size() > 1) {
-                        throw new InvalidCommandArgument(co.aikar.commands.JavacordMessageKeys.TOO_MANY_ROLES_WITH_NAME, false);
+                        throw new InvalidCommandArgument(JavacordMessageKeys.TOO_MANY_ROLES_WITH_NAME, false);
                     }
                     if (!roles.isEmpty()) {
                         role = Optional.of(roles.get(0));
@@ -215,7 +215,7 @@ public class JavacordCommandContexts extends CommandContexts<co.aikar.commands.J
             }
 
             if (!role.isPresent()) {
-                throw new InvalidCommandArgument(co.aikar.commands.JavacordMessageKeys.COULD_NOT_FIND_ROLE, false);
+                throw new InvalidCommandArgument(JavacordMessageKeys.COULD_NOT_FIND_ROLE, false);
             }
             return role.get();
         });

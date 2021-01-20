@@ -21,9 +21,9 @@ import org.javacord.api.listener.message.MessageCreateListener;
 
 public class JavacordListener implements MessageCreateListener {
 
-    private final co.aikar.commands.JavacordCommandManager manager;
+    private final JavacordCommandManager manager;
 
-    JavacordListener(co.aikar.commands.JavacordCommandManager manager) {
+    JavacordListener(JavacordCommandManager manager) {
         this.manager = manager;
     }
 
