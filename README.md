@@ -1,2 +1,2 @@
 # acf-javacord
-A Javacord implementation of aikar's Annotation Command Framework (ACF)
+A Javacord implementation of [aikar's](https://github.com/aikar) [Annotation Command Framework (ACF)](https://github.com/aikar/commands)
