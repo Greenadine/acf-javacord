@@ -43,3 +43,22 @@ dependencies {
     implementation files('libs/acf-javacord-0.1.jar')
 }
 ````
+
+## Example
+```java
+@CommandAlias("ping")
+@Description("Check API latency.")
+public class PingCommand extends BaseCommand {
+
+    @Default
+    public void onPing(JavacordCommandEvent event) {
+        event.reply("Testing latency...").thenAcceptAsync(message -> {
+            double messageTimestamp = message.getCreationTimestamp().toEpochMilli();
+            double currentTimestamp = System.currentTimeMillis();
+            double ping = Math.abs(Math.round((currentTimestamp - messageTimestamp) / 100));
+
+            message.edit(String.format("My API latency is %.0fms.", ping));
+        });
+    }
+}
+```
