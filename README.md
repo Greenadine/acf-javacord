@@ -1,5 +1,5 @@
 
-# ACF Javacord ![](https://img.shields.io/github/v/release/Greenadine/acf-javacord) [![](https://img.shields.io/badge/acf-v0.5.0-blue)](https://github.com/aikar/commands) [![](https://img.shields.io/badge/javacord-v3.1.2-blue)](https://github.com/Javacord/Javacord) ![](https://img.shields.io/github/license/Greenadine/acf-javacord)
+# ACF Javacord ![](https://img.shields.io/badge/version-v0.1-blue?style=flat-square) [![](https://img.shields.io/badge/acf-v0.5.0-blue?style=flat-square)](https://github.com/aikar/commands) [![](https://img.shields.io/badge/javacord-v3.1.2-blue?style=flat-square)](https://github.com/Javacord/Javacord) ![](https://img.shields.io/github/license/Greenadine/acf-javacord?style=flat-square)
 ACF Javacord is a Javacord implementation of Aikar's [Annotation Command Framework (ACF)](https://github.com/aikar/commands).
 
 ## Installation
