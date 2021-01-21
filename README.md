@@ -44,6 +44,11 @@ dependencies {
 }
 ````
 
+## Documentation
+[ACF Javacord wiki](https://github.com/Greenadine/acf-javacord/wiki) - ACF Javacord-specific documentation.
+
+For ACF documentation please consult the [ACF wiki](https://github.com/aikar/commands/wiki).
+
 ## Example
 ```java
 @CommandAlias("ping")
