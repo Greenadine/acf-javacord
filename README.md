@@ -1,6 +1,8 @@
 
 # ACF Javacord ![](https://img.shields.io/badge/version-v0.1-blue?style=flat-square) [![](https://img.shields.io/badge/acf-v0.5.0-blue?style=flat-square)](https://github.com/aikar/commands) [![](https://img.shields.io/badge/javacord-v3.1.2-blue?style=flat-square)](https://github.com/Javacord/Javacord) ![](https://img.shields.io/github/license/Greenadine/acf-javacord?style=flat-square)
-ACF Javacord is a Javacord implementation of Aikar's [Annotation Command Framework (ACF)](https://github.com/aikar/commands).
+A Javacord implementation of Aikar's [Annotation Command Framework (ACF)](https://github.com/aikar/commands).
+
+ACF-Javacord allows the usage of the powerful command framework ACF for [Javacord](https://github.com/Javacord/Javacord)-based Discord bots. 
 
 ## Installation
 Add the .jar file to a new `/libs` folder (or a different one) within the project.
