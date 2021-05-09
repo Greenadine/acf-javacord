@@ -22,7 +22,7 @@ Add the .jar file to a new `/libs` folder (or a different one) within the projec
         <version>0.5.0</version>
     </dependency>
     <dependency>
-        <groupId>com.github.greenadine</groupId>
+        <groupId>nl.greenadine</groupId>
         <artifactId>acf-javacord</artifactId>
         <version>0.1</version>
         <scope>system</scope>
