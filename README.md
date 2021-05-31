@@ -24,7 +24,7 @@ Add the .jar file to a new `/libs` folder (or a different one) within the projec
     <dependency>
         <groupId>nl.greenadine</groupId>
         <artifactId>acf-javacord</artifactId>
-        <version>0.1</version>
+        <version>0.1.1</version>
         <scope>system</scope>
         <systemPath>${project.basedir}/libs/javacord-0.1.1.jar</systemPath>
     </dependency>
