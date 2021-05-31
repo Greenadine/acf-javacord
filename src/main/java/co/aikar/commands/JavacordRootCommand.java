@@ -26,10 +26,11 @@ public class JavacordRootCommand implements RootCommand {
 
     private final String name;
     boolean isRegistered = false;
-    private JavacordCommandManager manager;
+    private final JavacordCommandManager manager;
     private BaseCommand defCommand;
-    private SetMultimap<String, RegisteredCommand> subCommands = HashMultimap.create();
-    private List<BaseCommand> children = new ArrayList<>();
+    @SuppressWarnings("all")
+    private final SetMultimap<String, RegisteredCommand> subCommands = HashMultimap.create();
+    private final List<BaseCommand> children = new ArrayList<>();
 
     JavacordRootCommand(JavacordCommandManager manager, String name) {
         this.manager = manager;
@@ -45,11 +46,13 @@ public class JavacordRootCommand implements RootCommand {
     }
 
     @Override
+    @SuppressWarnings("all")
     public CommandManager getManager() {
         return this.manager;
     }
 
     @Override
+    @SuppressWarnings("all")
     public SetMultimap<String, RegisteredCommand> getSubCommands() {
         return this.subCommands;
     }

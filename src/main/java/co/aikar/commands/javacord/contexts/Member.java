@@ -17,6 +17,8 @@
 package co.aikar.commands.javacord.contexts;
 
 import com.google.common.base.Preconditions;
+import org.javacord.api.entity.Icon;
+import org.javacord.api.entity.activity.Activity;
 import org.javacord.api.entity.channel.ServerChannel;
 import org.javacord.api.entity.channel.ServerVoiceChannel;
 import org.javacord.api.entity.permission.PermissionType;
@@ -31,6 +33,7 @@ import java.time.Instant;
 import java.util.Collection;
 import java.util.List;
 import java.util.Optional;
+import java.util.Set;
 import java.util.concurrent.CompletableFuture;
 
 /**
@@ -89,17 +92,25 @@ public class Member {
     }
 
     /**
-     * Gets the display name of the member.
+     * Gets the avatar of the member.
      *
-     * <p>Gets the nickname of the member if present, otherwise the member's username.</p>
+     * @return the member's avatar.
      *
-     * @return the member's display name.
-     *
-     * @see #getNickname()
-     * @see #getName()
+     * @see User#getAvatar()
      */
-    public String getDisplayName() {
-        return getNickname().orElse(getName());
+    public Icon getAvatar() {
+        return user.getAvatar();
+    }
+
+    /**
+     * Gets the current activity of the member if present.
+     *
+     * @return the member's current activity.
+     *
+     * @see User#getActivities()
+     */
+    public Set<Activity> getActivity() {
+        return user.getActivities();
     }
 
     /**
@@ -111,6 +122,19 @@ public class Member {
      */
     public String getName() {
         return user.getName();
+    }
+
+    /**
+     * Gets the display name of the member.
+     * <p>Gets the nickname of the member if present, otherwise the member's username.</p>
+     *
+     * @return the member's display name.
+     *
+     * @see #getNickname()
+     * @see #getName()
+     */
+    public String getDisplayName() {
+        return getNickname().orElse(getName());
     }
 
     /**
@@ -136,14 +160,37 @@ public class Member {
     }
 
     /**
+     * Gets the mention tag of the member.
+     *
+     * @return the member's mention tag.
+     *
+     * @see User#getMentionTag()
+     */
+    public String getMentionTag() {
+        return user.getMentionTag();
+    }
+
+    /**
+     * Gets the nickname mention tag of the member.
+     *
+     * @return the member's nickname mention tag.
+     *
+     * @see User#getNicknameMentionTag()
+     */
+    public String getNicknameMentionTag() {
+        return user.getNicknameMentionTag();
+    }
+
+    /**
      * Gets the timestamp of when the member joined the server.
      *
      * @return the {@link Instant} timestamp of when the member joined the server.
      *
      * @see Server#getJoinedAtTimestamp(User)
      */
-    public Optional<Instant> getJoinedAtTimestamp() {
-        return server.getJoinedAtTimestamp(user);
+    @SuppressWarnings("OptionalGetWithoutIsPresent")
+    public Instant getJoinedAtTimestamp() {
+        return server.getJoinedAtTimestamp(user).get();
     }
 
     /**

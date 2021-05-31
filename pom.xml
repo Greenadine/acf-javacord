@@ -1,15 +1,45 @@
 <project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
   xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
   <modelVersion>4.0.0</modelVersion>
- 
-  <groupId>me.greenadine.acfjavacord</groupId>
-  <artifactId>acf-javacord</artifactId>
-  <version>0.1</version>
- 
+
   <properties>
     <maven.compiler.source>1.8</maven.compiler.source>
     <maven.compiler.target>1.8</maven.compiler.target>
   </properties>
+
+  <name>ACF Javacord</name>
+  <description>A Javacord implementation of aikar's Annotation Command Framework (ACF)</description>
+
+  <groupId>me.greenadine.acfjavacord</groupId>
+  <artifactId>acf-javacord</artifactId>
+  <version>0.1.1</version>
+  <packaging>jar</packaging>
+
+  <developers>
+    <developer>
+      <name>Kevin Zuman</name>
+      <email>kevinzuman@outlook.com</email>
+      <url>https://github.com/Greenadine</url>
+    </developer>
+  </developers>
+
+  <licenses>
+    <license>
+      <name>The Apache License, Version 2.0</name>
+      <url>https://www.apache.org/licenses/LICENSE-2.0.txt</url>
+    </license>
+  </licenses>
+
+  <distributionManagement>
+    <snapshotRepository>
+      <id>ossrh</id>
+      <url>https://oss.sonatype.org/content/repositories/snapshots</url>
+    </snapshotRepository>
+    <repository>
+      <id>ossrh</id>
+      <url>https://oss.sonatype.org/service/local/staging/deploy/maven2/</url>
+    </repository>
+  </distributionManagement>
 
   <repositories>
     <repository>
@@ -28,7 +58,7 @@
     <dependency>
       <groupId>org.javacord</groupId>
       <artifactId>javacord</artifactId>
-      <version>3.1.2</version>
+      <version>3.3.0</version>
       <type>pom</type>
     </dependency>
     <dependency>

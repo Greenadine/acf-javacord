@@ -16,6 +16,7 @@
 
 package co.aikar.commands;
 
+import co.aikar.commands.javacord.contexts.Member;
 import co.aikar.commands.javacord.util.JavacordEmbedBuilder;
 import org.javacord.api.entity.channel.TextChannel;
 import org.javacord.api.entity.message.Message;
@@ -32,8 +33,8 @@ import java.util.concurrent.CompletableFuture;
 
 public class JavacordCommandEvent implements CommandIssuer {
 
-    private MessageCreateEvent event;
-    private JavacordCommandManager manager;
+    private final MessageCreateEvent event;
+    private final JavacordCommandManager manager;
 
     public JavacordCommandEvent(JavacordCommandManager manager, MessageCreateEvent event) {
         this.manager = manager;
@@ -41,13 +42,29 @@ public class JavacordCommandEvent implements CommandIssuer {
     }
 
     @Override
+    @SuppressWarnings("unchecked")
     public MessageCreateEvent getIssuer() {
         return event;
     }
 
     @Override
+    @SuppressWarnings("all")
     public CommandManager getManager() {
         return this.manager;
+    }
+
+    public String getExecCommandLabel() {
+        return event.getMessage().getContent().trim().split("\\s+")[0].substring(manager.getCommandPrefix(this).length());
+    }
+
+    @SuppressWarnings("OptionalGetWithoutIsPresent")
+    public User getUser() {
+        return event.getMessageAuthor().asUser().get();
+    }
+
+    @SuppressWarnings("OptionalGetWithoutIsPresent")
+    public Member getMember() {
+        return new Member(getUser(), event.getServer().get());
     }
 
     @Override
@@ -71,7 +88,7 @@ public class JavacordCommandEvent implements CommandIssuer {
 
     @Override
     public void sendMessageInternal(String message) {
-        this.event.getChannel().sendMessage(message);
+        this.replyEmbed(message, Color.RED);
     }
 
     /**
@@ -119,6 +136,17 @@ public class JavacordCommandEvent implements CommandIssuer {
      */
     public CompletableFuture<Message> reply(InputStream is, String fileName) {
         return getChannel().sendMessage(is, fileName);
+    }
+
+    /**
+     * Send a message in the channel in which the command was invoked.
+     * Allows for formatting according to {@link String#format(String, Object...)}.
+     *
+     * @param message the message to send, with formatting.
+     * @param replacements the replacements.
+     */
+    public CompletableFuture<Message> replyf(String message, Object... replacements) {
+        return getChannel().sendMessage(String.format(message, replacements));
     }
 
     /**
@@ -241,6 +269,7 @@ public class JavacordCommandEvent implements CommandIssuer {
      *
      * @return {@code true} if the command issuer is a bot, {@code false} otherwise.
      */
+    @SuppressWarnings("OptionalGetWithoutIsPresent")
     public boolean isBot() {
         if (!getEvent().getMessageAuthor().isUser()) return false;
         return getEvent().getMessageAuthor().asUser().get().isBot();

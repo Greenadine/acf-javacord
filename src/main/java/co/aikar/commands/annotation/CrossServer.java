@@ -14,7 +14,7 @@
  *  limitations under the License.
  */
 
-package co.aikar.commands.annotations;
+package co.aikar.commands.annotation;
 
 import java.lang.annotation.ElementType;
 import java.lang.annotation.Retention;
@@ -22,13 +22,14 @@ import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
 
 /**
- * The {@link Author} annotation is to define whether the parameter should be the author object from the event or
- * parsed from the user's input.
+ * The {@link CrossServer} annotation is to define whether the parameter should be server-specific or global.
  * <p>
- *     Using this on a User/Member will fetch the author and otherwise it'll parse the input.
+ *     If a supported parameter is marked with the CrossServer annotation, the parameter will be filled from
+ *     a global perspective (i.e., all of the servers the bot is connected to). Otherwise, the parameter will
+ *     be filled from command input.
  * </p>
  */
 @Target(ElementType.PARAMETER)
 @Retention(RetentionPolicy.RUNTIME)
-public @interface Author {
+public @interface CrossServer {
 }

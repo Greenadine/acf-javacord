@@ -18,12 +18,9 @@ package co.aikar.commands;
 
 public class JavacordLocales extends Locales {
 
-    private final JavacordCommandManager manager;
-
     public JavacordLocales(JavacordCommandManager manager) {
         super(manager);
-        this.manager = manager;
-        this.addBundleClassLoader(this.manager.getApi().getClass().getClassLoader());
+        this.addBundleClassLoader(manager.getApi().getClass().getClassLoader());
     }
 
     @Override

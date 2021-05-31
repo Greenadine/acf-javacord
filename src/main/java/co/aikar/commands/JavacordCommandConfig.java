@@ -24,9 +24,7 @@ import java.util.concurrent.CopyOnWriteArrayList;
 public class JavacordCommandConfig implements CommandConfig {
     protected @NotNull List<String> commandPrefixes = new CopyOnWriteArrayList<>(new String[]{"!"});
 
-    public JavacordCommandConfig() {
-
-    }
+    public JavacordCommandConfig() { }
 
     @NotNull
     public List<String> getCommandPrefixes() { return commandPrefixes; }

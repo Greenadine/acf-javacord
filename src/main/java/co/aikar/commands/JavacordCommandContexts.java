@@ -16,14 +16,16 @@
 
 package co.aikar.commands;
 
-import co.aikar.commands.annotations.Author;
-import co.aikar.commands.annotations.CrossServer;
-import co.aikar.commands.annotations.SelfUser;
+import co.aikar.commands.annotation.Author;
+import co.aikar.commands.annotation.CrossServer;
+import co.aikar.commands.annotation.SelfUser;
 import co.aikar.commands.javacord.contexts.Member;
 import org.javacord.api.DiscordApi;
 import org.javacord.api.entity.channel.ChannelType;
 import org.javacord.api.entity.channel.ServerTextChannel;
 import org.javacord.api.entity.channel.TextChannel;
+import org.javacord.api.entity.emoji.CustomEmoji;
+import org.javacord.api.entity.emoji.KnownCustomEmoji;
 import org.javacord.api.entity.message.Message;
 import org.javacord.api.entity.permission.Role;
 import org.javacord.api.entity.server.Server;
@@ -38,13 +40,11 @@ import java.util.Optional;
 
 public class JavacordCommandContexts extends CommandContexts<JavacordCommandExecutionContext> {
 
-    private final JavacordCommandManager manager;
     private final DiscordApi api;
 
     public JavacordCommandContexts(JavacordCommandManager manager) {
         super(manager);
-        this.manager = manager;
-        this.api = this.manager.getApi();
+        this.api = manager.getApi();
         this.registerIssuerOnlyContext(JavacordCommandEvent.class, CommandExecutionContext::getIssuer);
         this.registerIssuerOnlyContext(MessageCreateEvent.class, c -> c.issuer.getIssuer());
         this.registerIssuerOnlyContext(Message.class, c -> c.issuer.getIssuer().getMessage());
@@ -58,7 +58,7 @@ public class JavacordCommandContexts extends CommandContexts<JavacordCommandExec
                 return event.getServer().get();
             }
         });
-        this.registerContext(TextChannel.class, c -> {
+        this.registerIssuerAwareContext(TextChannel.class, c -> {
             if (c.hasAnnotation(Author.class)) {
                 return c.getIssuer().getEvent().getChannel();
             }
@@ -85,12 +85,12 @@ public class JavacordCommandContexts extends CommandContexts<JavacordCommandExec
             }
             return channel.get();
         });
-        this.registerContext(ServerTextChannel.class, c -> {
+        this.registerIssuerAwareContext(ServerTextChannel.class, c -> {
             if (!c.issuer.getIssuer().getServer().isPresent()) {
                 throw new InvalidCommandArgument(JavacordMessageKeys.SERVER_ONLY, false);
             }
             if (c.hasAnnotation(Author.class)) {
-                //noinspection all
+                //noinspection OptionalGetWithoutIsPresent
                 return c.getIssuer().getChannel().asServerTextChannel().get();
             }
             boolean isCrossServer = c.hasAnnotation(CrossServer.class);
@@ -116,21 +116,27 @@ public class JavacordCommandContexts extends CommandContexts<JavacordCommandExec
             }
             return channel.get();
         });
-        this.registerContext(User.class, c -> {
+        this.registerIssuerAwareContext(User.class, c -> {
             if (c.hasAnnotation(SelfUser.class)) {
                 return api.getYourself();
             }
 
+            if ("false".equalsIgnoreCase(c.getFlagValue("other", "false"))) {
+                //noinspection OptionalGetWithoutIsPresent
+                return c.issuer.getIssuer().getMessageAuthor().asUser().get();
+            }
+
             String arg = c.isLastArg() ? String.join(" ", c.getArgs()) : c.popFirstArg();
 
-            if (c.isOptional() && (arg == null || arg.isEmpty())) {
-                return null;
+            if (!c.isOptional()) {
+                if (arg == null || arg.isEmpty()) {
+                    throw new InvalidCommandArgument(JavacordMessageKeys.PLEASE_SPECIFY_USER, false);
+                }
             }
+
             User user = null;
-            if (arg.startsWith("<@!")) {
-                user = api.getUserById(arg.substring(3, arg.length() - 1)).join();
-            } else if (arg.startsWith("<@")) {
-                user = api.getUserById(arg.substring(2, arg.length() - 1)).join();
+            if (arg.startsWith("<@")) {
+                user = api.getUserById(arg.replaceAll("[^0-9]", "")).join();
             } else {
                 Collection<User> users = api.getCachedUsersByNameIgnoreCase(arg);
                 if (users.size() > 1) {
@@ -140,30 +146,43 @@ public class JavacordCommandContexts extends CommandContexts<JavacordCommandExec
                     user = ACFUtil.getFirstElement(users);
                 }
             }
+
             if (user == null) {
                 throw new InvalidCommandArgument(JavacordMessageKeys.COULD_NOT_FIND_USER, false);
             }
             return user;
         });
-        this.registerContext(Member.class, c -> {
+        this.registerIssuerAwareContext(Member.class, c -> {
+            Server server = c.issuer.getIssuer().getServer().get();
+
+            if (c.hasAnnotation(SelfUser.class)) {
+                return new Member(api.getYourself(), server);
+            }
+
             if (!c.issuer.getIssuer().getServer().isPresent()) {
                 throw new InvalidCommandArgument(JavacordMessageKeys.SERVER_ONLY, false);
             }
 
+            if ("false".equalsIgnoreCase(c.getFlagValue("other", "false"))) {
+                //noinspection OptionalGetWithoutIsPresent
+                return new Member(c.issuer.getIssuer().getMessageAuthor().asUser().get(), server);
+            }
+
             if (c.hasAnnotation(SelfUser.class)) {
-                return new Member(api.getYourself(), c.issuer.getIssuer().getServer().get());
+                return new Member(api.getYourself(), server);
             }
 
             String arg = c.isLastArg() ? String.join(" ", c.getArgs()) : c.popFirstArg();
 
-            if (c.isOptional() && (arg == null || arg.isEmpty())) {
-                return null;
+            if (!c.isOptional()) {
+                if (arg == null || arg.isEmpty()) {
+                    throw new InvalidCommandArgument(JavacordMessageKeys.PLEASE_SPECIFY_USER, false);
+                }
             }
+
             User user = null;
-            if (arg.startsWith("<@!")) {
-                user = api.getUserById(arg.substring(3, arg.length() - 1)).join();
-            } else if (arg.startsWith("<@")) {
-                user = api.getUserById(arg.substring(2, arg.length() - 1)).join();
+            if (arg.startsWith("<@")) {
+                user = api.getUserById(arg.replaceAll("[^0-9]", "")).join();
             } else {
                 Collection<User> users = api.getCachedUsersByNameIgnoreCase(arg);
                 if (users.size() > 1) {
@@ -173,14 +192,14 @@ public class JavacordCommandContexts extends CommandContexts<JavacordCommandExec
                     user = ACFUtil.getFirstElement(users);
                 }
             }
+
             if (user == null) {
                 throw new InvalidCommandArgument(JavacordMessageKeys.COULD_NOT_FIND_USER, false);
-            }
-            if (!c.issuer.getIssuer().getServer().get().isMember(user)) {
+            } else if (!c.issuer.getIssuer().getServer().get().isMember(user)) {
                 throw new InvalidCommandArgument(JavacordMessageKeys.USER_NOT_MEMBER_OF_SERVER, false);
             }
 
-            return new Member(user, c.issuer.getIssuer().getServer().get());
+            return new Member(user, server);
         });
         this.registerContext(Role.class, c -> {
             boolean isCrossServer = c.hasAnnotation(CrossServer.class);
@@ -218,6 +237,58 @@ public class JavacordCommandContexts extends CommandContexts<JavacordCommandExec
                 throw new InvalidCommandArgument(JavacordMessageKeys.COULD_NOT_FIND_ROLE, false);
             }
             return role.get();
+        });
+        this.registerContext(CustomEmoji.class, c -> {
+            String arg = c.popFirstArg();
+
+            Optional<KnownCustomEmoji> emoji = Optional.empty();
+            if (arg.startsWith("<a:")) {
+                String id = arg.substring(3, arg.length() - 1);
+                emoji = api.getCustomEmojiById(id);
+            } else if (arg.startsWith("<:")) {
+                String id = arg.substring(2, arg.length() - 1);
+                emoji = api.getCustomEmojiById(id);
+            } else {
+                Collection<KnownCustomEmoji> emojis = api.getCustomEmojisByName(arg);
+
+                if (emojis.size() > 1) {
+                    throw new InvalidCommandArgument(JavacordMessageKeys.TOO_MANY_EMOJIS_WITH_NAME);
+                }
+                if (!emojis.isEmpty()) {
+                    emoji = Optional.of(ACFUtil.getFirstElement(emojis));
+                }
+            }
+
+            if (!emoji.isPresent()) {
+                throw new InvalidCommandArgument(JavacordMessageKeys.COULD_NOT_FIND_EMOJI);
+            }
+            return emoji.get();
+        });
+        this.registerContext(KnownCustomEmoji.class, c -> {
+            String arg = c.popFirstArg();
+
+            Optional<KnownCustomEmoji> emoji = Optional.empty();
+            if (arg.startsWith("<a:")) {
+                String id = arg.substring(3, arg.length() - 1);
+                emoji = api.getCustomEmojiById(id);
+            } else if (arg.startsWith("<:")) {
+                String id = arg.substring(2, arg.length() - 1);
+                emoji = api.getCustomEmojiById(id);
+            } else {
+                Collection<KnownCustomEmoji> emojis = api.getCustomEmojisByName(arg);
+
+                if (emojis.size() > 1) {
+                    throw new InvalidCommandArgument(JavacordMessageKeys.TOO_MANY_EMOJIS_WITH_NAME);
+                }
+                if (!emojis.isEmpty()) {
+                    emoji = Optional.of(ACFUtil.getFirstElement(emojis));
+                }
+            }
+
+            if (!emoji.isPresent()) {
+                throw new InvalidCommandArgument(JavacordMessageKeys.COULD_NOT_FIND_EMOJI);
+            }
+            return emoji.get();
         });
     }
 }

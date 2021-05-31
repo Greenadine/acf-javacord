@@ -28,11 +28,14 @@ public enum JavacordMessageKeys implements MessageKeyProvider {
     GROUP_ONLY,
     TOO_MANY_USERS_WITH_NAME,
     COULD_NOT_FIND_USER,
+    PLEASE_SPECIFY_USER,
     USER_NOT_MEMBER_OF_SERVER,
     TOO_MANY_CHANNELS_WITH_NAME,
     COULD_NOT_FIND_CHANNEL,
     TOO_MANY_ROLES_WITH_NAME,
     COULD_NOT_FIND_ROLE,
+    TOO_MANY_EMOJIS_WITH_NAME,
+    COULD_NOT_FIND_EMOJI,
     ;
 
     private final MessageKey key = MessageKey.of("acf-javacord." + this.name().toLowerCase(Locale.ENGLISH));

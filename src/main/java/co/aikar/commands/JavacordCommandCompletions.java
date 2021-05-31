@@ -30,6 +30,7 @@ public class JavacordCommandCompletions extends CommandCompletions<CommandComple
     }
 
     @Override
+    @SuppressWarnings("all")
     public CommandCompletionHandler registerCompletion(String id, CommandCompletionHandler<CommandCompletionContext<?>> handler) {
         if (initialized) {
             throw new UnsupportedOperationException("Javacord doesn't support command completions.");
@@ -38,6 +39,7 @@ public class JavacordCommandCompletions extends CommandCompletions<CommandComple
     }
 
     @Override
+    @SuppressWarnings("all")
     public CommandCompletionHandler registerAsyncCompletion(String id, AsyncCommandCompletionHandler<CommandCompletionContext<?>> handler) {
         if (initialized) {
             throw new UnsupportedOperationException("Javacord doesn't support command completions.");
