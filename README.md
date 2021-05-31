@@ -26,7 +26,7 @@ Add the .jar file to a new `/libs` folder (or a different one) within the projec
         <artifactId>acf-javacord</artifactId>
         <version>0.1</version>
         <scope>system</scope>
-        <systemPath>${project.basedir}/libs/javacord-0.1.jar</systemPath>
+        <systemPath>${project.basedir}/libs/javacord-0.1.1.jar</systemPath>
     </dependency>
 </dependencies>
 ````
@@ -42,7 +42,7 @@ repositories {
 
 dependencies {
     implementation 'co.aikar:acf-core:0.5.0-SNAPSHOT'
-    implementation files('libs/acf-javacord-0.1.jar')
+    implementation files('libs/acf-javacord-0.1.1.jar')
 }
 ````
 
