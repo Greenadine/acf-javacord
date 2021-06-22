@@ -1,5 +1,5 @@
 
-# ACF Javacord ![](https://img.shields.io/badge/version-v0.1-blue?style=flat-square) [![](https://img.shields.io/badge/acf-v0.5.0-blue?style=flat-square)](https://github.com/aikar/commands) [![](https://img.shields.io/badge/javacord-v3.3.0-blue?style=flat-square)](https://github.com/Javacord/Javacord) ![](https://img.shields.io/github/license/Greenadine/acf-javacord?style=flat-square)
+# ACF Javacord ![](https://img.shields.io/badge/version-v0.1.1-blue?style=flat-square) [![](https://img.shields.io/badge/acf-v0.5.0-blue?style=flat-square)](https://github.com/aikar/commands) [![](https://img.shields.io/badge/javacord-v3.3.0-blue?style=flat-square)](https://github.com/Javacord/Javacord) ![](https://img.shields.io/github/license/Greenadine/acf-javacord?style=flat-square)
 A Javacord implementation of Aikar's [Annotation Command Framework (ACF)](https://github.com/aikar/commands).
 
 ACF-Javacord allows the usage of the powerful command framework ACF for [Javacord](https://github.com/Javacord/Javacord)-based Discord bots. 
@@ -24,9 +24,9 @@ Add the .jar file to a new `/libs` folder (or a different one) within the projec
     <dependency>
         <groupId>nl.greenadine</groupId>
         <artifactId>acf-javacord</artifactId>
-        <version>0.1</version>
+        <version>0.1.1</version>
         <scope>system</scope>
-        <systemPath>${project.basedir}/libs/javacord-0.1.jar</systemPath>
+        <systemPath>${project.basedir}/libs/javacord-0.1.1.jar</systemPath>
     </dependency>
 </dependencies>
 ````
@@ -42,7 +42,7 @@ repositories {
 
 dependencies {
     implementation 'co.aikar:acf-core:0.5.0-SNAPSHOT'
-    implementation files('libs/acf-javacord-0.1.jar')
+    implementation files('libs/acf-javacord-0.1.1.jar')
 }
 ````
 
