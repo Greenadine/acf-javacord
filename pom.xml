@@ -10,9 +10,9 @@
   <name>ACF Javacord</name>
   <description>A Javacord implementation of aikar's Annotation Command Framework (ACF)</description>
 
-  <groupId>me.greenadine.acfjavacord</groupId>
+  <groupId>nl.greenadine.acfjavacord</groupId>
   <artifactId>acf-javacord</artifactId>
-  <version>0.1.1</version>
+  <version>0.2.0</version>
   <packaging>jar</packaging>
 
   <developers>
@@ -40,6 +40,38 @@
       <url>https://oss.sonatype.org/service/local/staging/deploy/maven2/</url>
     </repository>
   </distributionManagement>
+
+  <build>
+    <plugins>
+      <plugin>
+        <artifactId>maven-shade-plugin</artifactId>
+        <version>3.2.4</version>
+        <executions>
+          <execution>
+            <phase>package</phase>
+            <goals>
+              <goal>shade</goal>
+            </goals>
+            <configuration>
+              <relocations>
+                <relocation>
+                  <pattern>com.vdurmont.emoji</pattern>
+                  <shadedPattern>co.aikar.commands.shaded.emoji</shadedPattern>
+                </relocation>
+              </relocations>
+            </configuration>
+          </execution>
+        </executions>
+        <configuration>
+          <artifactSet>
+            <includes>
+              <include>com.vdurmont:emoji-java</include>
+            </includes>
+          </artifactSet>
+        </configuration>
+      </plugin>
+    </plugins>
+  </build>
 
   <repositories>
     <repository>
@@ -75,6 +107,11 @@
       <groupId>org.jetbrains</groupId>
       <artifactId>annotations</artifactId>
       <version>13.0</version>
+    </dependency>
+    <dependency>
+      <groupId>com.vdurmont</groupId>
+      <artifactId>emoji-java</artifactId>
+      <version>3.1.3</version>
     </dependency>
   </dependencies>
 </project>

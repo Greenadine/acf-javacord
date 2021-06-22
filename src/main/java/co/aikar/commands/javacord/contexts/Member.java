@@ -17,6 +17,7 @@
 package co.aikar.commands.javacord.contexts;
 
 import com.google.common.base.Preconditions;
+import org.javacord.api.entity.DiscordClient;
 import org.javacord.api.entity.Icon;
 import org.javacord.api.entity.activity.Activity;
 import org.javacord.api.entity.channel.ServerChannel;
@@ -26,18 +27,18 @@ import org.javacord.api.entity.permission.Permissions;
 import org.javacord.api.entity.permission.Role;
 import org.javacord.api.entity.server.Server;
 import org.javacord.api.entity.user.User;
+import org.javacord.api.entity.user.UserFlag;
+import org.javacord.api.entity.user.UserStatus;
 import org.jetbrains.annotations.NotNull;
 
 import java.awt.*;
 import java.time.Instant;
-import java.util.Collection;
+import java.util.*;
 import java.util.List;
-import java.util.Optional;
-import java.util.Set;
 import java.util.concurrent.CompletableFuture;
 
 /**
- * A {@link User} that is part of a specific {@link Server}. Contains all server-specific information about a {@code User}.
+ * This class represents a {@link User} within the context of a {@link Server}. Contains all server-specific information about a {@link User}.
  */
 public class Member {
 
@@ -72,6 +73,52 @@ public class Member {
     }
 
     /**
+     * Gets the member's current status.
+     *
+     * @return the member's current status.
+     *
+     * @see User#getStatus()
+     */
+    public UserStatus getStatus() {
+        return user.getStatus();
+    }
+
+    /**
+     * Gets the member's current status on the given client.
+     *
+     * @param discordClient the {@link DiscordClient}.
+     *
+     * @return the member's status on the given client.
+     *
+     * @see User#getStatusOnClient(DiscordClient)
+     */
+    public UserStatus getStatusOnClient(DiscordClient discordClient) {
+        return user.getStatusOnClient(discordClient);
+    }
+
+    /**
+     * Gets the member's public flags (badges) present on their account.
+     *
+     * @return an {@link EnumSet} of the member's user flags
+     *
+     * @see User#getUserFlags()
+     */
+    public EnumSet<UserFlag> getUserFlags() {
+        return user.getUserFlags();
+    }
+
+    /**
+     * Gets the current activities of the member.
+     *
+     * @return a {@link Set} of the member's current activities.
+     *
+     * @see User#getActivities()
+     */
+    public Set<Activity> getActivities() {
+        return user.getActivities();
+    }
+
+    /**
      * Gets the {@link Server} of the member.
      *
      * @return the member's {@code Server}.
@@ -103,14 +150,26 @@ public class Member {
     }
 
     /**
-     * Gets the current activity of the member if present.
+     * Returns whether the member currently has the default Discord avatar set on their account.
      *
-     * @return the member's current activity.
+     * @return {@code true} if the member has the default Discord avatar set, {@code false} otherwise.
      *
-     * @see User#getActivities()
+     * @see User#hasDefaultAvatar()
      */
-    public Set<Activity> getActivity() {
-        return user.getActivities();
+    public boolean hasDefaultAvatar() {
+        return user.hasDefaultAvatar();
+    }
+
+    /**
+     * Gets all the mutual servers with this account.
+     * NOTE: this only returns the mutual servers the user has with the API (bot).
+     *
+     * @return a {@link Collection} containing all the mutual servers.
+     *
+     * @see User#getMutualServers()
+     */
+    public Collection<Server> getMutualServers() {
+        return user.getMutualServers();
     }
 
     /**
@@ -367,6 +426,26 @@ public class Member {
      */
     public Optional<Color> getRoleColor() {
         return server.getRoleColor(user);
+    }
+
+    /**
+     * Returns whether the member is connected to a voice channel within the server.
+     *
+     * @return {@code true} if the member is connected to a server's voice channel, {@code false} otherwise.
+     */
+    public boolean isInVoiceChannel() {
+        return server.getVoiceChannels().stream().anyMatch(user::isConnected);
+    }
+
+    /**
+     * Returns whether the member is connected to the given voice channel within the server.
+     *
+     * @param channel the {@link ServerVoiceChannel}.
+     *
+     * @return {@code true} if the member is connected to the given voice channel, {@code false} otherwise.
+     */
+    public boolean isConnected(ServerVoiceChannel channel) {
+        return user.isConnected(channel);
     }
 
     /**
@@ -706,13 +785,12 @@ public class Member {
     }
 
     /**
-     * Gets the highest role of the member in the server.
+     * Gets the highest role of the member in the server, if present.
      *
      * @return the highest role of the member.
      */
-    @SuppressWarnings("OptionalGetWithoutIsPresent")
-    public Role getHighestRole() {
-        return server.getHighestRole(user).get();
+    public Optional<Role> getHighestRole() {
+        return server.getHighestRole(user);
     }
 
     /**
