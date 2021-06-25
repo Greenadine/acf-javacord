@@ -222,6 +222,18 @@ public class JavacordCommandEvent implements CommandIssuer {
     }
 
     /**
+     * Sends an embed in the channel in which the command was invoked, with the given description and the given color.
+     * Allows for formatting according to {@link String#format(String, Object...)}.
+     *
+     * @param color the color of the embed.
+     * @param description the message to send, with formatting.
+     * @param replacements the replacements.
+     */
+    public CompletableFuture<Message> replyfEmbed(Color color, String description, Object... replacements) {
+        return newEmbed().setColor(color).setDescription(String.format(description, replacements)).send();
+    }
+
+    /**
      * Creates a new {@link JavacordEmbedBuilder} for building a new embed within the context.
      *
      * @return the new {@code JavacordEmbedBuilder}.
