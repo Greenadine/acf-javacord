@@ -4,7 +4,7 @@ A Javacord implementation of Aikar's [Annotation Command Framework (ACF)](https:
 
 ACF-Javacord allows the usage of the powerful command framework ACF for [Javacord](https://github.com/Javacord/Javacord)-based Discord bots.
 
-_NOTE: This implementation of ACF is not official, and the core of ACF has been marked as not stable enough for new implementations. Use this implementation at your own risks._
+_NOTE: This implementation of ACF is not official, and the core of ACF has been marked as not stable enough for new implementations. Use this implementation at your own risk._
 
 ## Installation
 Add the .jar file to a new `/libs` folder (or a different one) within the project.
