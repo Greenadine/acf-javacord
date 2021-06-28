@@ -28,7 +28,7 @@ Add the .jar file to a new `/libs` folder (or a different one) within the projec
         <artifactId>acf-javacord</artifactId>
         <version>0.2</version>
         <scope>system</scope>
-        <systemPath>${project.basedir}/libs/javacord-0.1.1.jar</systemPath>
+        <systemPath>${project.basedir}/libs/javacord-0.2.jar</systemPath>
     </dependency>
 </dependencies>
 ````
