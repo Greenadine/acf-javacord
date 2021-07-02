@@ -32,6 +32,7 @@ Add the .jar file to a new `/libs` folder (or a different one) within the projec
     </dependency>
 </dependencies>
 ````
+This is a quick and dirty solution. I recommend [installing it to a local repository](https://maven.apache.org/guides/mini/guide-3rd-party-jars-local.html).
 ### Gradle
 ````gradle
 repositories {
