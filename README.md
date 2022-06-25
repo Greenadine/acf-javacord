@@ -8,6 +8,8 @@ ACF-Javacord allows the usage of the powerful command framework ACF for [Javacor
 This implementation of ACF is not official, and the core of ACF has been marked as not stable enough for new implementations. Use this implementation at your own risk.
 
 ## Installation
+_I recommend [installing it to a local repository](https://maven.apache.org/guides/mini/guide-3rd-party-jars-local.html), but if you would rather want to get it working as soon as possible, read the "quick and dirty" solution below._
+
 Add the .jar file to a new `/libs` folder (or a different one) within the project.
 ### Maven
 ```xml
@@ -33,7 +35,7 @@ Add the .jar file to a new `/libs` folder (or a different one) within the projec
     </dependency>
 </dependencies>
 ````
-This is a quick and dirty solution. I recommend [installing it to a local repository](https://maven.apache.org/guides/mini/guide-3rd-party-jars-local.html).
+
 ### Gradle
 ````gradle
 repositories {
