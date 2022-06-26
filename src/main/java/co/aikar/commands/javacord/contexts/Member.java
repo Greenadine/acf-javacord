@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2021 Kevin Zuman (Greenadine)
+ * Copyright (c) 2022 Kevin Zuman (Greenadine)
  *
  *  Licensed under the Apache License, Version 2.0 (the "License");
  *  you may not use this file except in compliance with the License.
@@ -17,9 +17,11 @@
 package co.aikar.commands.javacord.contexts;
 
 import com.google.common.base.Preconditions;
+import org.javacord.api.DiscordApi;
 import org.javacord.api.entity.DiscordClient;
 import org.javacord.api.entity.Icon;
 import org.javacord.api.entity.activity.Activity;
+import org.javacord.api.entity.channel.PrivateChannel;
 import org.javacord.api.entity.channel.ServerChannel;
 import org.javacord.api.entity.channel.ServerVoiceChannel;
 import org.javacord.api.entity.permission.PermissionType;
@@ -29,158 +31,58 @@ import org.javacord.api.entity.server.Server;
 import org.javacord.api.entity.user.User;
 import org.javacord.api.entity.user.UserFlag;
 import org.javacord.api.entity.user.UserStatus;
+import org.javacord.api.listener.ObjectAttachableListener;
+import org.javacord.api.listener.channel.server.ServerChannelChangeOverwrittenPermissionsListener;
+import org.javacord.api.listener.channel.server.voice.ServerVoiceChannelMemberJoinListener;
+import org.javacord.api.listener.channel.server.voice.ServerVoiceChannelMemberLeaveListener;
+import org.javacord.api.listener.channel.user.PrivateChannelCreateListener;
+import org.javacord.api.listener.channel.user.PrivateChannelDeleteListener;
+import org.javacord.api.listener.interaction.*;
+import org.javacord.api.listener.message.MessageCreateListener;
+import org.javacord.api.listener.message.reaction.ReactionAddListener;
+import org.javacord.api.listener.message.reaction.ReactionRemoveListener;
+import org.javacord.api.listener.server.member.ServerMemberBanListener;
+import org.javacord.api.listener.server.member.ServerMemberJoinListener;
+import org.javacord.api.listener.server.member.ServerMemberLeaveListener;
+import org.javacord.api.listener.server.member.ServerMemberUnbanListener;
+import org.javacord.api.listener.server.role.UserRoleAddListener;
+import org.javacord.api.listener.server.role.UserRoleRemoveListener;
+import org.javacord.api.listener.user.*;
+import org.javacord.api.util.event.ListenerManager;
 import org.jetbrains.annotations.NotNull;
 
 import java.awt.*;
+import java.time.Duration;
 import java.time.Instant;
 import java.util.*;
 import java.util.List;
 import java.util.concurrent.CompletableFuture;
 
 /**
- * This class represents a {@link User} within the context of a {@link Server}. Contains all server-specific information about a {@link User}.
+ * Represents a {@link User} within the context of a {@link Server}
+ *
+ * @author Kevin Zuman
+ * @since 0.1
  */
-public class Member {
+@SuppressWarnings("OptionalGetWithoutIsPresent")
+public class Member implements User {
 
     private final User user;
     private final Server server;
 
     public Member(@NotNull User user, @NotNull Server server) {
-        Preconditions.checkArgument(server.isMember(user), "User is not a member of the server");
-
+        Preconditions.checkArgument(server.isMember(user), "User is not member of server.");
         this.user = user;
         this.server = server;
     }
-
+    
     /**
-     * Gets the {@link User} instance of the member.
+     * Gets the {@link Server} where the member is present.
      *
-     * @return the member's {@code User} instance.
-     */
-    public User getUser() {
-        return user;
-    }
-
-    /**
-     * Returns whether the member is a bot.
-     *
-     * @return {@code true} if the member is a bot, {@code false} otherwise.
-     *
-     * @see User#isBot()
-     */
-    public boolean isBot() {
-        return user.isBot();
-    }
-
-    /**
-     * Gets the member's current status.
-     *
-     * @return the member's current status.
-     *
-     * @see User#getStatus()
-     */
-    public UserStatus getStatus() {
-        return user.getStatus();
-    }
-
-    /**
-     * Gets the member's current status on the given client.
-     *
-     * @param discordClient the {@link DiscordClient}.
-     *
-     * @return the member's status on the given client.
-     *
-     * @see User#getStatusOnClient(DiscordClient)
-     */
-    public UserStatus getStatusOnClient(DiscordClient discordClient) {
-        return user.getStatusOnClient(discordClient);
-    }
-
-    /**
-     * Gets the member's public flags (badges) present on their account.
-     *
-     * @return an {@link EnumSet} of the member's user flags
-     *
-     * @see User#getUserFlags()
-     */
-    public EnumSet<UserFlag> getUserFlags() {
-        return user.getUserFlags();
-    }
-
-    /**
-     * Gets the current activities of the member.
-     *
-     * @return a {@link Set} of the member's current activities.
-     *
-     * @see User#getActivities()
-     */
-    public Set<Activity> getActivities() {
-        return user.getActivities();
-    }
-
-    /**
-     * Gets the {@link Server} of the member.
-     *
-     * @return the member's {@code Server}.
+     * @return the member's {@link Server}.
      */
     public Server getServer() {
         return server;
-    }
-
-    /**
-     * Gets the ID of the member.
-     *
-     * @return the ID of the member.
-     *
-     * @see User#getId()
-     */
-    public long getId() {
-        return user.getId();
-    }
-
-    /**
-     * Gets the avatar of the member.
-     *
-     * @return the member's avatar.
-     *
-     * @see User#getAvatar()
-     */
-    public Icon getAvatar() {
-        return user.getAvatar();
-    }
-
-    /**
-     * Returns whether the member currently has the default Discord avatar set on their account.
-     *
-     * @return {@code true} if the member has the default Discord avatar set, {@code false} otherwise.
-     *
-     * @see User#hasDefaultAvatar()
-     */
-    public boolean hasDefaultAvatar() {
-        return user.hasDefaultAvatar();
-    }
-
-    /**
-     * Gets all the mutual servers with this account.
-     * NOTE: this only returns the mutual servers the user has with the API (bot).
-     *
-     * @return a {@link Collection} containing all the mutual servers.
-     *
-     * @see User#getMutualServers()
-     */
-    public Collection<Server> getMutualServers() {
-        return user.getMutualServers();
-    }
-
-    /**
-     * Gets the name of the member.
-     *
-     * @return the member's name.
-     *
-     * @see User#getName()
-     */
-    public String getName() {
-        return user.getName();
     }
 
     /**
@@ -189,55 +91,53 @@ public class Member {
      *
      * @return the member's display name.
      *
-     * @see #getNickname()
-     * @see #getName()
+     * @see Member#getNickname()
+     * @see Member#getName()
      */
     public String getDisplayName() {
         return getNickname().orElse(getName());
     }
 
     /**
-     * Gets the discriminated name of the member.
+     * Gets the server-specific avatar of the member.
      *
-     * @return the member's discriminated name.
-     *
-     * @see User#getDiscriminatedName()
+     * @return the member's server-specific avatar.
      */
-    public String getDiscriminatedName() {
-        return user.getDiscriminatedName();
+    public Optional<Icon> getServerAvatar() {
+        return user.getServerAvatar(server);
     }
 
     /**
-     * Gets the discriminator of the member.
+     * Gets the server-specific avatar of the member at the given image size.
      *
-     * @return the member's discriminator.
+     * @param i the size of the image, must be any power of 2 between 16 and 4096.
      *
-     * @see User#getDiscriminator()
+     * @return the member's server-specific avatar at the given image size.
      */
-    public String getDiscriminator() {
-        return user.getDiscriminator();
+    public Optional<Icon> getServerAvatar(int i) {
+        return user.getServerAvatar(server, i);
     }
 
     /**
-     * Gets the mention tag of the member.
+     * Gets the effective avatar of the member. This will return the member's server-specific avatar if they have one,
+     * otherwise it will return their account avatar.
      *
-     * @return the member's mention tag.
-     *
-     * @see User#getMentionTag()
+     * @return the member's effective avatar.
      */
-    public String getMentionTag() {
-        return user.getMentionTag();
+    public Icon getEffectiveAvatar() {
+        return user.getEffectiveAvatar(server);
     }
 
     /**
-     * Gets the nickname mention tag of the member.
+     * Gets the effective avatar of the member at the given image size. This will return the member's server-specific
+     * avatar if they have one, otherwise it will return their account avatar.
      *
-     * @return the member's nickname mention tag.
+     * @param i the size of the image, must be any power of 2 between 16 and 4096.
      *
-     * @see User#getNicknameMentionTag()
+     * @return the member's effective avatar at the given image size.
      */
-    public String getNicknameMentionTag() {
-        return user.getNicknameMentionTag();
+    public Icon getEffectiveAvatar(int i) {
+        return user.getEffectiveAvatar(server, i);
     }
 
     /**
@@ -247,7 +147,6 @@ public class Member {
      *
      * @see Server#getJoinedAtTimestamp(User)
      */
-    @SuppressWarnings("OptionalGetWithoutIsPresent")
     public Instant getJoinedAtTimestamp() {
         return server.getJoinedAtTimestamp(user).get();
     }
@@ -277,7 +176,7 @@ public class Member {
      *
      * @param nickname the new nickname of the member.
      *
-     * @return a future to check if the update was successful.
+     * @return A {@code Future} to check if the update was successful.
      *
      * @see Server#updateNickname(User, String)
      */
@@ -291,7 +190,7 @@ public class Member {
      * @param nickname the new nickname of the member.
      * @param reason the audit log reason for this update.
      *
-     * @return a future to check if the update was successful.
+     * @return A {@code Future} to check if the update was successful.
      *
      * @see Server#updateNickname(User, String)
      */
@@ -302,7 +201,7 @@ public class Member {
     /**
      * Removes the nickname of the member.
      *
-     * @return a future to check if the update was successful.
+     * @return A {@code Future} to check if the update was successful.
      *
      * @see Server#resetNickname(User)
      */
@@ -315,7 +214,7 @@ public class Member {
      *
      * @param reason the audit log reason for this update.
      *
-     * @return a future to check if the update was successful.
+     * @return A {@code Future} to check if the update was successful.
      *
      * @see Server#resetNickname(User, String)
      */
@@ -339,7 +238,7 @@ public class Member {
      *
      * @param role the role which should be added to the member.
      *
-     * @return a future to check if the update was successful.
+     * @return A {@code Future} to check if the update was successful.
      *
      * @see Server#addRoleToUser(User, Role)
      */
@@ -353,7 +252,7 @@ public class Member {
      * @param role the role which should be added to the member.
      * @param reason the audit log reason for this update.
      *
-     * @return a future to check if the update was successful.
+     * @return A {@code Future} to check if the update was successful.
      *
      * @see Server#addRoleToUser(User, Role, String)
      */
@@ -366,7 +265,7 @@ public class Member {
      *
      * @param role the role which should be removed from the member.
      *
-     * @return a future to check if the update was successful.
+     * @return A {@code Future} to check if the update was successful.
      *
      * @see Server#removeRoleFromUser(User, Role)
      */
@@ -380,7 +279,7 @@ public class Member {
      * @param role the role which should be removed from the member.
      * @param reason the audit log reason for this update.
      *
-     * @return a future to check if the update was successful.
+     * @return A {@code Future} to check if the update was successful.
      *
      * @see Server#removeRoleFromUser(User, Role, String)
      */
@@ -394,7 +293,7 @@ public class Member {
      *
      * @param roles the collection of roles to replace the member's roles.
      *
-     * @return a future to check if the update was successful.
+     * @return A {@code Future} to check if the update was successful.
      *
      * @see Server#updateRoles(User, Collection)
      */
@@ -409,7 +308,7 @@ public class Member {
      * @param roles the collection of roles to replace the member's roles.
      * @param reason the audit log reason for this update.
      *
-     * @return a future to check if the update was successful.
+     * @return A {@code Future} to check if the update was successful.
      *
      * @see Server#updateRoles(User, Collection, String)
      */
@@ -453,7 +352,7 @@ public class Member {
      *
      * @param channel the channel to move the member to.
      *
-     * @return a future to check if the move was successful.
+     * @return A {@code Future} to check if the move was successful.
      *
      * @see Server#moveUser(User, ServerVoiceChannel)
      */
@@ -464,7 +363,7 @@ public class Member {
     /**
      * Kicks the member from any voice channel.
      *
-     * @return a future to check if the kick was successful.
+     * @return A {@code Future} to check if the kick was successful.
      *
      * @see Server#kickUserFromVoiceChannel(User)
      */
@@ -475,7 +374,7 @@ public class Member {
     /**
      * Mutes the member on the server.
      *
-     * @return a future to check if the mute was successful.
+     * @return A {@code Future} to check if the mute was successful.
      *
      * @see Server#muteUser(User)
      */
@@ -488,7 +387,7 @@ public class Member {
      *
      * @param reason the audit log reason for this action.
      *
-     * @return a future to check if the mute was successful.
+     * @return A {@code Future} to check if the mute was successful.
      *
      * @see Server#muteUser(User, String)
      */
@@ -499,7 +398,7 @@ public class Member {
     /**
      * Unmutes the member on the server.
      *
-     * @return a future to check if the unmute was successful.
+     * @return A {@code Future} to check if the unmute was successful.
      *
      * @see Server#unmuteUser(User)
      */
@@ -512,7 +411,7 @@ public class Member {
      *
      * @param reason the audit log reason for this action.
      *
-     * @return a future to check if the unmute was successful.
+     * @return A {@code Future} to check if the unmute was successful.
      */
     public CompletableFuture<Void> unmute(String reason) {
         return server.unmuteUser(user, reason);
@@ -543,7 +442,7 @@ public class Member {
     /**
      * Deafens the member on the server.
      *
-     * @return a future to check if the deafen was successful.
+     * @return A {@code Future} to check if the deafen was successful.
      *
      * @see Server#deafenUser(User)
      */
@@ -556,7 +455,7 @@ public class Member {
      *
      * @param reason the audit log reason for this action.
      *
-     * @return a future to check if the deafen was successful.
+     * @return A {@code Future} to check if the deafen was successful.
      *
      * @see Server#deafenUser(User, String)
      */
@@ -567,7 +466,7 @@ public class Member {
     /**
      * Undeafens the member on the server.
      *
-     * @return a future to check if the undeafen was successful.
+     * @return A {@code Future} to check if the undeafen was successful.
      *
      * @see Server#undeafenUser(User)
      */
@@ -580,7 +479,7 @@ public class Member {
      *
      * @param reason the audit log reason for this action.
      *
-     * @return a future to check if the undeafen was successful.
+     * @return A {@code Future} to check if the undeafen was successful.
      *
      * @see Server#undeafenUser(User, String)
      */
@@ -611,9 +510,93 @@ public class Member {
     }
 
     /**
+     * Timeouts the member on the server until the given {@link Instant} timestamp.
+     *
+     * @param timeout The {@code Instant}.
+     *
+     * @return A {@code Future} to check if the timeout was successful.
+     */
+    public CompletableFuture<Void> timeout(Instant timeout) {
+        return user.timeout(server, timeout);
+    }
+
+    /**
+     * Timeouts the member on the server for the given {@link Duration}.
+     * 
+     * @param duration The {@code Duration}.
+     *                 
+     * @return A {@code Future} to check if the timeout was successful.
+     */
+    public CompletableFuture<Void> timeout(Duration duration) {
+        return user.timeout(server, duration);
+    }
+
+    /**
+     * Timeouts the member on the server until the given {@link Instant} timestamp for the provided reason.
+     *
+     * @param timeout The {@code Instant}.
+     * @param reason A description of the reason for the timeout.
+     *
+     * @return A {@code Future} to check if the timeout was successful.
+     */
+    public CompletableFuture<Void> timeout(Instant timeout, String reason) {
+        return user.timeout(server, timeout, reason);
+    }
+
+    /**
+     * Timeouts the member on the server for the given {@link Duration} for the provided reason.
+     *
+     * @param duration The {@code Duration}.
+     * @param reason A description of the reason for the timeout.
+     *
+     * @return A {@code Future} to check if the timeout was successful.
+     */
+    public CompletableFuture<Void> timeout(Duration duration, String reason) {
+        return user.timeout(server, duration, reason);
+    }
+
+    /**
+     * Gets the timestamp of when the member's timeout will expire, and the member will be able to communicate in the server again.
+     *
+     * @return An {@link Instant} of when the member's timeout will expire.
+     */
+    public Optional<Instant> getTimeout() {
+        return user.getTimeout(server);
+    }
+
+    /**
+     * Gets the timestamp of when the member's timeout will expire, and the member will be able to communicate in the server again.
+     *
+     * @return An {@link Instant} of when the member's timeout will expire.
+     */
+    public Optional<Instant> getActiveTimeout() {
+        return user.getActiveTimeout(server);
+    }
+
+    /**
+     * Removes a timeout of the member on the server.
+     *
+     * @return A {@code Future} to check if the timeout removal was successful.
+     */
+    public CompletableFuture<Void> removeTimeout() {
+        return user.removeTimeout(server);
+    }
+
+    /**
+     * Removes a timeout of the member on the server with the provided reason.
+     *
+     * @param reason A description of the reason for the timeout removal.
+     *
+     * @return A {@code Future} to check if the timeout removal was successful.
+     */
+    public CompletableFuture<Void> removeTimeout(String reason) {
+        return user.removeTimeout(server, reason);
+    }
+
+    /**
      * Kicks the member from the server.
      *
-     * @return a future to check if the kick was successful.
+     * @return A {@code Future} to check if the kick was successful.
      *
      * @see Server#kickUser(User)
      */
@@ -626,7 +609,7 @@ public class Member {
      *
      * @param reason the audit log reason for this action.
      *
-     * @return a future to check if the kick was successful.
+     * @return A {@code Future} to check if the kick was successful.
      *
      * @see Server#kickUser(User, String)
      */
@@ -657,7 +640,7 @@ public class Member {
      *
      * @param deleteMessageDays the number of days to delete the messages for (0-7).
      *
-     * @return a future to check if the ban was successful.
+     * @return A {@code Future} to check if the ban was successful.
      *
      * @see Server#banUser(User, int)
      */
@@ -671,7 +654,7 @@ public class Member {
      * @param deleteMessageDays the number of days to delete the messages for (0-7).
      * @param reason the audit log reason for this action.
      *
-     * @return a future to check if the ban was successful.
+     * @return A {@code Future} to check if the ban was successful.
      *
      * @see Server#banUser(User, int, String)
      */
@@ -682,7 +665,7 @@ public class Member {
     /**
      * Unbans the member from the server.
      *
-     * @return a future to check if the unban was successful.
+     * @return A {@code Future} to check if the unban was successful.
      *
      * @see Server#unbanUser(User)
      */
@@ -695,7 +678,7 @@ public class Member {
      *
      * @param reason the audit log reason for this action.
      *
-     * @return a future to check if the unban was successful.
+     * @return A {@code Future} to check if the unban was successful.
      *
      * @see Server#unbanUser(User, String)
      */
@@ -995,5 +978,547 @@ public class Member {
      */
     public boolean canBanUser(User userToBan) {
         return server.canBanUser(user, userToBan);
+    }
+
+    /* User implemented methods */
+
+    @Override
+    public String getDiscriminatedName() {
+        return user.getDiscriminatedName();
+    }
+
+    @Override
+    public String getDiscriminator() {
+        return user.getDiscriminator();
+    }
+
+    @Override
+    public boolean isBot() {
+        return user.isBot();
+    }
+
+    @Override
+    public Set<Activity> getActivities() {
+        return user.getActivities();
+    }
+
+    @Override
+    public UserStatus getStatus() {
+        return user.getStatus();
+    }
+
+    @Override
+    public UserStatus getStatusOnClient(DiscordClient discordClient) {
+        return user.getStatusOnClient(discordClient);
+    }
+
+    @Override
+    public EnumSet<UserFlag> getUserFlags() {
+        return user.getUserFlags();
+    }
+
+    @Override
+    public Optional<String> getAvatarHash() {
+        return user.getAvatarHash();
+    }
+
+    @Override
+    public Icon getAvatar() {
+        return user.getAvatar();
+    }
+
+    @Override
+    public Icon getAvatar(int i) {
+        return user.getAvatar(i);
+    }
+
+    @Override
+    public Optional<Icon> getServerAvatar(Server server) {
+        return user.getServerAvatar(server);
+    }
+
+    @Override
+    public Optional<Icon> getServerAvatar(Server server, int i) {
+        return user.getServerAvatar(server, i);
+    }
+
+    @Override
+    public Icon getEffectiveAvatar(Server server) {
+        return user.getEffectiveAvatar(server);
+    }
+
+    @Override
+    public Icon getEffectiveAvatar(Server server, int i) {
+        return user.getEffectiveAvatar(server, i);
+    }
+
+    @Override
+    public boolean hasDefaultAvatar() {
+        return user.hasDefaultAvatar();
+    }
+
+    @Override
+    public Set<Server> getMutualServers() {
+        return user.getMutualServers();
+    }
+
+    @Override
+    public String getDisplayName(Server server) {
+        return user.getDisplayName(server);
+    }
+
+    @Override
+    public Optional<String> getNickname(Server server) {
+        return server.getNickname(user);
+    }
+
+    @Override
+    public Optional<Instant> getTimeout(Server server) {
+        return user.getTimeout(server);
+    }
+
+    @Override
+    public boolean isPending(Server server) {
+        return server.isPending(user.getId());
+    }
+
+    @Override
+    public boolean isSelfMuted(Server server) {
+        return server.isSelfMuted(user.getId());
+    }
+
+    @Override
+    public boolean isSelfDeafened(Server server) {
+        return server.isSelfDeafened(user.getId());
+    }
+
+    @Override
+    public Optional<Instant> getJoinedAtTimestamp(Server server) {
+        return server.getJoinedAtTimestamp(user);
+    }
+
+    @Override
+    public List<Role> getRoles(Server server) {
+        return server.getRoles(user);
+    }
+
+    @Override
+    public Optional<Color> getRoleColor(Server server) {
+        return server.getRoleColor(user);
+    }
+
+    @Override
+    public Optional<PrivateChannel> getPrivateChannel() {
+        return user.getPrivateChannel();
+    }
+
+    @Override
+    public CompletableFuture<PrivateChannel> openPrivateChannel() {
+        return user.openPrivateChannel();
+    }
+
+    @Override
+    public DiscordApi getApi() {
+        return user.getApi();
+    }
+
+    @Override
+    public long getId() {
+        return user.getId();
+    }
+
+    @Override
+    public String getName() {
+        return user.getName();
+    }
+
+    @Override
+    public ListenerManager<InteractionCreateListener> addInteractionCreateListener(InteractionCreateListener interactionCreateListener) {
+        return user.addInteractionCreateListener(interactionCreateListener);
+    }
+
+    @Override
+    public List<InteractionCreateListener> getInteractionCreateListeners() {
+        return user.getInteractionCreateListeners();
+    }
+
+    @Override
+    public ListenerManager<MessageComponentCreateListener> addMessageComponentCreateListener(MessageComponentCreateListener messageComponentCreateListener) {
+        return user.addMessageComponentCreateListener(messageComponentCreateListener);
+    }
+
+    @Override
+    public List<MessageComponentCreateListener> getMessageComponentCreateListeners() {
+        return user.getMessageComponentCreateListeners();
+    }
+
+    @Override
+    public ListenerManager<ButtonClickListener> addButtonClickListener(ButtonClickListener buttonClickListener) {
+        return user.addButtonClickListener(buttonClickListener);
+    }
+
+    @Override
+    public List<ButtonClickListener> getButtonClickListeners() {
+        return user.getButtonClickListeners();
+    }
+
+    @Override
+    public ListenerManager<SelectMenuChooseListener> addSelectMenuChooseListener(SelectMenuChooseListener selectMenuChooseListener) {
+        return user.addSelectMenuChooseListener(selectMenuChooseListener);
+    }
+
+    @Override
+    public List<SelectMenuChooseListener> getSelectMenuChooseListeners() {
+        return user.getSelectMenuChooseListeners();
+    }
+
+    @Override
+    public ListenerManager<ModalSubmitListener> addModalSubmitListener(ModalSubmitListener modalSubmitListener) {
+        return null;
+    }
+
+    @Override
+    public List<ModalSubmitListener> getModalSubmitListeners() {
+        return null;
+    }
+
+    @Override
+    public ListenerManager<AutocompleteCreateListener> addAutocompleteCreateListener(AutocompleteCreateListener autocompleteCreateListener) {
+        return null;
+    }
+
+    @Override
+    public List<AutocompleteCreateListener> getAutocompleteCreateListeners() {
+        return null;
+    }
+
+    @Override
+    public ListenerManager<UserContextMenuCommandListener> addUserContextMenuCommandListener(UserContextMenuCommandListener userContextMenuCommandListener) {
+        return null;
+    }
+
+    @Override
+    public List<UserContextMenuCommandListener> getUserContextMenuCommandListeners() {
+        return null;
+    }
+
+    @Override
+    public ListenerManager<MessageContextMenuCommandListener> addMessageContextMenuCommandListener(MessageContextMenuCommandListener messageContextMenuCommandListener) {
+        return null;
+    }
+
+    @Override
+    public List<MessageContextMenuCommandListener> getMessageContextMenuCommandListeners() {
+        return null;
+    }
+
+    @Override
+    public ListenerManager<SlashCommandCreateListener> addSlashCommandCreateListener(SlashCommandCreateListener slashCommandCreateListener) {
+        return user.addSlashCommandCreateListener(slashCommandCreateListener);
+    }
+
+    @Override
+    public List<SlashCommandCreateListener> getSlashCommandCreateListeners() {
+        return user.getSlashCommandCreateListeners();
+    }
+
+    @Override
+    public ListenerManager<UserChangeSelfMutedListener> addUserChangeSelfMutedListener(UserChangeSelfMutedListener userChangeSelfMutedListener) {
+        return user.addUserChangeSelfMutedListener(userChangeSelfMutedListener);
+    }
+
+    @Override
+    public List<UserChangeSelfMutedListener> getUserChangeSelfMutedListeners() {
+        return user.getUserChangeSelfMutedListeners();
+    }
+
+    @Override
+    public ListenerManager<UserChangeSelfDeafenedListener> addUserChangeSelfDeafenedListener(UserChangeSelfDeafenedListener userChangeSelfDeafenedListener) {
+        return user.addUserChangeSelfDeafenedListener(userChangeSelfDeafenedListener);
+    }
+
+    @Override
+    public List<UserChangeSelfDeafenedListener> getUserChangeSelfDeafenedListeners() {
+        return user.getUserChangeSelfDeafenedListeners();
+    }
+
+    @Override
+    public ListenerManager<UserChangeDiscriminatorListener> addUserChangeDiscriminatorListener(UserChangeDiscriminatorListener userChangeDiscriminatorListener) {
+        return user.addUserChangeDiscriminatorListener(userChangeDiscriminatorListener);
+    }
+
+    @Override
+    public List<UserChangeDiscriminatorListener> getUserChangeDiscriminatorListeners() {
+        return user.getUserChangeDiscriminatorListeners();
+    }
+
+    @Override
+    public ListenerManager<UserChangeServerAvatarListener> addUserChangeServerAvatarListener(UserChangeServerAvatarListener userChangeServerAvatarListener) {
+        return null;
+    }
+
+    @Override
+    public List<UserChangeServerAvatarListener> getUserChangeServerAvatarListeners() {
+        return null;
+    }
+
+    @Override
+    public ListenerManager<UserChangeActivityListener> addUserChangeActivityListener(UserChangeActivityListener userChangeActivityListener) {
+        return user.addUserChangeActivityListener(userChangeActivityListener);
+    }
+
+    @Override
+    public List<UserChangeActivityListener> getUserChangeActivityListeners() {
+        return user.getUserChangeActivityListeners();
+    }
+
+    @Override
+    public ListenerManager<UserChangeMutedListener> addUserChangeMutedListener(UserChangeMutedListener userChangeMutedListener) {
+        return user.addUserChangeMutedListener(userChangeMutedListener);
+    }
+
+    @Override
+    public List<UserChangeMutedListener> getUserChangeMutedListeners() {
+        return user.getUserChangeMutedListeners();
+    }
+
+    @Override
+    public ListenerManager<UserChangeDeafenedListener> addUserChangeDeafenedListener(UserChangeDeafenedListener userChangeDeafenedListener) {
+        return user.addUserChangeDeafenedListener(userChangeDeafenedListener);
+    }
+
+    @Override
+    public List<UserChangeDeafenedListener> getUserChangeDeafenedListeners() {
+        return user.getUserChangeDeafenedListeners();
+    }
+
+    @Override
+    public ListenerManager<UserChangePendingListener> addUserChangePendingListener(UserChangePendingListener userChangePendingListener) {
+        return user.addUserChangePendingListener(userChangePendingListener);
+    }
+
+    @Override
+    public List<UserChangePendingListener> getUserChangePendingListeners() {
+        return user.getUserChangePendingListeners();
+    }
+
+    @Override
+    public ListenerManager<UserChangeTimeoutListener> addUserChangeTimeoutListener(UserChangeTimeoutListener userChangeTimeoutListener) {
+        return null;
+    }
+
+    @Override
+    public List<UserChangeTimeoutListener> getUserChangeTimeoutListeners() {
+        return null;
+    }
+
+    @Override
+    public ListenerManager<UserStartTypingListener> addUserStartTypingListener(UserStartTypingListener userStartTypingListener) {
+        return user.addUserStartTypingListener(userStartTypingListener);
+    }
+
+    @Override
+    public List<UserStartTypingListener> getUserStartTypingListeners() {
+        return user.getUserStartTypingListeners();
+    }
+
+    @Override
+    public ListenerManager<UserChangeNicknameListener> addUserChangeNicknameListener(UserChangeNicknameListener userChangeNicknameListener) {
+        return user.addUserChangeNicknameListener(userChangeNicknameListener);
+    }
+
+    @Override
+    public List<UserChangeNicknameListener> getUserChangeNicknameListeners() {
+        return user.getUserChangeNicknameListeners();
+    }
+
+    @Override
+    public ListenerManager<UserChangeAvatarListener> addUserChangeAvatarListener(UserChangeAvatarListener userChangeAvatarListener) {
+        return user.addUserChangeAvatarListener(userChangeAvatarListener);
+    }
+
+    @Override
+    public List<UserChangeAvatarListener> getUserChangeAvatarListeners() {
+        return user.getUserChangeAvatarListeners();
+    }
+
+    @Override
+    public ListenerManager<UserChangeStatusListener> addUserChangeStatusListener(UserChangeStatusListener userChangeStatusListener) {
+        return user.addUserChangeStatusListener(userChangeStatusListener);
+    }
+
+    @Override
+    public List<UserChangeStatusListener> getUserChangeStatusListeners() {
+        return user.getUserChangeStatusListeners();
+    }
+
+    @Override
+    public ListenerManager<UserChangeNameListener> addUserChangeNameListener(UserChangeNameListener userChangeNameListener) {
+        return user.addUserChangeNameListener(userChangeNameListener);
+    }
+
+    @Override
+    public List<UserChangeNameListener> getUserChangeNameListeners() {
+        return user.getUserChangeNameListeners();
+    }
+
+    @Override
+    public ListenerManager<PrivateChannelCreateListener> addPrivateChannelCreateListener(PrivateChannelCreateListener privateChannelCreateListener) {
+        return user.addPrivateChannelCreateListener(privateChannelCreateListener);
+    }
+
+    @Override
+    public List<PrivateChannelCreateListener> getPrivateChannelCreateListeners() {
+        return user.getPrivateChannelCreateListeners();
+    }
+
+    @Override
+    public ListenerManager<PrivateChannelDeleteListener> addPrivateChannelDeleteListener(PrivateChannelDeleteListener privateChannelDeleteListener) {
+        return user.addPrivateChannelDeleteListener(privateChannelDeleteListener);
+    }
+
+    @Override
+    public List<PrivateChannelDeleteListener> getPrivateChannelDeleteListeners() {
+        return user.getPrivateChannelDeleteListeners();
+    }
+
+    @Override
+    public ListenerManager<ServerChannelChangeOverwrittenPermissionsListener> addServerChannelChangeOverwrittenPermissionsListener(ServerChannelChangeOverwrittenPermissionsListener serverChannelChangeOverwrittenPermissionsListener) {
+        return user.addServerChannelChangeOverwrittenPermissionsListener(serverChannelChangeOverwrittenPermissionsListener);
+    }
+
+    @Override
+    public List<ServerChannelChangeOverwrittenPermissionsListener> getServerChannelChangeOverwrittenPermissionsListeners() {
+        return user.getServerChannelChangeOverwrittenPermissionsListeners();
+    }
+
+    @Override
+    public ListenerManager<ServerVoiceChannelMemberLeaveListener> addServerVoiceChannelMemberLeaveListener(ServerVoiceChannelMemberLeaveListener serverVoiceChannelMemberLeaveListener) {
+        return user.addServerVoiceChannelMemberLeaveListener(serverVoiceChannelMemberLeaveListener);
+    }
+
+    @Override
+    public List<ServerVoiceChannelMemberLeaveListener> getServerVoiceChannelMemberLeaveListeners() {
+        return user.getServerVoiceChannelMemberLeaveListeners();
+    }
+
+    @Override
+    public ListenerManager<ServerVoiceChannelMemberJoinListener> addServerVoiceChannelMemberJoinListener(ServerVoiceChannelMemberJoinListener serverVoiceChannelMemberJoinListener) {
+        return user.addServerVoiceChannelMemberJoinListener(serverVoiceChannelMemberJoinListener);
+    }
+
+    @Override
+    public List<ServerVoiceChannelMemberJoinListener> getServerVoiceChannelMemberJoinListeners() {
+        return user.getServerVoiceChannelMemberJoinListeners();
+    }
+
+    @Override
+    public ListenerManager<ReactionAddListener> addReactionAddListener(ReactionAddListener reactionAddListener) {
+        return user.addReactionAddListener(reactionAddListener);
+    }
+
+    @Override
+    public List<ReactionAddListener> getReactionAddListeners() {
+        return user.getReactionAddListeners();
+    }
+
+    @Override
+    public ListenerManager<ReactionRemoveListener> addReactionRemoveListener(ReactionRemoveListener reactionRemoveListener) {
+        return user.addReactionRemoveListener(reactionRemoveListener);
+    }
+
+    @Override
+    public List<ReactionRemoveListener> getReactionRemoveListeners() {
+        return user.getReactionRemoveListeners();
+    }
+
+    @Override
+    public ListenerManager<MessageCreateListener> addMessageCreateListener(MessageCreateListener messageCreateListener) {
+        return user.addMessageCreateListener(messageCreateListener);
+    }
+
+    @Override
+    public List<MessageCreateListener> getMessageCreateListeners() {
+        return user.getMessageCreateListeners();
+    }
+
+    @Override
+    public ListenerManager<UserRoleAddListener> addUserRoleAddListener(UserRoleAddListener userRoleAddListener) {
+        return user.addUserRoleAddListener(userRoleAddListener);
+    }
+
+    @Override
+    public List<UserRoleAddListener> getUserRoleAddListeners() {
+        return user.getUserRoleAddListeners();
+    }
+
+    @Override
+    public ListenerManager<UserRoleRemoveListener> addUserRoleRemoveListener(UserRoleRemoveListener userRoleRemoveListener) {
+        return user.addUserRoleRemoveListener(userRoleRemoveListener);
+    }
+
+    @Override
+    public List<UserRoleRemoveListener> getUserRoleRemoveListeners() {
+        return user.getUserRoleRemoveListeners();
+    }
+
+    @Override
+    public ListenerManager<ServerMemberLeaveListener> addServerMemberLeaveListener(ServerMemberLeaveListener serverMemberLeaveListener) {
+        return user.addServerMemberLeaveListener(serverMemberLeaveListener);
+    }
+
+    @Override
+    public List<ServerMemberLeaveListener> getServerMemberLeaveListeners() {
+        return user.getServerMemberLeaveListeners();
+    }
+
+    @Override
+    public ListenerManager<ServerMemberBanListener> addServerMemberBanListener(ServerMemberBanListener serverMemberBanListener) {
+        return user.addServerMemberBanListener(serverMemberBanListener);
+    }
+
+    @Override
+    public List<ServerMemberBanListener> getServerMemberBanListeners() {
+        return user.getServerMemberBanListeners();
+    }
+
+    @Override
+    public ListenerManager<ServerMemberUnbanListener> addServerMemberUnbanListener(ServerMemberUnbanListener serverMemberUnbanListener) {
+        return user.addServerMemberUnbanListener(serverMemberUnbanListener);
+    }
+
+    @Override
+    public List<ServerMemberUnbanListener> getServerMemberUnbanListeners() {
+        return user.getServerMemberUnbanListeners();
+    }
+
+    @Override
+    public ListenerManager<ServerMemberJoinListener> addServerMemberJoinListener(ServerMemberJoinListener serverMemberJoinListener) {
+        return user.addServerMemberJoinListener(serverMemberJoinListener);
+    }
+
+    @Override
+    public List<ServerMemberJoinListener> getServerMemberJoinListeners() {
+        return user.getServerMemberJoinListeners();
+    }
+
+    @Override
+    public <T extends UserAttachableListener & ObjectAttachableListener> Collection<ListenerManager<T>> addUserAttachableListener(T t) {
+        return user.addUserAttachableListener(t);
+    }
+
+    @Override
+    public <T extends UserAttachableListener & ObjectAttachableListener> void removeUserAttachableListener(T t) {
+        user.removeUserAttachableListener(t);
+    }
+
+    @Override
+    public <T extends UserAttachableListener & ObjectAttachableListener> Map<T, List<Class<T>>> getUserAttachableListeners() {
+        return user.getUserAttachableListeners();
+    }
+
+    @Override
+    public <T extends UserAttachableListener & ObjectAttachableListener> void removeListener(Class<T> aClass, T t) {
+        user.removeListener(aClass, t);
     }
 }

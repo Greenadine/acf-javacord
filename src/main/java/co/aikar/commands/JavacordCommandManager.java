@@ -17,7 +17,6 @@
 package co.aikar.commands;
 
 import co.aikar.commands.apachecommonslang.ApacheCommonsExceptionUtil;
-import org.javacord.api.AccountType;
 import org.javacord.api.DiscordApi;
 import org.javacord.api.entity.channel.ChannelType;
 import org.javacord.api.entity.message.Message;
@@ -31,7 +30,7 @@ public class JavacordCommandManager extends CommandManager<
         MessageCreateEvent,
         JavacordCommandEvent,
         String,
-        MessageFormatter<String>,
+        JavacordMessageFormatter,
         JavacordCommandExecutionContext,
         JavacordConditionContext
         > {
@@ -64,6 +63,8 @@ public class JavacordCommandManager extends CommandManager<
         initializeBotOwner();
         api.addMessageCreateListener(new JavacordListener(this));
 
+        // Overwrite message formatters
+
         getCommandConditions().addCondition("owneronly", context -> {
             if (context.getIssuer().getEvent().getMessageAuthor().getId() != getBotOwnerId()) {
                 throw new ConditionFailedException(JavacordMessageKeys.OWNER_ONLY);
@@ -93,11 +94,12 @@ public class JavacordCommandManager extends CommandManager<
 
     void initializeBotOwner() {
         if (botOwner == 0L) {
-            if (api.getAccountType() == AccountType.BOT) {
-                botOwner = api.getApplicationInfo().join().getOwnerId();
-            } else {
-                botOwner = api.getYourself().getId();
-            }
+            botOwner = api.getApplicationInfo().join().getOwnerId();
+//            if (api.getAccountType() == AccountType.BOT) {
+//                botOwner = api.getApplicationInfo().join().getOwnerId();
+//            } else {
+//                botOwner = api.getYourself().getId();
+//            }
         }
     }
 
@@ -212,11 +214,13 @@ public class JavacordCommandManager extends CommandManager<
     }
 
     @Override
+    @SuppressWarnings("rawtypes")
     public CommandExecutionContext createCommandContext(RegisteredCommand command, CommandParameter parameter, CommandIssuer sender, List<String> args, int i, Map<String, Object> passedArgs) {
         return new JavacordCommandExecutionContext(command, parameter, (JavacordCommandEvent) sender, args, i, passedArgs);
     }
 
     @Override
+    @SuppressWarnings("rawtypes")
     public CommandCompletionContext createCompletionContext(RegisteredCommand command, CommandIssuer sender, String input, String config, String[] args) {
         // Not really going to be used;
         //noinspection unchecked

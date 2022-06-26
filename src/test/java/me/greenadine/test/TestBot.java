@@ -19,6 +19,8 @@ public class TestBot {
 
     public static JavacordCommandManager commandManager;
 
+    public static String defaultPrefix;
+
     public static void main(String[] args) {
         String token;
 
@@ -38,12 +40,15 @@ public class TestBot {
 
         registerCommands();
 
-        String prefix = ((TestCommandConfig)commandManager.getConfigProvider()).getCommandPrefixes().get(0); // Get command prefix
-        api.updateActivity(ActivityType.WATCHING, prefix + "help"); // Set activity
+        api.updateActivity(ActivityType.WATCHING, defaultPrefix + "help"); // Set activity
+        System.out.println("Online!");
     }
 
     private static void registerCommands() {
         commandManager = new JavacordOptions().configProvider(new TestCommandConfig()).create(api); // Create manager
+        defaultPrefix = ((TestCommandConfig)commandManager.getConfigProvider()).getCommandPrefixes().get(0); // Get command prefix
+
+        registerCommandReplacements();
 
         commandManager.addSupportedLanguage(Locales.DUTCH);
         commandManager.addSupportedLanguage(Locale.GERMAN);
@@ -52,5 +57,18 @@ public class TestBot {
 
         // Register commands
         commandManager.registerCommand(new TestCommand());
+    }
+
+    /**
+     * Register all command replacements.
+     */
+    private static void registerCommandReplacements() {
+        commandManager.getCommandReplacements().addReplacements(
+                // Perms
+                "perm-admin", "manage-server", // Principal/Vice-Principal
+                "perm-mod", "view-audit-log", // Teacher
+                "perm-helper", "kick-members", // Assistant
+                "perm-trusted", "use-external-emojis"
+        );
     }
 }

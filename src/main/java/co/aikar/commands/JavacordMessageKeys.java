@@ -29,6 +29,7 @@ public enum JavacordMessageKeys implements MessageKeyProvider {
     TOO_MANY_USERS_WITH_NAME,
     COULD_NOT_FIND_USER,
     PLEASE_SPECIFY_USER,
+    USER_IS_BOT,
     USER_NOT_MEMBER_OF_SERVER,
     USER_NOT_IN_VOICE_CHANNEL,
     COULD_NOT_FIND_CHANNEL,

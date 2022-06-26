@@ -23,7 +23,7 @@ import java.util.Locale;
 import java.util.Map;
 
 public class JavacordCommandPermissionResolver implements CommandPermissionResolver {
-    private final Map<String, Integer> discordPermissionValues;
+    private final Map<String, Long> discordPermissionValues;
 
     public JavacordCommandPermissionResolver() {
         discordPermissionValues = new HashMap<>();
@@ -45,21 +45,21 @@ public class JavacordCommandPermissionResolver implements CommandPermissionResol
             return false;
         }
 
-        Integer permissionValue = discordPermissionValues.get(permission);
+        Long permissionValue = discordPermissionValues.get(permission);
         if (permissionValue == null) {
             return false;
         }
 
-        if (!event.getIssuer().getServerTextChannel().isPresent()) return false;
+        if (!event.getChannel().asServerTextChannel().isPresent()) return false;
 
         PermissionType permissionType = getPermission(permissionValue);
 
         if (permissionType == null) return false;
 
-        return event.getIssuer().getServerTextChannel().get().hasPermission(event.getIssuer().getMessageAuthor().asUser().get(), permissionType);
+        return event.getChannel().asServerTextChannel().get().getServer().hasAnyPermission(event.getUser(), permissionType, PermissionType.ADMINISTRATOR);
     }
 
-    private PermissionType getPermission(int value) {
+    private PermissionType getPermission(long value) {
         for (PermissionType type : PermissionType.values()) {
             if (type.getValue() == value) {
                 return type;

@@ -22,6 +22,7 @@ import org.jetbrains.annotations.NotNull;
 import java.util.List;
 
 public interface CommandConfig extends CommandConfigProvider {
+
     @NotNull
     List<String> getCommandPrefixes();
 

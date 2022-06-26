@@ -5,11 +5,16 @@ import co.aikar.commands.JavacordCommandEvent;
 import co.aikar.commands.annotation.*;
 import co.aikar.commands.javacord.contexts.Member;
 import co.aikar.commands.javacord.contexts.UnicodeEmoji;
+import co.aikar.commands.javacord.util.TestActionRowBuilder;
 import org.javacord.api.entity.channel.*;
 import org.javacord.api.entity.emoji.CustomEmoji;
 import org.javacord.api.entity.emoji.Emoji;
+import org.javacord.api.entity.message.component.Button;
 import org.javacord.api.entity.permission.Role;
 import org.javacord.api.entity.user.User;
+
+import java.util.ArrayList;
+import java.util.Collection;
 
 @CommandAlias("test")
 @Description("Various test commands.")
@@ -37,19 +42,29 @@ public class TestCommand extends BaseCommand {
     }
 
     @Subcommand("sudo")
-    public void onSudo(JavacordCommandEvent event, @Require ServerTextChannel channel, String message) {
-        event.deleteMessage(); // Delete original message
-        channel.sendMessage(message);
+    public void onSudo(JavacordCommandEvent event, ServerTextChannel channel, String message) {
+        event.deleteMessage().thenAccept(m -> channel.sendMessage(message)); // Delete original message
     }
 
     @Subcommand("user")
-    public void onUser(JavacordCommandEvent event, @Flags("other") User user) {
-        event.reply(user.getName());
+    public void onUser(JavacordCommandEvent event, User user, String test) {
+        if (user == null) {
+            event.reply("No user specified");
+        } else {
+            event.reply(user.getName());
+        }
+
+        event.reply(test);
     }
 
     @Subcommand("member")
     public void onMember(JavacordCommandEvent event, @Flags("other") Member member) {
-        event.reply(member.getName());
+        event.reply(member.getDisplayName());
+    }
+
+    @Subcommand("humanmember")
+    public void onHumanmember(JavacordCommandEvent event, @Flags("other,humanonly") Member member) {
+        event.reply(member.getDisplayName());
     }
 
     @Subcommand("channel")
@@ -95,5 +110,40 @@ public class TestCommand extends BaseCommand {
     @Subcommand("unicodeemoji")
     public void onUnicodeEmoji(JavacordCommandEvent event, UnicodeEmoji emoji) {
         event.reply(emoji.getMentionTag());
+    }
+
+    @Subcommand("actionrow")
+    public void onActionrow(JavacordCommandEvent event) {
+        TestActionRowBuilder testActionRowBuilder = new TestActionRowBuilder();
+        Collection<Button> buttonsRow1 = new ArrayList<>();
+        Collection<Button> buttonsRow2 = new ArrayList<>();
+        Collection<Button> buttonsRow3 = new ArrayList<>();
+
+        for (int i = 0; i < 5; i++) {
+            buttonsRow1.add(Button.primary("button_" + (i + 1), "Button " + (i + 1)));
+        }
+        for (int i = 0; i < 3; i++) {
+            buttonsRow2.add(Button.primary("button_" + (i + 1), "Button " + (i + 1)));
+        }
+        for (int i = 0; i < 4; i++) {
+            buttonsRow3.add(Button.primary("button_" + (i + 1), "Button " + (i + 1)));
+        }
+
+        testActionRowBuilder.addComponentsToRow(0, buttonsRow1);
+        testActionRowBuilder.addComponentsToRow(1, buttonsRow2);
+        testActionRowBuilder.addComponentsToRow(2, buttonsRow3);
+
+        testActionRowBuilder.build().setContent("Test").send(event.getChannel());
+    }
+
+    @Subcommand("perm")
+    @CommandPermission("%perm-mod")
+    public void onPerm(JavacordCommandEvent event) {
+        event.reply("Yes");
+    }
+
+    @Subcommand("integer")
+    public void onInteger(JavacordCommandEvent event, @Flags("min=1,max=5") Integer number) {
+        event.reply(number + "");
     }
 }

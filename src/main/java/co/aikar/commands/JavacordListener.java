@@ -29,7 +29,7 @@ public class JavacordListener implements MessageCreateListener {
 
     @Override
     public void onMessageCreate(MessageCreateEvent event) {
-        if (event.isPrivateMessage() || event.isServerMessage()) {
+        if (event.getMessageAuthor().isRegularUser() && (event.isPrivateMessage() || event.isServerMessage())) {
             this.manager.dispatchEvent(event);
         }
     }

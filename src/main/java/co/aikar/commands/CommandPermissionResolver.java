@@ -17,5 +17,6 @@
 package co.aikar.commands;
 
 public interface CommandPermissionResolver {
+
     boolean hasPermission(JavacordCommandManager manager, JavacordCommandEvent event, String permission);
 }

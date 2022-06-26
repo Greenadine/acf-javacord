@@ -36,14 +36,17 @@ import java.util.concurrent.CompletableFuture;
 import java.util.function.Consumer;
 import java.util.function.Predicate;
 
-public class JavacordEmbedBuilder {
+/**
+ * Convenience class for building quick embeds.
+ *
+ *
+ */
+public class JavacordEmbedBuilder extends EmbedBuilder {
 
     private final TextChannel channel;
-    private final EmbedBuilder embed;
 
     private JavacordEmbedBuilder(TextChannel channel) {
         this.channel = channel;
-        embed = new EmbedBuilder();
     }
 
     public static JavacordEmbedBuilder forChannel(@NotNull TextChannel channel) {
@@ -54,707 +57,329 @@ public class JavacordEmbedBuilder {
      * Send the embed to the channel.
      */
     public CompletableFuture<Message> send() {
-        return channel.sendMessage(embed);
+        return channel.sendMessage(this);
     }
 
-    /**
-     * Sets the title of the embed.
-     *
-     * @param title the title of the embed.
-     *
-     * @return the {@code JavacordEmbedBuilder} instance to chain methods.
-     */
-    public JavacordEmbedBuilder setTitle(@NotNull String title) {
-        embed.setTitle(title);
+    @Override
+    public JavacordEmbedBuilder setTitle(String title) {
+        super.setTitle(title);
         return this;
     }
 
-    /**
-     * Sets the description of the embed.
-     *
-     * @param description the description of the embed.
-     *
-     * @return the {@code JavacordEmbedBuilder} instance to chain methods.
-     */
-    public JavacordEmbedBuilder setDescription(@NotNull String description) {
-        embed.setDescription(description);
+    @Override
+    public JavacordEmbedBuilder setDescription(String description) {
+        super.setDescription(description);
         return this;
     }
 
-    /**
-     * Sets the url of the embed.
-     *
-     * @param url the url of the embed.
-     *
-     * @return the {@code JavacordEmbedBuilder} instance to chain methods.
-     */
-    public JavacordEmbedBuilder setUrl(@NotNull String url) {
-        embed.setUrl(url);
+    @Override
+    public JavacordEmbedBuilder setUrl(String url) {
+        super.setUrl(url);
         return this;
     }
 
-    /**
-     * Sets the current time as timestamp of the embed.
-     *
-     * @return the {@code JavacordEmbedBuilder} instance to chain methods.
-     */
+    @Override
     public JavacordEmbedBuilder setTimestampToNow() {
-        embed.setTimestampToNow();
+        super.setTimestampToNow();
         return this;
     }
 
-    /**
-     * Sets the timestamp of the embed.
-     *
-     * @param timestamp the timestamp to set.
-     *
-     * @return the {@code JavacordEmbedBuilder} instance to chain methods.
-     */
-    public JavacordEmbedBuilder setTimestamp(@NotNull Instant timestamp) {
-        embed.setTimestamp(timestamp);
+    @Override
+    public JavacordEmbedBuilder setTimestamp(Instant timestamp) {
+        super.setTimestamp(timestamp);
         return this;
     }
 
-    /**
-     * Sets the color of the embed.
-     *
-     * @param color the color of the embed.
-     *
-     * @return the {@code JavacordEmbedBuilder} instance to chain methods.
-     */
-    public JavacordEmbedBuilder setColor(@NotNull Color color) {
-        embed.setColor(color);
+    @Override
+    public JavacordEmbedBuilder setColor(Color color) {
+        super.setColor(color);
         return this;
     }
 
-    /**
-     * Sets the footer of the embed.
-     *
-     * @param text the text of the footer.
-     *
-     * @return the {@code JavacordEmbedBuilder} instance to chain methods.
-     */
-    public JavacordEmbedBuilder setFooter(@NotNull String text) {
-        embed.setFooter(text);
+    @Override
+    public JavacordEmbedBuilder setFooter(String text) {
+        super.setFooter(text);
         return this;
     }
 
-    /**
-     * Sets the footer of the embed.
-     *
-     * @param text the text of the footer.
-     * @param iconUrl the url of the footer's icon.
-     *
-     * @return the {@code JavacordEmbedBuilder} instance to chain methods.
-     */
-    public JavacordEmbedBuilder setFooter(@NotNull String text, @NotNull String iconUrl) {
-        embed.setFooter(text, iconUrl);
+    @Override
+    public JavacordEmbedBuilder setFooter(String text, String iconUrl) {
+        super.setFooter(text, iconUrl);
         return this;
     }
 
-    /**
-     * Sets the footer of the embed.
-     *
-     * @param text the text of the footer.
-     * @param icon the footer's icon.
-     *
-     * @return the {@code JavacordEmbedBuilder} instance to chain methods.
-     */
-    public JavacordEmbedBuilder setFooter(@NotNull String text, @NotNull Icon icon) {
-        embed.setFooter(text, icon);
+    @Override
+    public JavacordEmbedBuilder setFooter(String text, Icon icon) {
+        super.setFooter(text, icon);
         return this;
     }
 
-    /**
-     * Sets the footer of the embed.
-     *
-     * @param text the text of the footer.
-     * @param icon the footer's icon.
-     *
-     * @return the {@code JavacordEmbedBuilder} instance to chain methods.
-     */
-    public JavacordEmbedBuilder setFooter(@NotNull String text, @NotNull File icon) {
-        embed.setFooter(text, icon);
+    @Override
+    public JavacordEmbedBuilder setFooter(String text, File icon) {
+        super.setFooter(text, icon);
         return this;
     }
 
-    /**
-     * Sets the footer of the embed.
-     * This method assumes the file type is "png"!
-     *
-     * @param text the text of the footer.
-     * @param icon the footer's icon.
-     *
-     * @return the {@code JavacordEmbedBuilder} instance to chain methods.
-     */
-    public JavacordEmbedBuilder setFooter(@NotNull String text, @NotNull InputStream icon) {
-        embed.setFooter(text, icon);
+    @Override
+    public JavacordEmbedBuilder setFooter(String text, InputStream icon) {
+        super.setFooter(text, icon);
         return this;
     }
 
-    /**
-     * Sets the footer of the embed.
-     *
-     * @param text the text of the footer.
-     * @param icon the footer's icon.
-     * @param fileType the type of the file, e.g. "png" or "gif".
-     *
-     * @return the {@code JavacordEmbedBuilder} instance to chain methods.
-     */
-    public JavacordEmbedBuilder setFooter(@NotNull String text, @NotNull InputStream icon, @NotNull String fileType) {
-        embed.setFooter(text, icon, fileType);
+    @Override
+    public JavacordEmbedBuilder setFooter(String text, InputStream icon, String fileType) {
+        super.setFooter(text, icon, fileType);
         return this;
     }
 
-    /**
-     * Sets the footer of the embed.
-     * This method assumes the file type is "png"!
-     *
-     * @param text the text of the footer.
-     * @param icon the footer's icon.
-     *
-     * @return the {@code JavacordEmbedBuilder} instance to chain methods.
-     */
-    public JavacordEmbedBuilder setFooter(@NotNull String text, byte[] icon) {
-        embed.setFooter(text, icon);
+    @Override
+    public JavacordEmbedBuilder setFooter(String text, byte[] icon) {
+        super.setFooter(text, icon);
         return this;
     }
 
-    /**
-     * Sets the footer of the embed.
-     *
-     * @param text the text of the footer.
-     * @param icon the footer's icon.
-     * @param fileType the type of the file, e.g. "png" or "gif".
-     *
-     * @return the {@code JavacordEmbedBuilder} instance to chain methods.
-     */
-    public JavacordEmbedBuilder setFooter(@NotNull String text, byte[] icon, @NotNull String fileType) {
-        embed.setFooter(text, icon, fileType);
+    @Override
+    public JavacordEmbedBuilder setFooter(String text, byte[] icon, String fileType) {
+        super.setFooter(text, icon, fileType);
         return this;
     }
 
-    /**
-     * Sets the footer of the embed.
-     * This method assumes the file type is "png"!
-     *
-     * @param text the text of the footer.
-     * @param icon the footer's icon.
-     *
-     * @return the {@code JavacordEmbedBuilder} instance to chain methods.
-     */
-    public JavacordEmbedBuilder setFooter(@NotNull String text, @NotNull BufferedImage icon) {
-        embed.setFooter(text, icon);
+    @Override
+    public JavacordEmbedBuilder setFooter(String text, BufferedImage icon) {
+        super.setFooter(text, icon);
         return this;
     }
 
-    /**
-     * Sets the footer of the embed.
-     *
-     * @param text the text of the footer.
-     * @param icon the footer's icon.
-     * @param fileType the type of the file, e.g. "png" or "gif".
-     *
-     * @return the {@code JavacordEmbedBuilder} instance to chain methods.
-     */
-    public JavacordEmbedBuilder setFooter(@NotNull String text, @NotNull BufferedImage icon, @NotNull String fileType) {
-        embed.setFooter(text, icon, fileType);
+    @Override
+    public JavacordEmbedBuilder setFooter(String text, BufferedImage icon, String fileType) {
+        super.setFooter(text, icon, fileType);
         return this;
     }
 
-    /**
-     * Sets the image of the embed.
-     *
-     * @param url the url of the image.
-     *
-     * @return the {@code JavacordEmbedBuilder} instance to chain methods.
-     */
-    public JavacordEmbedBuilder setImage(@NotNull String url) {
-        embed.setImage(url);
+    @Override
+    public JavacordEmbedBuilder setImage(String url) {
+        super.setImage(url);
         return this;
     }
 
-    /**
-     * Sets the image of the embed.
-     *
-     * @param image the image.
-     *
-     * @return the {@code JavacordEmbedBuilder} instance to chain methods.
-     */
-    public JavacordEmbedBuilder setImage(@NotNull Icon image) {
-        embed.setImage(image);
+    @Override
+    public JavacordEmbedBuilder setImage(Icon image) {
+        super.setImage(image);
         return this;
     }
 
-    /**
-     * Sets the image of the embed.
-     *
-     * @param image the image.
-     *
-     * @return the {@code JavacordEmbedBuilder} instance to chain methods.
-     */
-    public JavacordEmbedBuilder setImage(@NotNull File image) {
-        embed.setImage(image);
+    @Override
+    public JavacordEmbedBuilder setImage(File image) {
+        super.setImage(image);
         return this;
     }
 
-    /**
-     * Sets the image of the embed.
-     * This method assumes the file type is "png"!
-     *
-     * @param image the image.
-     *
-     * @return the {@code JavacordEmbedBuilder} instance to chain methods.
-     */
-    public JavacordEmbedBuilder setImage(@NotNull InputStream image) {
-        embed.setImage(image);
+    @Override
+    public JavacordEmbedBuilder setImage(InputStream image) {
+        super.setImage(image);
         return this;
     }
 
-    /**
-     * Sets the image of the embed.
-     *
-     * @param image the image.
-     * @param fileType the type of the file, e.g. "png" or "gif".
-     *
-     * @return the {@code JavacordEmbedBuilder} instance to chain methods.
-     */
-    public JavacordEmbedBuilder setImage(@NotNull InputStream image, @NotNull String fileType) {
-        embed.setImage(image, fileType);
+    @Override
+    public JavacordEmbedBuilder setImage(InputStream image, String fileType) {
+        super.setImage(image, fileType);
         return this;
     }
 
-    /**
-     * Sets the image of the embed.
-     * This method assumes the file type is "png"!
-     *
-     * @param image the image.
-     *
-     * @return the {@code JavacordEmbedBuilder} instance to chain methods.
-     */
+    @Override
     public JavacordEmbedBuilder setImage(byte[] image) {
-        embed.setImage(image);
+        super.setImage(image);
         return this;
     }
 
-    /**
-     * Sets the image of the embed.
-     *
-     * @param image the image.
-     * @param fileType the type of the file, e.g. "png" or "gif".
-     *
-     * @return the {@code JavacordEmbedBuilder} instance to chain methods.
-     */
-    public JavacordEmbedBuilder setImage(byte[] image, @NotNull String fileType) {
-        embed.setImage(image, fileType);
+    @Override
+    public JavacordEmbedBuilder setImage(byte[] image, String fileType) {
+        super.setImage(image, fileType);
         return this;
     }
 
-    /**
-     * Sets the image of the embed.
-     * This method assumes the file type is "png"!
-     *
-     * @param image the image.
-     *
-     * @return the {@code JavacordEmbedBuilder} instance to chain methods.
-     */
-    public JavacordEmbedBuilder setImage(@NotNull BufferedImage image) {
-        embed.setImage(image);
+    @Override
+    public JavacordEmbedBuilder setImage(BufferedImage image) {
+        super.setImage(image);
         return this;
     }
 
-    /**
-     * Sets the image of the embed.
-     *
-     * @param image the image.
-     * @param fileType the type of the file, e.g. "png" or "gif".
-     *
-     * @return the {@code JavacordEmbedBuilder} instance to chain methods.
-     */
-    public JavacordEmbedBuilder setImage(@NotNull BufferedImage image, @NotNull String fileType) {
-        embed.setImage(image, fileType);
+    @Override
+    public JavacordEmbedBuilder setImage(BufferedImage image, String fileType) {
+        super.setImage(image, fileType);
         return this;
     }
 
-    /**
-     * Sets the author of the embed.
-     *
-     * @param author the message author which should be used as author.
-     *
-     * @return the {@code JavacordEmbedBuilder} instance to chain methods.
-     */
-    public JavacordEmbedBuilder setAuthor(@NotNull MessageAuthor author) {
-        embed.setAuthor(author);
+    @Override
+    public JavacordEmbedBuilder setAuthor(MessageAuthor author) {
+        super.setAuthor(author);
         return this;
     }
 
-    /**
-     * Sets the author of the embed.
-     *
-     * @param author the user which should be used as author.
-     *
-     * @return the {@code JavacordEmbedBuilder} instance to chain methods.
-     */
-    public JavacordEmbedBuilder setAuthor(@NotNull User author) {
-        embed.setAuthor(author);
+    @Override
+    public JavacordEmbedBuilder setAuthor(User author) {
+        super.setAuthor(author);
         return this;
     }
 
-    /**
-     * Sets the author of the embed.
-     *
-     * @param name the name of the author.
-     *
-     * @return the {@code JavacordEmbedBuilder} instance to chain methods.
-     */
-    public JavacordEmbedBuilder setAuthor(@NotNull String name) {
-        embed.setAuthor(name);
+    @Override
+    public JavacordEmbedBuilder setAuthor(String name) {
+        super.setAuthor(name);
         return this;
     }
 
-    /**
-     * Sets the author of the embed.
-     *
-     * @param name the name of the author.
-     * @param url the url of the author.
-     * @param iconUrl the url of the author's icon.
-     *
-     * @return the {@code JavacordEmbedBuilder} instance to chain methods.
-     */
-    public JavacordEmbedBuilder setAuthor(@NotNull String name, @Nullable String url, @NotNull String iconUrl) {
-        embed.setAuthor(name, url, iconUrl);
+    @Override
+    public JavacordEmbedBuilder setAuthor(String name, String url, String iconUrl) {
+        super.setAuthor(name, url, iconUrl);
         return this;
     }
 
-    /**
-     * Sets the author of the embed.
-     *
-     * @param name the name of the author.
-     * @param url the url of the author.
-     * @param icon the author's icon.
-     *
-     * @return the {@code JavacordEmbedBuilder} instance to chain methods.
-     */
-    public JavacordEmbedBuilder setAuthor(@NotNull String name, @Nullable String url, @NotNull Icon icon) {
-        embed.setAuthor(name, url, icon);
+    @Override
+    public JavacordEmbedBuilder setAuthor(String name, String url, Icon icon) {
+        super.setAuthor(name, url, icon);
         return this;
     }
 
-    /**
-     * Sets the author of the embed.
-     *
-     * @param name the name of the author.
-     * @param url the url of the author.
-     * @param icon the author's icon.
-     *
-     * @return the {@code JavacordEmbedBuilder} instance to chain methods.
-     */
-    public JavacordEmbedBuilder setAuthor(@NotNull String name, @Nullable String url, @NotNull File icon) {
-        embed.setAuthor(name, url, icon);
+    @Override
+    public JavacordEmbedBuilder setAuthor(String name, String url, File icon) {
+        super.setAuthor(name, url, icon);
         return this;
     }
 
-    /**
-     * Sets the author of the embed.
-     * This method assumes the file type is "png"!
-     *
-     * @param name the name of the author.
-     * @param url the url of the author.
-     * @param icon the author's icon.
-     *
-     * @return the {@code JavacordEmbedBuilder} instance to chain methods.
-     */
-    public JavacordEmbedBuilder setAuthor(@NotNull String name, @Nullable String url, @NotNull InputStream icon) {
-        embed.setAuthor(name, url, icon);
+    @Override
+    public JavacordEmbedBuilder setAuthor(String name, String url, InputStream icon) {
+        super.setAuthor(name, url, icon);
         return this;
     }
 
-    /**
-     * Sets the author of the embed.
-     *
-     * @param name the name of the author.
-     * @param url the url of the author.
-     * @param icon the author's icon.
-     * @param fileType the type of the file, e.g. "png" or "gif".
-     *
-     * @return the {@code JavacordEmbedBuilder} instance to chain methods.
-     */
-    public JavacordEmbedBuilder setAuthor(@NotNull String name, @Nullable String url, @NotNull InputStream icon, @NotNull String fileType) {
-        embed.setAuthor(name, url, icon, fileType);
+    @Override
+    public JavacordEmbedBuilder setAuthor(String name, String url, InputStream icon, String fileType) {
+        super.setAuthor(name, url, icon, fileType);
         return this;
     }
 
-    /**
-     * Sets the author of the embed.
-     * This method assumes the file type is "png"!
-     *
-     * @param name the name of the author.
-     * @param url the url of the author.
-     * @param icon the author's icon.
-     *
-     * @return the {@code JavacordEmbedBuilder} instance to chain methods.
-     */
-    public JavacordEmbedBuilder setAuthor(@NotNull String name, @Nullable String url, byte[] icon) {
-        embed.setAuthor(name, url, icon);
+    @Override
+    public JavacordEmbedBuilder setAuthor(String name, String url, byte[] icon) {
+        super.setAuthor(name, url, icon);
         return this;
     }
 
-    /**
-     * Sets the author of the embed.
-     *
-     * @param name the name of the author.
-     * @param url the url of the author.
-     * @param icon the author's icon.
-     * @param fileType the type of the file, e.g. "png" or "gif".
-     *
-     * @return the {@code JavacordEmbedBuilder} instance to chain methods.
-     */
-    public JavacordEmbedBuilder setAuthor(@NotNull String name, @Nullable String url, byte[] icon, @NotNull String fileType) {
-        embed.setAuthor(name, url, icon, fileType);
+    @Override
+    public JavacordEmbedBuilder setAuthor(String name, String url, byte[] icon, String fileType) {
+        super.setAuthor(name, url, icon, fileType);
         return this;
     }
 
-    /**
-     * Sets the author of the embed.
-     * This method assumes the file type is "png"!
-     *
-     * @param name the name of the author.
-     * @param url the url of the author.
-     * @param icon the author's icon.
-     *
-     * @return the {@code JavacordEmbedBuilder} instance to chain methods.
-     */
-    public JavacordEmbedBuilder setAuthor(@NotNull String name, @Nullable String url, @NotNull BufferedImage icon) {
-        embed.setAuthor(name, url, icon);
+    @Override
+    public JavacordEmbedBuilder setAuthor(String name, String url, BufferedImage icon) {
+        super.setAuthor(name, url, icon);
         return this;
     }
 
-    /**
-     * Sets the author of the embed.
-     *
-     * @param name the name of the author.
-     * @param url the url of the author.
-     * @param icon the author's icon.
-     * @param fileType the type of the file, e.g. "png" or "gif".
-     *
-     * @return the {@code JavacordEmbedBuilder} instance to chain methods.
-     */
-    public JavacordEmbedBuilder setAuthor(@NotNull String name, @Nullable String url, @NotNull BufferedImage icon, @NotNull String fileType) {
-        embed.setAuthor(name, url, icon, fileType);
+    @Override
+    public JavacordEmbedBuilder setAuthor(String name, String url, BufferedImage icon, String fileType) {
+        super.setAuthor(name, url, icon, fileType);
         return this;
     }
 
-    /**
-     * Sets the thumbnail of the embed.
-     *
-     * @param url the url of the thumbnail.
-     *
-     * @return the {@code JavacordEmbedBuilder} instance to chain methods.
-     */
-    public JavacordEmbedBuilder setThumbnail(@NotNull String url) {
-        embed.setThumbnail(url);
+    @Override
+    public JavacordEmbedBuilder setThumbnail(String url) {
+        super.setThumbnail(url);
         return this;
     }
 
-    /**
-     * Sets the thumbnail of the embed.
-     *
-     * @param thumbnail the thumbnail.
-     *
-     * @return the {@code JavacordEmbedBuilder} instance to chain methods.
-     */
-    public JavacordEmbedBuilder setThumbnail(@NotNull Icon thumbnail) {
-        embed.setThumbnail(thumbnail);
+    @Override
+    public JavacordEmbedBuilder setThumbnail(Icon thumbnail) {
+        super.setThumbnail(thumbnail);
         return this;
     }
 
-    /**
-     * Sets the thumbnail of the embed.
-     *
-     * @param thumbnail the thumbnail.
-     *
-     * @return the {@code JavacordEmbedBuilder} instance to chain methods.
-     */
-    public JavacordEmbedBuilder setThumbnail(@NotNull File thumbnail) {
-        embed.setThumbnail(thumbnail);
+    @Override
+    public JavacordEmbedBuilder setThumbnail(File thumbnail) {
+        super.setThumbnail(thumbnail);
         return this;
     }
 
-    /**
-     * Sets the thumbnail of the embed.
-     * This method assumes the file type is "png"!
-     *
-     * @param thumbnail the thumbnail.
-     *
-     * @return the {@code JavacordEmbedBuilder} instance to chain methods.
-     */
-    public JavacordEmbedBuilder setThumbnail(@NotNull InputStream thumbnail) {
-        embed.setThumbnail(thumbnail);
+    @Override
+    public JavacordEmbedBuilder setThumbnail(InputStream thumbnail) {
+        super.setThumbnail(thumbnail);
         return this;
     }
 
-    /**
-     * Sets the thumbnail of the embed.
-     *
-     * @param thumbnail the thumbnail.
-     * @param fileType the type of the file, e.g. "png" or "gif".
-     *
-     * @return the {@code JavacordEmbedBuilder} instance to chain methods.
-     */
-    public JavacordEmbedBuilder setThumbnail(@NotNull InputStream thumbnail, @NotNull String fileType) {
-        embed.setThumbnail(thumbnail, fileType);
+    @Override
+    public JavacordEmbedBuilder setThumbnail(InputStream thumbnail, String fileType) {
+        super.setThumbnail(thumbnail, fileType);
         return this;
     }
 
-    /**
-     * Sets the thumbnail of the embed.
-     * This method assumes the file type is "png"!
-     *
-     * @param thumbnail the thumbnail.
-     *
-     * @return the {@code JavacordEmbedBuilder} instance to chain methods.
-     */
+    @Override
     public JavacordEmbedBuilder setThumbnail(byte[] thumbnail) {
-        embed.setThumbnail(thumbnail);
+        super.setThumbnail(thumbnail);
         return this;
     }
 
-    /**
-     * Sets the thumbnail of the embed.
-     *
-     * @param thumbnail the thumbnail.
-     * @param fileType the type of the file, e.g. "png" or "gif".
-     *
-     * @return the {@code JavacordEmbedBuilder} instance to chain methods.
-     */
+    @Override
     public JavacordEmbedBuilder setThumbnail(byte[] thumbnail, String fileType) {
-        embed.setThumbnail(thumbnail, fileType);
+        super.setThumbnail(thumbnail, fileType);
         return this;
     }
 
-    /**
-     * Sets the thumbnail of the embed.
-     * This method assumes the file type is "png"!
-     *
-     * @param thumbnail the thumbnail.
-     *
-     * @return the {@code JavacordEmbedBuilder} instance to chain methods.
-     */
-    public JavacordEmbedBuilder setThumbnail(@NotNull BufferedImage thumbnail) {
-        embed.setThumbnail(thumbnail);
+    @Override
+    public JavacordEmbedBuilder setThumbnail(BufferedImage thumbnail) {
+        super.setThumbnail(thumbnail);
         return this;
     }
 
-    /**
-     * Sets the thumbnail of the embed.
-     *
-     * @param thumbnail the thumbnail.
-     * @param fileType the type of the file, e.g. "png" or "gif".
-     *
-     * @return the {@code JavacordEmbedBuilder} instance to chain methods.
-     */
-    public JavacordEmbedBuilder setThumbnail(@NotNull BufferedImage thumbnail, @NotNull String fileType) {
-        embed.setThumbnail(thumbnail, fileType);
+    @Override
+    public JavacordEmbedBuilder setThumbnail(BufferedImage thumbnail, String fileType) {
+        super.setThumbnail(thumbnail, fileType);
         return this;
     }
 
-    /**
-     * Adds an inline field to the embed.
-     *
-     * @param name the name of the field.
-     * @param value the value of the field.
-     *
-     * @return the {@code JavacordEmbedBuilder} instance to chain methods.
-     */
-    public JavacordEmbedBuilder addInlineField(@NotNull String name, @NotNull String value) {
-        embed.addField(name, value, true);
+    @Override
+    public JavacordEmbedBuilder addInlineField(String name, String value) {
+        super.addInlineField(name, value);
         return this;
     }
 
-    /**
-     * Adds a non-inline field to the embed.
-     *
-     * @param name the name of the field.
-     * @param value the value of the field.
-     *
-     * @return the {@code JavacordEmbedBuilder} instance to chain methods.
-     */
-    public JavacordEmbedBuilder addField(@NotNull String name, @NotNull String value) {
-        embed.addField(name, value, false);
+    @Override
+    public JavacordEmbedBuilder addField(String name, String value) {
+        super.addField(name, value);
         return this;
     }
 
-    /**
-     * Adds a field to the embed.
-     *
-     * @param name the name of the field.
-     * @param value the value of the field.
-     * @param inline Whether the field should be inline or not.
-     *
-     * @return the {@code JavacordEmbedBuilder} instance to chain methods.
-     */
-    public JavacordEmbedBuilder addField(@NotNull String name, @NotNull String value, boolean inline) {
-        embed.addField(name, value, inline);
+    @Override
+    public JavacordEmbedBuilder addField(String name, String value, boolean inline) {
+        super.addField(name, value, inline);
         return this;
     }
 
-    /**
-     * Updates all fields of the embed that satisfy the given predicate using the given updater.
-     *
-     * @param predicate the predicate that fields have to satisfy to get updated.
-     * @param updater the updater for the fields; the {@code EditableEmbedField} is only valid during the run of the
-     *                updater; any try to save it in a variable and reuse it later after this method call will fail
-     *                with exceptions.
-     *
-     * @return the {@code JavacordEmbedBuilder} instance to chain methods.
-     */
-    public JavacordEmbedBuilder updateFields(@NotNull Predicate<EmbedField> predicate, @NotNull Consumer<EditableEmbedField> updater) {
-        embed.updateFields(predicate, updater);
+    @Override
+    public JavacordEmbedBuilder updateFields(Predicate<EmbedField> predicate, Consumer<EditableEmbedField> updater) {
+        super.updateFields(predicate, updater);
         return this;
     }
 
-    /**
-     * Updates all fields of the embed using the given updater.
-     *
-     * @param updater the updater for the fields; the {@code EditableEmbedField} is only valid during the run of the
-     *                updater; any try to save it in a variable and reuse it later after this method call will fail
-     *                with exceptions.
-     *
-     * @return the {@code JavacordEmbedBuilder} instance to chain methods.
-     */
-    public JavacordEmbedBuilder updateAllFields(@NotNull Consumer<EditableEmbedField> updater) {
-        embed.updateFields(field -> true, updater);
+    @Override
+    public JavacordEmbedBuilder updateAllFields(Consumer<EditableEmbedField> updater) {
+        super.updateAllFields(updater);
         return this;
     }
 
-    /**
-     * Removes all fields of the embed that satisfy the given predicate.
-     *
-     * @param predicate the predicate that fields have to satisfy to get removed.
-     *
-     * @return the {@code JavacordEmbedBuilder} instance to chain methods.
-     */
-    public JavacordEmbedBuilder removeFields(@NotNull Predicate<EmbedField> predicate) {
-        embed.removeFields(predicate);
+    @Override
+    public JavacordEmbedBuilder removeFields(Predicate<EmbedField> predicate) {
+        super.removeFields(predicate);
         return this;
     }
 
-    /**
-     * Removes all fields of the embed.
-     *
-     * @return the {@code JavacordEmbedBuilder} instance to chain methods.
-     */
+    @Override
     public JavacordEmbedBuilder removeAllFields() {
-        embed.removeFields(field -> true);
+        super.removeAllFields();
         return this;
     }
 
-    /**
-     * Checks if this embed requires any attachments.
-     *
-     * @return the {@code JavacordEmbedBuilder} instance to chain methods.
-     */
+    @Override
     public boolean requiresAttachments() {
-        return embed.requiresAttachments();
+        return super.requiresAttachments();
     }
 }

@@ -18,6 +18,8 @@ package co.aikar.commands;
 
 import co.aikar.commands.javacord.contexts.Member;
 import co.aikar.commands.javacord.util.JavacordEmbedBuilder;
+import co.aikar.commands.javacord.util.JavacordMessageBuilder;
+import co.aikar.locales.MessageKey;
 import org.javacord.api.entity.channel.TextChannel;
 import org.javacord.api.entity.message.Message;
 import org.javacord.api.entity.message.embed.EmbedBuilder;
@@ -31,6 +33,7 @@ import java.io.InputStream;
 import java.util.UUID;
 import java.util.concurrent.CompletableFuture;
 
+@SuppressWarnings("OptionalGetWithoutIsPresent,unused")
 public class JavacordCommandEvent implements CommandIssuer {
 
     private final MessageCreateEvent event;
@@ -57,12 +60,10 @@ public class JavacordCommandEvent implements CommandIssuer {
         return event.getMessage().getContent().trim().split("\\s+")[0].substring(manager.getCommandPrefix(this).length());
     }
 
-    @SuppressWarnings("OptionalGetWithoutIsPresent")
     public User getUser() {
         return event.getMessageAuthor().asUser().get();
     }
 
-    @SuppressWarnings("OptionalGetWithoutIsPresent")
     public Member getMember() {
         return new Member(getUser(), event.getServer().get());
     }
@@ -77,7 +78,7 @@ public class JavacordCommandEvent implements CommandIssuer {
         // Discord id only have 64 bit width (long) while UUIDs have twice the size.
         // In order to keep it unique we use 0L for the first 64 bit.
         long authorId = event.getMessageAuthor().getId();
-        return new UUID(0, authorId);
+        return new UUID(0L, authorId);
     }
 
     @Override
@@ -88,7 +89,7 @@ public class JavacordCommandEvent implements CommandIssuer {
 
     @Override
     public void sendMessageInternal(String message) {
-        this.replyEmbed(message, Color.RED);
+        this.replyEmbed(Color.RED, message);
     }
 
     /**
@@ -96,7 +97,7 @@ public class JavacordCommandEvent implements CommandIssuer {
      *
      * @param message the message to send.
      */
-    public CompletableFuture<Message> reply(String message) {
+    public @NotNull CompletableFuture<Message> reply(@NotNull String message) {
         return getChannel().sendMessage(message);
     }
 
@@ -105,7 +106,7 @@ public class JavacordCommandEvent implements CommandIssuer {
      *
      * @param embed the embed to send.
      */
-    public CompletableFuture<Message> reply(EmbedBuilder embed) {
+    public @NotNull CompletableFuture<Message> reply(@NotNull EmbedBuilder embed) {
         return getChannel().sendMessage(embed);
     }
 
@@ -115,7 +116,7 @@ public class JavacordCommandEvent implements CommandIssuer {
      * @param message the message to send.
      * @param embed the embed to send.
      */
-    public CompletableFuture<Message> reply(String message, EmbedBuilder embed) {
+    public @NotNull CompletableFuture<Message> reply(@NotNull String message, @NotNull EmbedBuilder embed) {
         return getChannel().sendMessage(message, embed);
     }
 
@@ -124,7 +125,7 @@ public class JavacordCommandEvent implements CommandIssuer {
      *
      * @param file the file(s) to send.
      */
-    public CompletableFuture<Message> reply(File... file) {
+    public @NotNull CompletableFuture<Message> reply(File... file) {
         return getChannel().sendMessage(file);
     }
 
@@ -134,7 +135,7 @@ public class JavacordCommandEvent implements CommandIssuer {
      * @param is the {@code InputStream} to send as file.
      * @param fileName the name of the file.
      */
-    public CompletableFuture<Message> reply(InputStream is, String fileName) {
+    public @NotNull CompletableFuture<Message> reply(@NotNull InputStream is, @NotNull String fileName) {
         return getChannel().sendMessage(is, fileName);
     }
 
@@ -143,82 +144,83 @@ public class JavacordCommandEvent implements CommandIssuer {
      * Allows for formatting according to {@link String#format(String, Object...)}.
      *
      * @param message the message to send, with formatting.
-     * @param replacements the replacements.
+     * @param replacements the replacement objects for formatting.
      */
-    public CompletableFuture<Message> replyf(String message, Object... replacements) {
+    public @NotNull CompletableFuture<Message> replyf(@NotNull String message, Object... replacements) {
         return getChannel().sendMessage(String.format(message, replacements));
     }
 
     /**
      * Sends an embed in the channel in which the command was invoked, with the given description and the given color.
-     * @param description the description of the embed.
+     *
      * @param color the color of the embed.
+     * @param description the description of the embed.
      */
-    public CompletableFuture<Message> replyEmbed(String description, Color color) {
-        return newEmbed().setDescription(description).setColor(color).send();
+    public @NotNull CompletableFuture<Message> replyEmbed(@NotNull Color color, @NotNull String description) {
+        return embedBuilder().setColor(color).setDescription(description).send();
     }
 
     /**
      * Sends an embed in the channel in which the command was invoked,
      * with the given title, the given description and the given color.
      *
+     * @param color the color of the embed.
      * @param title the title of the embed.
      * @param description the description of the embed.
-     * @param color the color of the embed.
      */
-    public CompletableFuture<Message> replyEmbed(String title, String description, Color color) {
-        return newEmbed().setTitle(title).setDescription(description).setColor(color).send();
+    public @NotNull CompletableFuture<Message> replyEmbed(@NotNull Color color, @NotNull String title, @NotNull String description) {
+        return embedBuilder().setColor(color).setTitle(title).setDescription(description).send();
     }
 
     /**
      * Sends an embed in the channel in which the command was invoked,
      * with the given user as author, the given description and the given color.
      *
+     * @param color the color of the embed.
      * @param author the author of the embed.
      * @param description the description of the embed.
-     * @param color the color of the embed.
      */
-    public CompletableFuture<Message> replyEmbed(User author, String description, Color color) {
-        return newEmbed().setAuthor(author).setDescription(description).setColor(color).send();
+    public @NotNull CompletableFuture<Message> replyEmbed(@NotNull Color color, @NotNull User author, @NotNull String description) {
+        return embedBuilder().setColor(color).setAuthor(author).setDescription(description).send();
     }
 
     /**
      * Sends an embed in the channel in which the command was invoked,
      * with the given user as author, the given title, the given image and the given color.
      *
+     * @param color the color of the embed.
      * @param author the author of the embed.
      * @param title the title of the embed.
      * @param image the image included in the embed.
-     * @param color the color of the embed.
      */
-    public CompletableFuture<Message> replyEmbed(User author, String title, File image, Color color) {
-        return newEmbed().setAuthor(author).setTitle(title).setImage(image).setColor(color).send();
+    public @NotNull CompletableFuture<Message> replyEmbed(@NotNull Color color, @NotNull User author, @NotNull String title, @NotNull File image) {
+        return embedBuilder().setColor(color).setAuthor(author).setTitle(title).setImage(image).send();
     }
 
     /**
      * Sends an embed in the channel in which the command was invoked,
      * with the given user as author, the given image, the given description and the given color.
      *
+     * @param color the color of the embed.
      * @param author the author of the embed.
      * @param image the image included in the embed.
      * @param description the description of the embed.
-     * @param color the color of the embed.
      */
-    public CompletableFuture<Message> replyEmbed(User author, File image, String description, Color color) {
-        return newEmbed().setAuthor(author).setImage(image).setDescription(description).setColor(color).send();
+    public @NotNull CompletableFuture<Message> replyEmbed(@NotNull Color color, @NotNull User author, @NotNull File image, @NotNull String description) {
+        return embedBuilder().setColor(color).setAuthor(author).setImage(image).setDescription(description).send();
     }
 
     /**
      * Sends an embed in the channel in which the command was invoked,
      * with the given icon and string as author, the given description and the given color.
      *
-     * @param icon the icon of the author.
+     * @param color the color of the embed.
+     * @param authorIcon the icon of the author.
      * @param author the name of the author.
      * @param description the description of the embed.
-     * @param color the color of the embed.
      */
-    public CompletableFuture<Message> replyEmbed(File icon, String author, String description, Color color) {
-        return newEmbed().setAuthor(author, null, icon).setDescription(description).setColor(color).send();
+    public @NotNull CompletableFuture<Message> replyEmbed(@NotNull Color color, @NotNull File authorIcon, @NotNull String author, String description) {
+        return embedBuilder().setColor(color).setAuthor(author, null, authorIcon).setDescription(description).send();
     }
 
     /**
@@ -227,25 +229,60 @@ public class JavacordCommandEvent implements CommandIssuer {
      *
      * @param color the color of the embed.
      * @param description the message to send, with formatting.
-     * @param replacements the replacements.
+     * @param replacements the replacement objects for formatting.
      */
-    public CompletableFuture<Message> replyfEmbed(Color color, String description, Object... replacements) {
-        return newEmbed().setColor(color).setDescription(String.format(description, replacements)).send();
+    public @NotNull CompletableFuture<Message> replyfEmbed(@NotNull Color color, @NotNull String description, Object... replacements) {
+        return embedBuilder().setColor(color).setDescription(String.format(description, replacements)).send();
+    }
+
+    /**
+     * Sends an embed in the channel in which the command was invoked, with the given color, author and description.
+     * Allows for formatting according to {@link String#format(String, Object...)}.
+     *
+     * @param color the color of the embed.
+     * @param author the author of the embed.
+     * @param description the description of the embed.
+     * @param replacements the replacement objects for formatting.
+     */
+    public @NotNull CompletableFuture<Message> replyfEmbed(@NotNull Color color, @NotNull User author, @NotNull String description, Object... replacements) {
+        return embedBuilder().setColor(color).setAuthor(author).setDescription(String.format(description, replacements)).send();
+    }
+
+    /**
+     * Sends an embed in the channel in which the command was invoked, with the given color, author and description.
+     *
+     * @param color the color of the embed.
+     * @param authorIcon the icon of the author.
+     * @param author the name of the author.
+     * @param description the description of the embed.
+     * @param replacements the replacement objects for formatting.
+     */
+    public @NotNull CompletableFuture<Message> replyfEmbed(@NotNull Color color, @NotNull File authorIcon, @NotNull String author, @NotNull String description, Object... replacements) {
+        return embedBuilder().setColor(color).setAuthor(author, null, authorIcon).setDescription(String.format(description, replacements)).send();
+    }
+
+    /**
+     * Creates a new {@link JavacordMessageBuilder} for building a new message within the context.
+     *
+     * @return the new {@link JavacordMessageBuilder}.
+     */
+    public @NotNull JavacordMessageBuilder messageBuilder() {
+        return JavacordMessageBuilder.forChannel(getChannel());
     }
 
     /**
      * Creates a new {@link JavacordEmbedBuilder} for building a new embed within the context.
      *
-     * @return the new {@code JavacordEmbedBuilder}.
+     * @return the new {@link JavacordEmbedBuilder}.
      */
-    public JavacordEmbedBuilder newEmbed() {
+    public @NotNull JavacordEmbedBuilder embedBuilder() {
         return JavacordEmbedBuilder.forChannel(getChannel());
     }
 
     /**
      * Delete the message that was sent.
      */
-    public CompletableFuture<Void> deleteMessage() {
+    public @NotNull CompletableFuture<Void> deleteMessage() {
         return getMessage().delete();
     }
 
@@ -281,9 +318,44 @@ public class JavacordCommandEvent implements CommandIssuer {
      *
      * @return {@code true} if the command issuer is a bot, {@code false} otherwise.
      */
-    @SuppressWarnings("OptionalGetWithoutIsPresent")
     public boolean isBot() {
         if (!getEvent().getMessageAuthor().isUser()) return false;
         return getEvent().getMessageAuthor().asUser().get().isBot();
+    }
+
+    /**
+     * Returns whether the command issuer is a human.
+     *
+     * @return {@code true} if the command issuer is a human, {@code false} otherwise.
+     */
+    public boolean isHuman() {
+        return !isBot();
+    }
+
+    /**
+     * Returns whether the command was issued from within a server.
+     *
+     * @return {@code true} if the command was issued from within a server, {@code false} otherwise.
+     */
+    public boolean isInServer() {
+        return event.isServerMessage();
+    }
+
+//    /**
+//     * Returns whether the command was issued from within a private group.
+//     *
+//     * @return {@code true} if the command was issued from within a private group, {@code false} otherwise.
+//     */
+//    public boolean isInGroup() {
+//        return event.isGroupMessage();
+//    }
+
+    /**
+     * Returns whether the command was issued from within a private conversation between the bot and a user.
+     *
+     * @return {@code true} if the command was issued from within a private conversation, {@code false} otherwise.
+     */
+    public boolean isInPrivate() {
+        return event.isPrivateMessage();
     }
 }

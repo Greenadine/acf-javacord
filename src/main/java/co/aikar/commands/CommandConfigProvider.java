@@ -19,5 +19,6 @@ package co.aikar.commands;
 import org.javacord.api.event.message.MessageCreateEvent;
 
 public interface CommandConfigProvider {
+
     CommandConfig provide(MessageCreateEvent event);
 }

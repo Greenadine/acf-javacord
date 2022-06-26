@@ -28,6 +28,9 @@ import java.lang.annotation.Target;
  *     a global perspective (i.e., all of the servers the bot is connected to). Otherwise, the parameter will
  *     be filled from command input.
  * </p>
+ *
+ * @author Kevin Zuman
+ * @since 0.1
  */
 @Target(ElementType.PARAMETER)
 @Retention(RetentionPolicy.RUNTIME)

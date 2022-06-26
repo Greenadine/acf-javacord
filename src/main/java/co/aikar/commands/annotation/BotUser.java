@@ -22,9 +22,13 @@ import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
 
 /**
- * The {@link Require} annotation is to define whether the parameter should be forced to be retrieved from command input.
+ * The {@link BotUser} annotation is to mark that a parameter should be represented by Javacord's user object,
+ * instead of being resolved from command input.
+ *
+ * @author Kevin Zuman
+ * @since 0.3
  */
 @Target(ElementType.PARAMETER)
 @Retention(RetentionPolicy.RUNTIME)
-public @interface Require {
+public @interface BotUser {
 }
