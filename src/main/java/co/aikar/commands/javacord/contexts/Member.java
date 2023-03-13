@@ -1206,42 +1206,42 @@ public class Member implements User {
 
     @Override
     public ListenerManager<ModalSubmitListener> addModalSubmitListener(ModalSubmitListener modalSubmitListener) {
-        return null;
+        return user.addModalSubmitListener(modalSubmitListener);
     }
 
     @Override
     public List<ModalSubmitListener> getModalSubmitListeners() {
-        return null;
+        return user.getModalSubmitListeners();
     }
 
     @Override
     public ListenerManager<AutocompleteCreateListener> addAutocompleteCreateListener(AutocompleteCreateListener autocompleteCreateListener) {
-        return null;
+        return user.addAutocompleteCreateListener(autocompleteCreateListener);
     }
 
     @Override
     public List<AutocompleteCreateListener> getAutocompleteCreateListeners() {
-        return null;
+        return user.getAutocompleteCreateListeners();
     }
 
     @Override
     public ListenerManager<UserContextMenuCommandListener> addUserContextMenuCommandListener(UserContextMenuCommandListener userContextMenuCommandListener) {
-        return null;
+        return user.addUserContextMenuCommandListener(userContextMenuCommandListener);
     }
 
     @Override
     public List<UserContextMenuCommandListener> getUserContextMenuCommandListeners() {
-        return null;
+        return user.getUserContextMenuCommandListeners();
     }
 
     @Override
     public ListenerManager<MessageContextMenuCommandListener> addMessageContextMenuCommandListener(MessageContextMenuCommandListener messageContextMenuCommandListener) {
-        return null;
+        return user.addMessageContextMenuCommandListener(messageContextMenuCommandListener);
     }
 
     @Override
     public List<MessageContextMenuCommandListener> getMessageContextMenuCommandListeners() {
-        return null;
+        return user.getMessageContextMenuCommandListeners();
     }
 
     @Override
@@ -1286,12 +1286,12 @@ public class Member implements User {
 
     @Override
     public ListenerManager<UserChangeServerAvatarListener> addUserChangeServerAvatarListener(UserChangeServerAvatarListener userChangeServerAvatarListener) {
-        return null;
+        return user.addUserChangeServerAvatarListener(userChangeServerAvatarListener);
     }
 
     @Override
     public List<UserChangeServerAvatarListener> getUserChangeServerAvatarListeners() {
-        return null;
+        return user.getUserChangeServerAvatarListeners();
     }
 
     @Override
@@ -1336,12 +1336,12 @@ public class Member implements User {
 
     @Override
     public ListenerManager<UserChangeTimeoutListener> addUserChangeTimeoutListener(UserChangeTimeoutListener userChangeTimeoutListener) {
-        return null;
+        return user.addUserChangeTimeoutListener(userChangeTimeoutListener);
     }
 
     @Override
     public List<UserChangeTimeoutListener> getUserChangeTimeoutListeners() {
-        return null;
+        return user.getUserChangeTimeoutListeners();
     }
 
     @Override
@@ -1476,12 +1476,12 @@ public class Member implements User {
 
     @Override
     public ListenerManager<MessageReplyListener> addMessageReplyListener(MessageReplyListener messageReplyListener) {
-        return null;
+        return user.addMessageReplyListener(messageReplyListener);
     }
 
     @Override
     public List<MessageReplyListener> getMessageReplyListeners() {
-        return null;
+        return user.getMessageReplyListeners();
     }
 
     @Override
