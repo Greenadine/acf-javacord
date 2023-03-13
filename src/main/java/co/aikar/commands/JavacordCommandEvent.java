@@ -356,16 +356,6 @@ public class JavacordCommandEvent implements CommandIssuer {
         return event.isServerMessage();
     }
 
-    // TODO Javacord has removed this feature
-//    /**
-//     * Returns whether the command was issued from within a private group.
-//     *
-//     * @return {@code true} if the command was issued from within a private group, {@code false} otherwise.
-//     */
-//    public boolean isInGroup() {
-//        return event.isGroupMessage();
-//    }
-
     /**
      * Returns whether the command was issued from within a private conversation between the bot and a user.
      *
