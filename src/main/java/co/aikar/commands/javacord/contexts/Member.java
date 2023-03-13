@@ -16,8 +16,7 @@
 
 package co.aikar.commands.javacord.contexts;
 
-import co.aikar.commands.javacord.exception.UserNoMemberOfServerException;
-import com.google.common.base.Preconditions;
+import co.aikar.commands.javacord.exception.UserNotMemberOfServerException;
 import org.javacord.api.DiscordApi;
 import org.javacord.api.entity.DiscordClient;
 import org.javacord.api.entity.Icon;
@@ -74,7 +73,7 @@ public class Member implements User {
 
     public Member(@NotNull User user, @NotNull Server server) {
         if (!server.isMember(user)) {
-            throw new UserNoMemberOfServerException(user, server);
+            throw new UserNotMemberOfServerException(user, server);
         }
         this.user = user;
         this.server = server;

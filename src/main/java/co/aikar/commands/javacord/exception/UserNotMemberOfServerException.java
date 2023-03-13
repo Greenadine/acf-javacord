@@ -27,9 +27,9 @@ import org.javacord.api.entity.user.User;
  * @since 0.1
  * @author Greenadine
  */
-public class UserNoMemberOfServerException extends RuntimeException {
+public class UserNotMemberOfServerException extends RuntimeException {
 
-    public UserNoMemberOfServerException(final User user, final Server server) {
+    public UserNotMemberOfServerException(final User user, final Server server) {
         super(String.format("User '%s' (ID: %d) is no member of server '%s' (ID: %d).", user.getDiscriminatedName(), user.getId(), server.getName(), server.getId()));
     }
 }
