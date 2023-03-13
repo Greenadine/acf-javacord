@@ -16,11 +16,15 @@
 
 package co.aikar.commands;
 
+/**
+ * @since 0.1
+ * @author Greenadine
+ */
 public class JavacordMessageFormatter extends MessageFormatter<String> {
 
     public JavacordMessageFormatter() {
         // Javacord does not support coloring messages outside of embed fields.
-        // We pass three empty strings so as to remove color coded messages from appearing.
+        // We pass three empty strings to remove color coded messages from appearing.
         super("", "", "");
     }
 

@@ -19,6 +19,10 @@ package co.aikar.commands;
 import java.util.List;
 import java.util.Map;
 
+/**
+ * @since 0.1
+ * @author Greenadine
+ */
 public class JavacordCommandExecutionContext extends CommandExecutionContext<JavacordCommandExecutionContext, JavacordCommandEvent> {
     JavacordCommandExecutionContext(RegisteredCommand cmd, CommandParameter param, JavacordCommandEvent sender, List<String> args, int index, Map<String, Object> passedArgs) {
         super(cmd, param, sender, args, index, passedArgs);

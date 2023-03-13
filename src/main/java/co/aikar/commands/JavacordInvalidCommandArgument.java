@@ -19,6 +19,10 @@ package co.aikar.commands;
 import co.aikar.locales.MessageKey;
 import co.aikar.locales.MessageKeyProvider;
 
+/**
+ * @since 0.1
+ * @author Greenadine
+ */
 public class JavacordInvalidCommandArgument extends InvalidCommandArgument {
 
     public JavacordInvalidCommandArgument() {

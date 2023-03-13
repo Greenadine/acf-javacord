@@ -40,6 +40,10 @@ import java.util.Collection;
 import java.util.List;
 import java.util.Optional;
 
+/**
+ * @since 0.1
+ * @author Greenadine
+ */
 public class JavacordCommandContexts extends CommandContexts<JavacordCommandExecutionContext> {
 
     private final DiscordApi api;

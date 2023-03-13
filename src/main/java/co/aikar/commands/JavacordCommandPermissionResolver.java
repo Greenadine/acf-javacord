@@ -22,6 +22,10 @@ import java.util.HashMap;
 import java.util.Locale;
 import java.util.Map;
 
+/**
+ * @since 0.1
+ * @author Greenadine
+ */
 public class JavacordCommandPermissionResolver implements CommandPermissionResolver {
     private final Map<String, Long> discordPermissionValues;
 

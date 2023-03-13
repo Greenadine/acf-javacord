@@ -53,7 +53,6 @@ public class TestCommand extends BaseCommand {
         } else {
             event.reply(user.getName());
         }
-
         event.reply(test);
     }
 

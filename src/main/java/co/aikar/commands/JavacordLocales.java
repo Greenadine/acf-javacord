@@ -16,6 +16,10 @@
 
 package co.aikar.commands;
 
+/**
+ * @since 0.1
+ * @author Greenadine
+ */
 public class JavacordLocales extends Locales {
 
     public JavacordLocales(JavacordCommandManager manager) {

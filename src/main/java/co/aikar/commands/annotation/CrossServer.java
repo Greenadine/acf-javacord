@@ -24,13 +24,13 @@ import java.lang.annotation.Target;
 /**
  * The {@link CrossServer} annotation is to define whether the parameter should be server-specific or global.
  * <p>
- *     If a supported parameter is marked with the CrossServer annotation, the parameter will be filled from
- *     a global perspective (i.e., all of the servers the bot is connected to). Otherwise, the parameter will
- *     be filled from command input.
+ * If a supported parameter is marked with the CrossServer annotation, the parameter will be filled from
+ * a global perspective (i.e., all the servers the bot is connected to). Otherwise, the parameter will
+ * be filled from command input.
  * </p>
  *
- * @author Kevin Zuman
  * @since 0.1
+ * @author Greenadine
  */
 @Target(ElementType.PARAMETER)
 @Retention(RetentionPolicy.RUNTIME)

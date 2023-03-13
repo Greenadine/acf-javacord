@@ -37,9 +37,10 @@ import java.util.function.Consumer;
 import java.util.function.Predicate;
 
 /**
- * Convenience class for building quick embeds.
+ * Convenience class for building quick embeds within the contexts {@link TextChannel}.
  *
- *
+ * @since 0.1
+ * @author Greenadine
  */
 public class JavacordEmbedBuilder extends EmbedBuilder {
 

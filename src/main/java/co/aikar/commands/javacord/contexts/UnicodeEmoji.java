@@ -24,6 +24,9 @@ import java.util.Optional;
 
 /**
  * This class represents a Unicode {@link Emoji}.
+ *
+ * @since 0.3
+ * @author Greenadine
  */
 public class UnicodeEmoji implements Emoji {
 

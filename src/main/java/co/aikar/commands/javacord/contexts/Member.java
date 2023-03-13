@@ -16,6 +16,7 @@
 
 package co.aikar.commands.javacord.contexts;
 
+import co.aikar.commands.javacord.exception.UserNoMemberOfServerException;
 import com.google.common.base.Preconditions;
 import org.javacord.api.DiscordApi;
 import org.javacord.api.entity.DiscordClient;
@@ -39,6 +40,7 @@ import org.javacord.api.listener.channel.user.PrivateChannelCreateListener;
 import org.javacord.api.listener.channel.user.PrivateChannelDeleteListener;
 import org.javacord.api.listener.interaction.*;
 import org.javacord.api.listener.message.MessageCreateListener;
+import org.javacord.api.listener.message.MessageReplyListener;
 import org.javacord.api.listener.message.reaction.ReactionAddListener;
 import org.javacord.api.listener.message.reaction.ReactionRemoveListener;
 import org.javacord.api.listener.server.member.ServerMemberBanListener;
@@ -59,10 +61,10 @@ import java.util.List;
 import java.util.concurrent.CompletableFuture;
 
 /**
- * Represents a {@link User} within the context of a {@link Server}
+ * Represents a {@link User} within the context of a {@link Server}.
  *
- * @author Kevin Zuman
  * @since 0.1
+ * @author Greenadine
  */
 @SuppressWarnings("OptionalGetWithoutIsPresent")
 public class Member implements User {
@@ -71,7 +73,9 @@ public class Member implements User {
     private final Server server;
 
     public Member(@NotNull User user, @NotNull Server server) {
-        Preconditions.checkArgument(server.isMember(user), "User is not member of server.");
+        if (!server.isMember(user)) {
+            throw new UserNoMemberOfServerException(user, server);
+        }
         this.user = user;
         this.server = server;
     }
@@ -149,6 +153,24 @@ public class Member implements User {
      */
     public Instant getJoinedAtTimestamp() {
         return server.getJoinedAtTimestamp(user).get();
+    }
+
+    /**
+     * Gets the {@link Instant} of when the {@link User} started boosting the {@link Server}.
+     *
+     * @return the {@code Instant} of when the {@code User} started boosting the {@code Server}.
+     */
+    public Optional<Instant> getServerBoostingSinceTimestamp() {
+        return server.getServerBoostingSinceTimestamp(user);
+    }
+
+    /**
+     * Get the hash of the {@link User}s server avatar.
+     *
+     * @return the {@code User}s server avatar hash.
+     */
+    public Optional<String> getServerAvatarHash() {
+        return server.getUserServerAvatarHash(user);
     }
 
     /**
@@ -398,7 +420,7 @@ public class Member implements User {
     /**
      * Unmutes the member on the server.
      *
-     * @return A {@code Future} to check if the unmute was successful.
+     * @return A {@code Future} to check if unmute was successful.
      *
      * @see Server#unmuteUser(User)
      */
@@ -411,7 +433,7 @@ public class Member implements User {
      *
      * @param reason the audit log reason for this action.
      *
-     * @return A {@code Future} to check if the unmute was successful.
+     * @return A {@code Future} to check if unmute was successful.
      */
     public CompletableFuture<Void> unmute(String reason) {
         return server.unmuteUser(user, reason);
@@ -442,7 +464,7 @@ public class Member implements User {
     /**
      * Deafens the member on the server.
      *
-     * @return A {@code Future} to check if the deafen was successful.
+     * @return A {@code Future} to check if deafen was successful.
      *
      * @see Server#deafenUser(User)
      */
@@ -455,7 +477,7 @@ public class Member implements User {
      *
      * @param reason the audit log reason for this action.
      *
-     * @return A {@code Future} to check if the deafen was successful.
+     * @return A {@code Future} to check if deafen was successful.
      *
      * @see Server#deafenUser(User, String)
      */
@@ -638,28 +660,28 @@ public class Member implements User {
     /**
      * Bans the member from the server.
      *
-     * @param deleteMessageDays the number of days to delete the messages for (0-7).
+     * @param duration the duration in which to delete the messages for.
      *
      * @return A {@code Future} to check if the ban was successful.
      *
-     * @see Server#banUser(User, int)
+     * @see Server#banUser(User, Duration)
      */
-    public CompletableFuture<Void> ban(int deleteMessageDays) {
-        return server.banUser(user, deleteMessageDays);
+    public CompletableFuture<Void> ban(Duration duration) {
+        return server.banUser(user, duration);
     }
 
     /**
      * Bans the member from the server.
      *
-     * @param deleteMessageDays the number of days to delete the messages for (0-7).
+     * @param duration the duration in which to delete the messages for.
      * @param reason the audit log reason for this action.
      *
      * @return A {@code Future} to check if the ban was successful.
      *
-     * @see Server#banUser(User, int, String)
+     * @see Server#banUser(User, Duration, String)
      */
-    public CompletableFuture<Void> ban(int deleteMessageDays, String reason) {
-        return server.banUser(user, deleteMessageDays, reason);
+    public CompletableFuture<Void> ban(Duration duration, String reason) {
+        return server.banUser(user, duration, reason);
     }
 
     /**
@@ -724,7 +746,7 @@ public class Member implements User {
      *
      * @param type the permission type(s) to check.
      *
-     * @return {@code true} if the member has all of the given permissions, {@code false} otherwise.
+     * @return {@code true} if the member has all the given permissions, {@code false} otherwise.
      *
      * @see Server#hasPermissions(User, PermissionType...)
      */
@@ -1033,6 +1055,11 @@ public class Member implements User {
     }
 
     @Override
+    public Optional<String> getServerAvatarHash(Server server) {
+        return server.getUserServerAvatarHash(user);
+    }
+
+    @Override
     public Optional<Icon> getServerAvatar(Server server) {
         return user.getServerAvatar(server);
     }
@@ -1070,6 +1097,11 @@ public class Member implements User {
     @Override
     public Optional<String> getNickname(Server server) {
         return server.getNickname(user);
+    }
+
+    @Override
+    public Optional<Instant> getServerBoostingSinceTimestamp(Server server) {
+        return server.getServerBoostingSinceTimestamp(user);
     }
 
     @Override
@@ -1440,6 +1472,16 @@ public class Member implements User {
     @Override
     public List<MessageCreateListener> getMessageCreateListeners() {
         return user.getMessageCreateListeners();
+    }
+
+    @Override
+    public ListenerManager<MessageReplyListener> addMessageReplyListener(MessageReplyListener messageReplyListener) {
+        return null;
+    }
+
+    @Override
+    public List<MessageReplyListener> getMessageReplyListeners() {
+        return null;
     }
 
     @Override

@@ -19,6 +19,10 @@ package co.aikar.commands;
 import org.javacord.api.event.message.MessageCreateEvent;
 import org.javacord.api.listener.message.MessageCreateListener;
 
+/**
+ * @since 0.1
+ * @author Greenadine
+ */
 public class JavacordListener implements MessageCreateListener {
 
     private final JavacordCommandManager manager;

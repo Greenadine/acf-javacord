@@ -21,6 +21,10 @@ import co.aikar.locales.MessageKeyProvider;
 
 import java.util.Locale;
 
+/**
+ * @since 0.1
+ * @author Greenadine
+ */
 public enum JavacordMessageKeys implements MessageKeyProvider {
     OWNER_ONLY,
     SERVER_ONLY,

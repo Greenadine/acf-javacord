@@ -18,8 +18,6 @@ package co.aikar.commands;
 
 import co.aikar.commands.javacord.contexts.Member;
 import co.aikar.commands.javacord.util.JavacordEmbedBuilder;
-import co.aikar.commands.javacord.util.JavacordMessageBuilder;
-import co.aikar.locales.MessageKey;
 import org.javacord.api.entity.channel.TextChannel;
 import org.javacord.api.entity.message.Message;
 import org.javacord.api.entity.message.embed.EmbedBuilder;
@@ -33,6 +31,10 @@ import java.io.InputStream;
 import java.util.UUID;
 import java.util.concurrent.CompletableFuture;
 
+/**
+ * @since 0.1
+ * @author Greenadine
+ */
 @SuppressWarnings("OptionalGetWithoutIsPresent,unused")
 public class JavacordCommandEvent implements CommandIssuer {
 
@@ -261,20 +263,33 @@ public class JavacordCommandEvent implements CommandIssuer {
         return embedBuilder().setColor(color).setAuthor(author, null, authorIcon).setDescription(String.format(description, replacements)).send();
     }
 
+    // TODO message builder
+//    /**
+//     * Creates a new {@link JavacordMessageBuilder} for building a new message within the context.
+//     *
+//     * @return the new {@link JavacordMessageBuilder}.
+//     */
+//    public @NotNull JavacordMessageBuilder messageBuilder() {
+//        return JavacordMessageBuilder.forChannel(getChannel());
+//    }
+
     /**
-     * Creates a new {@link JavacordMessageBuilder} for building a new message within the context.
+     * Creates a new {@link JavacordEmbedBuilder} for building a new embed within the context.
      *
-     * @return the new {@link JavacordMessageBuilder}.
+     * @return The new {@link JavacordEmbedBuilder}.
      */
-    public @NotNull JavacordMessageBuilder messageBuilder() {
-        return JavacordMessageBuilder.forChannel(getChannel());
+    public @NotNull JavacordEmbedBuilder newEmbed() {
+        return JavacordEmbedBuilder.forChannel(getChannel());
     }
 
     /**
      * Creates a new {@link JavacordEmbedBuilder} for building a new embed within the context.
      *
-     * @return the new {@link JavacordEmbedBuilder}.
+     * @return The new {@link JavacordEmbedBuilder}.
+     *
+     * @deprecated In favor of {@link #newEmbed()}.
      */
+    @Deprecated
     public @NotNull JavacordEmbedBuilder embedBuilder() {
         return JavacordEmbedBuilder.forChannel(getChannel());
     }
@@ -341,6 +356,7 @@ public class JavacordCommandEvent implements CommandIssuer {
         return event.isServerMessage();
     }
 
+    // TODO Javacord has removed this feature
 //    /**
 //     * Returns whether the command was issued from within a private group.
 //     *

@@ -16,6 +16,10 @@
 
 package co.aikar.commands;
 
+/**
+ * @since 0.1
+ * @author Greenadine
+ */
 public class JavacordConditionContext extends ConditionContext<JavacordCommandEvent> {
     JavacordConditionContext(JavacordCommandEvent issuer, String config) { super(issuer, config); }
 }

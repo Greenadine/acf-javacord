@@ -8,18 +8,18 @@
   </properties>
 
   <name>ACF Javacord</name>
-  <description>A Javacord implementation of aikar's Annotation Command Framework (ACF)</description>
+  <description>A Javacord implementation of aikar's Annotation Command Framework (ACF).</description>
 
-  <groupId>nl.greenadine.acfjavacord</groupId>
+  <groupId>dev.greenadine.acfjavacord</groupId>
   <artifactId>acf-javacord</artifactId>
-  <version>0.3.0</version>
+  <version>0.4.0</version>
   <packaging>jar</packaging>
 
   <developers>
     <developer>
-      <name>Kevin Zuman</name>
-      <email>kevinzuman@outlook.com</email>
-      <url>https://github.com/Greenadine</url>
+      <name>Greenadine</name>
+      <email>kevin@greenadine.dev</email>
+      <url>https://greenadine.dev</url>
     </developer>
   </developers>
 
@@ -84,13 +84,13 @@
     <dependency>
       <groupId>junit</groupId>
       <artifactId>junit</artifactId>
-      <version>4.12</version>
+      <version>4.13.1</version>
       <scope>test</scope>
     </dependency>
     <dependency>
       <groupId>org.javacord</groupId>
       <artifactId>javacord</artifactId>
-      <version>3.5.0</version>
+      <version>3.7.0</version>
       <type>pom</type>
     </dependency>
     <dependency>
@@ -106,7 +106,7 @@
     <dependency>
       <groupId>org.jetbrains</groupId>
       <artifactId>annotations</artifactId>
-      <version>13.0</version>
+      <version>23.0.0</version>
     </dependency>
     <dependency>
       <groupId>com.vdurmont</groupId>

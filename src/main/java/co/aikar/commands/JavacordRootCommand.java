@@ -22,6 +22,10 @@ import com.google.common.collect.SetMultimap;
 import java.util.ArrayList;
 import java.util.List;
 
+/**
+ * @since 0.1
+ * @author Greenadine
+ */
 public class JavacordRootCommand implements RootCommand {
 
     private final String name;

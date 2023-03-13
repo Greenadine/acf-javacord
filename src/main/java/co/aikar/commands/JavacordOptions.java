@@ -19,6 +19,10 @@ package co.aikar.commands;
 import org.javacord.api.DiscordApi;
 import org.jetbrains.annotations.NotNull;
 
+/**
+ * @since 0.1
+ * @author Greenadine
+ */
 public class JavacordOptions {
     CommandConfig defaultConfig = new JavacordCommandConfig();
     CommandConfigProvider configProvider = null;

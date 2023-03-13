@@ -21,8 +21,12 @@ import org.jetbrains.annotations.NotNull;
 import java.util.Collections;
 import java.util.List;
 
+/**
+ * @since 0.1
+ * @author Greenadine
+ */
 public class JavacordCommandCompletions extends CommandCompletions<CommandCompletionContext<?>> {
-    private boolean initialized;
+    private final boolean initialized;
 
     public JavacordCommandCompletions(CommandManager manager) {
         super(manager);

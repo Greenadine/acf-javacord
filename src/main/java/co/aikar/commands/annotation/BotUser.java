@@ -22,11 +22,11 @@ import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
 
 /**
- * The {@link BotUser} annotation is to mark that a parameter should be represented by Javacord's user object,
- * instead of being resolved from command input.
+ * The {@link BotUser} annotation is to mark that a parameter should be resolved in relation to the bots user object,
+ * instead of being resolved from regular command context.
  *
- * @author Kevin Zuman
  * @since 0.3
+ * @author Greenadine
  */
 @Target(ElementType.PARAMETER)
 @Retention(RetentionPolicy.RUNTIME)
