@@ -1,5 +1,5 @@
 
-# ACF Javacord ![](https://img.shields.io/badge/version-v0.4.0-blue?style=flat-square) [![](https://img.shields.io/badge/acf-v0.5.1--SNAPSHOT-blue?style=flat-square)](https://github.com/aikar/commands) [![](https://img.shields.io/badge/javacord-v3.7.0-blue?style=flat-square)](https://github.com/Javacord/Javacord) ![](https://img.shields.io/github/license/Greenadine/acf-javacord?style=flat-square)
+# ACF Javacord [![](https://img.shields.io/badge/version-v0.4.0-blue?style=flat-square)](https://javadocs.greenadine.dev/acf-javacord/0.4.0/) [![](https://img.shields.io/badge/acf-v0.5.1--SNAPSHOT-blue?style=flat-square)](https://github.com/aikar/commands) [![](https://img.shields.io/badge/javacord-v3.7.0-blue?style=flat-square)](https://github.com/Javacord/Javacord) ![](https://img.shields.io/github/license/Greenadine/acf-javacord?style=flat-square)
 A Javacord implementation of Aikar's [Annotation Command Framework (ACF)](https://github.com/aikar/commands).
 
 ACF-Javacord allows the usage of the powerful command framework ACF for [Javacord](https://github.com/Javacord/Javacord)-based Discord bots.
@@ -11,7 +11,9 @@ This implementation of ACF is not official, and the core of ACF has been marked 
 For instructions on installing, see the [Beginner's Guide](https://github.com/Greenadine/acf-javacord/wiki/Beginner's-Guide).
 
 ## Documentation
+[JavaDocs](https://javadocs.greenadine.dev/acf-javacord/0.4.0/)
 [ACF Javacord wiki](https://github.com/Greenadine/acf-javacord/wiki) - ACF Javacord-specific documentation.
+
 
 For ACF documentation please consult the [ACF wiki](https://github.com/aikar/commands/wiki).
 
