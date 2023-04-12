@@ -11,11 +11,10 @@ This implementation of ACF is not official, and the core of ACF has been marked 
 For instructions on installing, see the [Beginner's Guide](https://github.com/Greenadine/acf-javacord/wiki/Beginner's-Guide).
 
 ## Documentation
-[JavaDocs](https://javadocs.greenadine.dev/acf-javacord/0.4.0/)
-[ACF Javacord wiki](https://github.com/Greenadine/acf-javacord/wiki) - ACF Javacord-specific documentation.
+* [Wiki](https://github.com/Greenadine/acf-javacord/wiki)
+* [JavaDocs](https://javadocs.greenadine.dev/acf-javacord/0.4.0/)
 
-
-For ACF documentation please consult the [ACF wiki](https://github.com/aikar/commands/wiki).
+For ACF core documentation please consult the [ACF core wiki](https://github.com/aikar/commands/wiki).
 
 ## Example command
 ```java
