@@ -12,22 +12,3 @@ This implementation of ACF is not official, and the core of ACF has been marked 
 * [JavaDocs](https://javadocs.greenadine.dev/acf-javacord/0.4.0/)
 
 For ACF core documentation please consult the [ACF core wiki](https://github.com/aikar/commands/wiki).
-
-## Example command
-```java
-@CommandAlias("ping")
-@Description("Check API latency.")
-public class PingCommand extends BaseCommand {
-
-    @Default
-    public void onPing(JavacordCommandEvent event) {
-        event.reply("Testing latency...").thenAcceptAsync(message -> {
-            double messageTimestamp = message.getCreationTimestamp().toEpochMilli();
-            double currentTimestamp = System.currentTimeMillis();
-            double ping = Math.round((currentTimestamp - messageTimestamp) / 100d);
-
-            message.edit(String.format("My API latency is %.0fms.", ping));
-        });
-    }
-}
-```
