@@ -27,7 +27,7 @@ public class PingCommand extends BaseCommand {
         event.reply("Testing latency...").thenAcceptAsync(message -> {
             double messageTimestamp = message.getCreationTimestamp().toEpochMilli();
             double currentTimestamp = System.currentTimeMillis();
-            double ping = Math.abs(Math.round((currentTimestamp - messageTimestamp) / 100));
+            double ping = Math.round((currentTimestamp - messageTimestamp) / 100d);
 
             message.edit(String.format("My API latency is %.0fms.", ping));
         });
