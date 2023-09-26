@@ -4,6 +4,8 @@ A [Javacord](https://github.com/Javacord/Javacord) implementation of [Aikar](htt
 
 ACF-Javacord allows the usage of the powerful command framework ACF for Javacord-based Discord bots.
 
+**Support for slash commands will come in the next update!**
+
 ### DISCLAIMER
 This implementation of ACF is not official, and the core of ACF has been marked as not stable enough for new implementations, however it has worked flawlessly for me thus far. Use this implementation at your own risk.
 
