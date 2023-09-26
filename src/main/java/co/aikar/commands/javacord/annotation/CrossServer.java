@@ -14,26 +14,25 @@
  *  limitations under the License.
  */
 
-package co.aikar.commands;
+package co.aikar.commands.javacord.annotation;
 
-import co.aikar.commands.MessageFormatter;
+import java.lang.annotation.ElementType;
+import java.lang.annotation.Retention;
+import java.lang.annotation.RetentionPolicy;
+import java.lang.annotation.Target;
 
 /**
- * Message formatter for Javacord.
+ * The {@link CrossServer} annotation is to define whether the parameter should be server-specific or global.
+ * <p>
+ * If a supported parameter is marked with the CrossServer annotation, the parameter will be filled from
+ * a global perspective (i.e., all the servers the bot is connected to). Otherwise, the parameter will
+ * be filled from command input.
+ * </p>
  *
  * @since 0.1.0
  * @author Greenadine
  */
-public class JavacordMessageFormatter extends MessageFormatter<Object> {
-
-    public JavacordMessageFormatter() {
-        // Javacord does not support coloring messages outside of embed fields.
-        // We pass three empty strings to remove color coded messages from appearing.
-        super("", "", "");
-    }
-
-    @Override
-    String format(Object color, String message) {
-        return message;
-    }
+@Target(ElementType.PARAMETER)
+@Retention(RetentionPolicy.RUNTIME)
+public @interface CrossServer {
 }

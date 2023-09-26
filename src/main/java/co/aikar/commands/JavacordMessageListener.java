@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2021 Kevin Zuman (Greenadine)
+ * Copyright (c) 2023 Kevin Zuman (Greenadine)
  *
  *  Licensed under the Apache License, Version 2.0 (the "License");
  *  you may not use this file except in compliance with the License.
@@ -18,23 +18,28 @@ package co.aikar.commands;
 
 import org.javacord.api.event.message.MessageCreateEvent;
 import org.javacord.api.listener.message.MessageCreateListener;
+import org.jetbrains.annotations.NotNull;
 
 /**
- * @since 0.1
- * @author Greenadine
+ * @since 0.1.0
  */
-public class JavacordListener implements MessageCreateListener {
+public class JavacordMessageListener implements MessageCreateListener {
 
-    private final JavacordCommandManager manager;
+    private final MessageCommandManager manager;
 
-    JavacordListener(JavacordCommandManager manager) {
+    JavacordMessageListener(@NotNull MessageCommandManager manager) {
         this.manager = manager;
     }
 
     @Override
     public void onMessageCreate(MessageCreateEvent event) {
-        if (event.getMessageAuthor().isRegularUser() && (event.isPrivateMessage() || event.isServerMessage())) {
-            this.manager.dispatchEvent(event);
+        if (!event.getMessageAuthor().isRegularUser()) {
+            return;
         }
+        if (!(event.isServerMessage() || event.isPrivateMessage())) {
+            return;
+        }
+
+        this.manager.dispatchEvent(event);
     }
 }

@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2021 Kevin Zuman (Greenadine)
+ * Copyright (c) 2023 Kevin Zuman (Greenadine)
  *
  *  Licensed under the Apache License, Version 2.0 (the "License");
  *  you may not use this file except in compliance with the License.
@@ -26,7 +26,6 @@ import org.javacord.api.entity.message.embed.EmbedField;
 import org.javacord.api.entity.user.User;
 import org.jetbrains.annotations.NotNull;
 
-import javax.annotation.Nullable;
 import java.awt.*;
 import java.awt.image.BufferedImage;
 import java.io.File;
@@ -39,8 +38,7 @@ import java.util.function.Predicate;
 /**
  * Convenience class for building quick embeds within the contexts {@link TextChannel}.
  *
- * @since 0.1
- * @author Greenadine
+ * @since 0.1.0
  */
 public class JavacordEmbedBuilder extends EmbedBuilder {
 
@@ -56,6 +54,8 @@ public class JavacordEmbedBuilder extends EmbedBuilder {
 
     /**
      * Send the embed to the channel.
+     *
+     * @return A {@link CompletableFuture} of the {@link Message}.
      */
     public CompletableFuture<Message> send() {
         return channel.sendMessage(this);

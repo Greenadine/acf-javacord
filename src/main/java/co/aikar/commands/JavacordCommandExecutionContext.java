@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2021 Kevin Zuman (Greenadine)
+ * Copyright (c) 2023 Kevin Zuman (Greenadine)
  *
  *  Licensed under the Apache License, Version 2.0 (the "License");
  *  you may not use this file except in compliance with the License.
@@ -20,11 +20,11 @@ import java.util.List;
 import java.util.Map;
 
 /**
- * @since 0.1
- * @author Greenadine
+ * @since 0.1.0
  */
-public class JavacordCommandExecutionContext extends CommandExecutionContext<JavacordCommandExecutionContext, JavacordCommandEvent> {
-    JavacordCommandExecutionContext(RegisteredCommand cmd, CommandParameter param, JavacordCommandEvent sender, List<String> args, int index, Map<String, Object> passedArgs) {
-        super(cmd, param, sender, args, index, passedArgs);
+public abstract class JavacordCommandExecutionContext<CE extends JavacordCommandEvent, CEC extends CommandExecutionContext<CEC, CE>> extends CommandExecutionContext<CEC, CE> {
+
+    JavacordCommandExecutionContext(RegisteredCommand cmd, CommandParameter param, CE event, List<String> args, int index, Map<String, Object> passedArgs) {
+        super(cmd, param, event, args, index, passedArgs);
     }
 }

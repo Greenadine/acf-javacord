@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2022 Kevin Zuman (Greenadine)
+ * Copyright (c) 2023 Kevin Zuman (Greenadine)
  *
  *  Licensed under the Apache License, Version 2.0 (the "License");
  *  you may not use this file except in compliance with the License.
@@ -14,14 +14,15 @@
  *  limitations under the License.
  */
 
-package co.aikar.commands;
+package co.aikar.commands.javacord.exception;
 
+import co.aikar.commands.InvalidCommandArgument;
 import co.aikar.locales.MessageKey;
 import co.aikar.locales.MessageKeyProvider;
 
 /**
- * @since 0.1
- * @author Greenadine
+ * @since 0.1.0
+ * @see InvalidCommandArgument
  */
 public class JavacordInvalidCommandArgument extends InvalidCommandArgument {
 

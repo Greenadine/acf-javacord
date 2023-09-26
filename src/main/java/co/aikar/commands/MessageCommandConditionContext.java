@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2021 Kevin Zuman (Greenadine)
+ * Copyright (c) 2023 Kevin Zuman (Greenadine)
  *
  *  Licensed under the Apache License, Version 2.0 (the "License");
  *  you may not use this file except in compliance with the License.
@@ -14,21 +14,11 @@
  *  limitations under the License.
  */
 
-package co.aikar.commands.annotation;
-
-import java.lang.annotation.ElementType;
-import java.lang.annotation.Retention;
-import java.lang.annotation.RetentionPolicy;
-import java.lang.annotation.Target;
+package co.aikar.commands;
 
 /**
- * The {@link BotUser} annotation is to mark that a parameter should be resolved in relation to the bots user object,
- * instead of being resolved from regular command context.
- *
- * @since 0.3
- * @author Greenadine
+ * @since 0.5.0
  */
-@Target(ElementType.PARAMETER)
-@Retention(RetentionPolicy.RUNTIME)
-public @interface BotUser {
+public class MessageCommandConditionContext extends JavacordConditionContext<MessageCommandEvent> {
+    MessageCommandConditionContext(MessageCommandEvent event, String config) { super(event, config); }
 }

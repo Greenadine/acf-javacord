@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2021 Kevin Zuman (Greenadine)
+ * Copyright (c) 2023 Kevin Zuman (Greenadine)
  *
  *  Licensed under the Apache License, Version 2.0 (the "License");
  *  you may not use this file except in compliance with the License.
@@ -14,7 +14,7 @@
  *  limitations under the License.
  */
 
-package co.aikar.commands.javacord.contexts;
+package co.aikar.commands.javacord.context;
 
 import com.google.common.base.Preconditions;
 import com.vdurmont.emoji.EmojiManager;
@@ -25,7 +25,7 @@ import java.util.Optional;
 /**
  * This class represents a Unicode {@link Emoji}.
  *
- * @since 0.3
+ * @since 0.3.0
  * @author Greenadine
  */
 public class UnicodeEmoji implements Emoji {

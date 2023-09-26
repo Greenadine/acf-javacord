@@ -16,29 +16,15 @@
 
 package co.aikar.commands;
 
-import org.javacord.api.event.interaction.InteractionCreateEvent;
-import org.javacord.api.event.message.MessageCreateEvent;
 import org.jetbrains.annotations.NotNull;
 
-import java.util.List;
-
 /**
- * @since 0.1.0
+ * @since 0.5.0
+ * @see JavacordCommandContexts
  */
-public interface CommandConfig extends CommandConfigProvider {
+public class MessageCommandContexts extends JavacordCommandContexts<MessageCommandEvent, MessageCommandExecutionContext> {
 
-    @NotNull
-    List<String> getCommandPrefixes();
-
-    @Override
-    @NotNull
-    default CommandConfig provide(@NotNull MessageCreateEvent event) {
-        return this;
-    }
-
-    @Override
-    @NotNull
-    default CommandConfig provide(@NotNull InteractionCreateEvent event) {
-        return this;
+    MessageCommandContexts(@NotNull MessageCommandManager manager) {
+        super(manager);
     }
 }

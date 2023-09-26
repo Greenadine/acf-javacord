@@ -1,15 +1,28 @@
-package me.greenadine.test;
+/*
+ * Copyright (c) 2023 Kevin Zuman (Greenadine)
+ *
+ *  Licensed under the Apache License, Version 2.0 (the "License");
+ *  you may not use this file except in compliance with the License.
+ *  You may obtain a copy of the License at
+ *
+ *    http://www.apache.org/licenses/LICENSE-2.0
+ *
+ *  Unless required by applicable law or agreed to in writing, software
+ *  distributed under the License is distributed on an "AS IS" BASIS,
+ *  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ *  See the License for the specific language governing permissions and
+ *  limitations under the License.
+ */
 
-import co.aikar.commands.JavacordCommandManager;
-import co.aikar.commands.JavacordOptions;
-import co.aikar.commands.Locales;
+package testbot;
+
+import co.aikar.commands.*;
 import org.javacord.api.DiscordApi;
 import org.javacord.api.DiscordApiBuilder;
 import org.javacord.api.entity.activity.ActivityType;
 
 import java.io.File;
 import java.io.IOException;
-import java.util.Locale;
 import java.util.Scanner;
 
 public class TestBot {
@@ -17,9 +30,9 @@ public class TestBot {
     // Bot
     public static DiscordApi api;
 
-    public static JavacordCommandManager commandManager;
+    public static JavacordCommandManager COMMAND_MANAGER;
 
-    public static String defaultPrefix;
+    public static String DEFAULT_PREFIX;
 
     public static void main(String[] args) {
         String token;
@@ -40,30 +53,29 @@ public class TestBot {
 
         registerCommands();
 
-        api.updateActivity(ActivityType.WATCHING, defaultPrefix + "help"); // Set activity
+        api.updateActivity(ActivityType.WATCHING, DEFAULT_PREFIX + "help"); // Set activity
         System.out.println("Online!");
     }
 
+    /**
+     * Registers commands.
+     */
     private static void registerCommands() {
-        commandManager = new JavacordOptions().configProvider(new TestCommandConfig()).create(api); // Create manager
-        defaultPrefix = ((TestCommandConfig)commandManager.getConfigProvider()).getCommandPrefixes().get(0); // Get command prefix
+        COMMAND_MANAGER = new JavacordOptions().messageConfigProvider(new TestCommandConfig()).createManager(api); // Create command manager
+        DEFAULT_PREFIX = ((TestCommandConfig)COMMAND_MANAGER.getMessageCommandManager().getConfigProvider()).getCommandPrefixes().get(0); // Get command prefix
 
         registerCommandReplacements();
 
-        commandManager.addSupportedLanguage(Locales.DUTCH);
-        commandManager.addSupportedLanguage(Locale.GERMAN);
-        commandManager.addSupportedLanguage(Locale.FRENCH);
-        commandManager.getLocales().setDefaultLocale(Locale.ENGLISH);
-
         // Register commands
-        commandManager.registerCommand(new TestCommand());
+        COMMAND_MANAGER.registerCommand(new TestCommand());
+        COMMAND_MANAGER.registerCommand(new TestSlashCommand());
     }
 
     /**
      * Register all command replacements.
      */
     private static void registerCommandReplacements() {
-        commandManager.getCommandReplacements().addReplacements(
+        COMMAND_MANAGER.addReplacements(
                 // Perms
                 "perm-admin", "manage-server", // Principal/Vice-Principal
                 "perm-mod", "view-audit-log", // Teacher

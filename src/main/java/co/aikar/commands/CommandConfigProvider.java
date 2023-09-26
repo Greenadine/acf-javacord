@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2021 Kevin Zuman (Greenadine)
+ * Copyright (c) 2023 Kevin Zuman (Greenadine)
  *
  *  Licensed under the Apache License, Version 2.0 (the "License");
  *  you may not use this file except in compliance with the License.
@@ -16,9 +16,19 @@
 
 package co.aikar.commands;
 
+import org.javacord.api.event.interaction.InteractionCreateEvent;
 import org.javacord.api.event.message.MessageCreateEvent;
+import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
 
+/**
+ * @since 0.1.0
+ */
 public interface CommandConfigProvider {
 
-    CommandConfig provide(MessageCreateEvent event);
+    @Nullable
+    CommandConfig provide(@NotNull MessageCreateEvent event);
+
+    @Nullable
+    CommandConfig provide(@NotNull InteractionCreateEvent event);
 }

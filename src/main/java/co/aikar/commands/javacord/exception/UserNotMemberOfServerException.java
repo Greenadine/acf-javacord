@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2022 Kevin Zuman (Greenadine)
+ * Copyright (c) 2023 Kevin Zuman (Greenadine)
  *
  *  Licensed under the Apache License, Version 2.0 (the "License");
  *  you may not use this file except in compliance with the License.
@@ -16,7 +16,7 @@
 
 package co.aikar.commands.javacord.exception;
 
-import co.aikar.commands.javacord.contexts.Member;
+import co.aikar.commands.javacord.context.Member;
 import org.javacord.api.entity.server.Server;
 import org.javacord.api.entity.user.User;
 
@@ -24,8 +24,7 @@ import org.javacord.api.entity.user.User;
  * Thrown when an instance of a {@link Member} is being constructed where the provided
  * {@link User} is not part of the specified {@link Server}.
  *
- * @since 0.1
- * @author Greenadine
+ * @since 0.1.0
  */
 public class UserNotMemberOfServerException extends RuntimeException {
 

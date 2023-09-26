@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2021 Kevin Zuman (Greenadine)
+ * Copyright (c) 2023 Kevin Zuman (Greenadine)
  *
  *  Licensed under the Apache License, Version 2.0 (the "License");
  *  you may not use this file except in compliance with the License.
@@ -17,36 +17,33 @@
 package co.aikar.commands;
 
 import org.javacord.api.entity.permission.PermissionType;
+import org.jetbrains.annotations.NotNull;
 
 import java.util.HashMap;
 import java.util.Locale;
 import java.util.Map;
 
+
 /**
- * @since 0.1
+ * @since 0.5.0
  * @author Greenadine
  */
-public class JavacordCommandPermissionResolver implements CommandPermissionResolver {
+public class JavacordPermissionResolver implements PermissionResolver {
     private final Map<String, Long> discordPermissionValues;
 
-    public JavacordCommandPermissionResolver() {
+    public JavacordPermissionResolver() {
         discordPermissionValues = new HashMap<>();
         for (PermissionType permission : PermissionType.values()) {
             discordPermissionValues.put(permission.name().toLowerCase(Locale.ENGLISH).replaceAll("_", "-"), permission.getValue());
         }
     }
 
+    @SuppressWarnings("rawtypes")
     @Override
-    public boolean hasPermission(JavacordCommandManager manager, JavacordCommandEvent event, String permission) {
-        // Explicitly return true if the user is the bot's owner. They are always allowed.
-        if (manager.getBotOwnerId() == event.getIssuer().getMessageAuthor().getId()) {
+    public boolean hasPermission(@NotNull AbstractJavacordCommandManager manager, @NotNull JavacordCommandEvent event, @NotNull String permission) {
+        // Explicitly return true if the user is the bots' owner. They are always allowed.
+        if (manager.getBotOwnerId() == event.getUser().getId()) {
             return true;
-        }
-
-        // Return false on webhook messages, as they cannot have permissions defined.
-        // If the User instance for the message author is not present, the author is a webhook.
-        if (!event.getIssuer().getMessageAuthor().asUser().isPresent()) {
-            return false;
         }
 
         Long permissionValue = discordPermissionValues.get(permission);

@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2021 Kevin Zuman (Greenadine)
+ * Copyright (c) 2023 Kevin Zuman (Greenadine)
  *
  *  Licensed under the Apache License, Version 2.0 (the "License");
  *  you may not use this file except in compliance with the License.
@@ -18,61 +18,55 @@ package co.aikar.commands;
 
 import com.google.common.collect.HashMultimap;
 import com.google.common.collect.SetMultimap;
+import org.jetbrains.annotations.NotNull;
 
 import java.util.ArrayList;
 import java.util.List;
 
 /**
- * @since 0.1
- * @author Greenadine
+ * @since 0.1.0
+ * @see RootCommand
  */
+@SuppressWarnings("rawtypes")
 public class JavacordRootCommand implements RootCommand {
 
-    private final String name;
+    protected final String name;
     boolean isRegistered = false;
-    private final JavacordCommandManager manager;
-    private BaseCommand defCommand;
-    @SuppressWarnings("all")
-    private final SetMultimap<String, RegisteredCommand> subCommands = HashMultimap.create();
-    private final List<BaseCommand> children = new ArrayList<>();
+    protected final AbstractJavacordCommandManager<?, ?, ?> manager;
+    protected BaseCommand defCommand;
+    protected final SetMultimap<String, RegisteredCommand> subCommands = HashMultimap.create();
+    protected final List<BaseCommand> children = new ArrayList<>();
 
-    JavacordRootCommand(JavacordCommandManager manager, String name) {
+    JavacordRootCommand(@NotNull AbstractJavacordCommandManager<?, ?, ?> manager, @NotNull String name) {
         this.manager = manager;
         this.name = name;
     }
 
     @Override
     public void addChild(BaseCommand command) {
-        if (this.defCommand == null || !command.subCommands.get(BaseCommand.DEFAULT).isEmpty()) {
-            this.defCommand = command;
+        if (defCommand == null || !command.subCommands.get(BaseCommand.DEFAULT).isEmpty()) {
+            defCommand = command;
         }
-        addChildShared(this.children, this.subCommands, command);
+        addChildShared((List<BaseCommand>) children, (SetMultimap<String, RegisteredCommand>) subCommands, command);
     }
 
     @Override
-    @SuppressWarnings("all")
-    public CommandManager getManager() {
-        return this.manager;
+    public AbstractJavacordCommandManager<?, ?, ?> getManager() {
+        return manager;
     }
 
     @Override
-    @SuppressWarnings("all")
     public SetMultimap<String, RegisteredCommand> getSubCommands() {
-        return this.subCommands;
+        return (SetMultimap<String, RegisteredCommand>) subCommands;
     }
 
     @Override
     public List<BaseCommand> getChildren() {
-        return this.children;
+        return (List<BaseCommand>) children;
     }
 
     @Override
     public String getCommandName() {
-        return this.name;
-    }
-
-    @Override
-    public BaseCommand getDefCommand() {
-        return defCommand;
+        return name;
     }
 }

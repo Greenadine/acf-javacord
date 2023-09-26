@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2021 Kevin Zuman (Greenadine)
+ * Copyright (c) 2023 Kevin Zuman (Greenadine)
  *
  *  Licensed under the Apache License, Version 2.0 (the "License");
  *  you may not use this file except in compliance with the License.
@@ -14,7 +14,9 @@
  *  limitations under the License.
  */
 
-package co.aikar.commands.annotation;
+package co.aikar.commands.javacord.annotation;
+
+import org.javacord.api.entity.permission.PermissionType;
 
 import java.lang.annotation.ElementType;
 import java.lang.annotation.Retention;
@@ -22,17 +24,17 @@ import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
 
 /**
- * The {@link CrossServer} annotation is to define whether the parameter should be server-specific or global.
- * <p>
- * If a supported parameter is marked with the CrossServer annotation, the parameter will be filled from
- * a global perspective (i.e., all the servers the bot is connected to). Otherwise, the parameter will
- * be filled from command input.
- * </p>
+ * The {@link CommandOptions} annotation is used to define the options for a slash command.
  *
- * @since 0.1
+ * @since 0.5.0
  * @author Greenadine
  */
-@Target(ElementType.PARAMETER)
+@Target({ElementType.TYPE, ElementType.METHOD})
 @Retention(RetentionPolicy.RUNTIME)
-public @interface CrossServer {
+public @interface CommandOptions {
+    boolean defaultEnabledForEveryone() default true;
+    PermissionType[] defaultEnabledForPermissions() default {};
+    boolean defaultDisabled() default false;
+    boolean enabledInDms() default true;
+    boolean isNsfw() default false;
 }

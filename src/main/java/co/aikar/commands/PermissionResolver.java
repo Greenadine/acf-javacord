@@ -16,29 +16,10 @@
 
 package co.aikar.commands;
 
-import org.javacord.api.event.interaction.InteractionCreateEvent;
-import org.javacord.api.event.message.MessageCreateEvent;
 import org.jetbrains.annotations.NotNull;
 
-import java.util.List;
+public interface PermissionResolver {
 
-/**
- * @since 0.1.0
- */
-public interface CommandConfig extends CommandConfigProvider {
-
-    @NotNull
-    List<String> getCommandPrefixes();
-
-    @Override
-    @NotNull
-    default CommandConfig provide(@NotNull MessageCreateEvent event) {
-        return this;
-    }
-
-    @Override
-    @NotNull
-    default CommandConfig provide(@NotNull InteractionCreateEvent event) {
-        return this;
-    }
+    @SuppressWarnings("rawtypes")
+    boolean hasPermission(@NotNull AbstractJavacordCommandManager manager, @NotNull JavacordCommandEvent event, @NotNull String permission);
 }

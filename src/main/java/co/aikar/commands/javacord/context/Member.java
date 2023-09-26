@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2022 Kevin Zuman (Greenadine)
+ * Copyright (c) 2023 Kevin Zuman (Greenadine)
  *
  *  Licensed under the Apache License, Version 2.0 (the "License");
  *  you may not use this file except in compliance with the License.
@@ -14,7 +14,7 @@
  *  limitations under the License.
  */
 
-package co.aikar.commands.javacord.contexts;
+package co.aikar.commands.javacord.context;
 
 import co.aikar.commands.javacord.exception.UserNotMemberOfServerException;
 import org.javacord.api.DiscordApi;
@@ -55,15 +55,14 @@ import org.jetbrains.annotations.NotNull;
 import java.awt.*;
 import java.time.Duration;
 import java.time.Instant;
-import java.util.*;
 import java.util.List;
+import java.util.*;
 import java.util.concurrent.CompletableFuture;
 
 /**
  * Represents a {@link User} within the context of a {@link Server}.
  *
- * @since 0.1
- * @author Greenadine
+ * @since 0.1.0
  */
 @SuppressWarnings("OptionalGetWithoutIsPresent")
 public class Member implements User {

@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2021 Kevin Zuman (Greenadine)
+ * Copyright (c) 2023 Kevin Zuman (Greenadine)
  *
  *  Licensed under the Apache License, Version 2.0 (the "License");
  *  you may not use this file except in compliance with the License.
@@ -22,7 +22,7 @@ import co.aikar.locales.MessageKeyProvider;
 import java.util.Locale;
 
 /**
- * @since 0.1
+ * @since 0.1.0
  * @author Greenadine
  */
 public enum JavacordMessageKeys implements MessageKeyProvider {

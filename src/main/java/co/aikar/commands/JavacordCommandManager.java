@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2021 Kevin Zuman (Greenadine)
+ * Copyright (c) 2023 Kevin Zuman (Greenadine)
  *
  *  Licensed under the Apache License, Version 2.0 (the "License");
  *  you may not use this file except in compliance with the License.
@@ -16,283 +16,88 @@
 
 package co.aikar.commands;
 
-import co.aikar.commands.apachecommonslang.ApacheCommonsExceptionUtil;
 import org.javacord.api.DiscordApi;
-import org.javacord.api.entity.ApplicationOwner;
-import org.javacord.api.entity.channel.ChannelType;
-import org.javacord.api.entity.message.Message;
-import org.javacord.api.event.message.MessageCreateEvent;
+import org.jetbrains.annotations.NotNull;
 
-import java.util.*;
-import java.util.logging.Level;
-import java.util.logging.Logger;
+import java.util.concurrent.locks.Condition;
 
 /**
- * @since 0.1
- * @author Greenadine
+ * A {@link CommandManager} that handles both slash commands and message commands. It is a convenience class that
+ * combines {@link MessageCommandManager} and {@link SlashCommandManager}.
+ *
+ * @since 0.5.0
+ * @see AbstractJavacordCommandManager
+ * @see MessageCommandManager
+ * @see SlashCommandManager
  */
-public class JavacordCommandManager extends CommandManager<
-        MessageCreateEvent,
-        JavacordCommandEvent,
-        String,
-        JavacordMessageFormatter,
-        JavacordCommandExecutionContext,
-        JavacordConditionContext
-        > {
+public class JavacordCommandManager {
 
-    private final DiscordApi api;
-    protected JavacordCommandCompletions completions;
-    protected JavacordCommandContexts contexts;
-    protected JavacordLocales locales;
-    protected Map<String, JavacordRootCommand> commands = new HashMap<>();
-    private Logger logger;
-    private CommandConfig defaultConfig;
-    private CommandConfigProvider configProvider;
-    private CommandPermissionResolver permissionResolver;
-    private long botOwner = 0L;
+    final MessageCommandManager messageCommandManager;
+    final SlashCommandManager slashCommandManager;
 
-    public JavacordCommandManager(DiscordApi api) { this(api, null); }
-
-    public JavacordCommandManager(DiscordApi api, JavacordOptions options) {
-        if (options == null) {
-            options = new JavacordOptions();
-        }
-        this.api = api;
-        this.permissionResolver = options.permissionResolver;
-        this.defaultConfig = options.defaultConfig != null ? new JavacordCommandConfig() : options.defaultConfig;
-        this.configProvider = options.configProvider;
-        this.defaultFormatter = new JavacordMessageFormatter();
-        this.completions = new JavacordCommandCompletions(this);
-        this.logger = Logger.getLogger(this.getClass().getSimpleName());
-
-        initializeBotOwner();
-        api.addMessageCreateListener(new JavacordListener(this));
-
-        // Overwrite message formatters
-
-        getCommandConditions().addCondition("owneronly", context -> {
-            if (context.getIssuer().getEvent().getMessageAuthor().getId() != getBotOwnerId()) {
-                throw new ConditionFailedException(JavacordMessageKeys.OWNER_ONLY);
-            }
-        });
-
-        getCommandConditions().addCondition("serveronly", context -> {
-            if (context.getIssuer().getEvent().getChannel().getType() != ChannelType.SERVER_TEXT_CHANNEL) {
-                throw new ConditionFailedException(JavacordMessageKeys.SERVER_ONLY);
-            }
-        });
-
-        getCommandConditions().addCondition("privateonly", context -> {
-            if (context.getIssuer().getEvent().getChannel().getType() != ChannelType.PRIVATE_CHANNEL) {
-                throw new ConditionFailedException(JavacordMessageKeys.PRIVATE_ONLY);
-            }
-        });
-
-        getCommandConditions().addCondition("grouponly", context -> {
-            if (context.getIssuer().getEvent().getChannel().getType() != ChannelType.GROUP_CHANNEL) {
-                throw new ConditionFailedException(JavacordMessageKeys.GROUP_ONLY);
-            }
-        });
+    public JavacordCommandManager(@NotNull DiscordApi api) {
+        this(api, new JavacordOptions());
     }
 
-    public static JavacordOptions options() { return new JavacordOptions(); }
-
-    void initializeBotOwner() {
-        if (botOwner == 0L) {
-            botOwner = api.requestApplicationInfo().join().getOwner().map(ApplicationOwner::getId).orElse(0L);
-//            if (api.getAccountType() == AccountType.BOT) {
-//                botOwner = api.getApplicationInfo().join().getOwnerId();
-//            } else {
-//                botOwner = api.getYourself().getId();
-//            }
-        }
+    public JavacordCommandManager(@NotNull DiscordApi api, @NotNull JavacordOptions options) {
+        messageCommandManager = new MessageCommandManager(api, options);
+        slashCommandManager = new SlashCommandManager(api, options);
     }
 
-    public long getBotOwnerId() {
-        return botOwner;
+    /**
+     * Gets the message command manager.
+     *
+     * @return the message command manager.
+     */
+    @NotNull
+    public MessageCommandManager getMessageCommandManager() {
+        return messageCommandManager;
     }
 
-    public DiscordApi getApi() {
-        return api;
+    /**
+     * Gets the slash command manager.
+     *
+     * @return the slash command manager.
+     */
+    @NotNull
+    public SlashCommandManager getSlashCommandManager() {
+        return slashCommandManager;
     }
 
-    public Logger getLogger() {
-        return logger;
-    }
-
-    public void setLogger(Logger logger) {
-        this.logger = logger;
-    }
-
-    public CommandConfig getDefaultConfig() {
-        return defaultConfig;
-    }
-
-    public void setDefaultConfig(CommandConfig defaultConfig) {
-        this.defaultConfig = defaultConfig;
-    }
-
-    public CommandConfigProvider getConfigProvider() {
-        return configProvider;
-    }
-
-    public void setConfigProvider(CommandConfigProvider configProvider) {
-        this.configProvider = configProvider;
-    }
-
-    public CommandPermissionResolver getPermissionResolver() {
-        return permissionResolver;
-    }
-
-    public void setPermissionResolver(CommandPermissionResolver permissionResolver) {
-        this.permissionResolver = permissionResolver;
-    }
-
-    @Override
-    public CommandContexts<?> getCommandContexts() {
-        if (this.contexts == null) {
-            this.contexts = new JavacordCommandContexts(this);
-        }
-        return this.contexts;
-    }
-
-    @Override
-    public CommandCompletions<?> getCommandCompletions() {
-        return completions;
-    }
-
-    @Override
-    public void registerCommand(BaseCommand command) {
-        command.onRegister(this);
-        for (Map.Entry<String, RootCommand> entry : command.registeredCommands.entrySet()) {
-            String commandName = entry.getKey().toLowerCase(Locale.ENGLISH);
-            JavacordRootCommand cmd = (JavacordRootCommand) entry.getValue();
-            if (!cmd.isRegistered) {
-                cmd.isRegistered = true;
-                commands.put(commandName, cmd);
-            }
-        }
-    }
-
-    public void unregisterCommand(BaseCommand command) {
-        for (Map.Entry<String, RootCommand> entry : command.registeredCommands.entrySet()) {
-            String javacordCommandName = entry.getKey().toLowerCase(Locale.ENGLISH);
-            JavacordRootCommand javacordCommand = (JavacordRootCommand) entry.getValue();
-            javacordCommand.getSubCommands().values().removeAll(command.subCommands.values());
-        }
-    }
-
-    @Override
-    public boolean hasRegisteredCommands() {
-        return !this.commands.isEmpty();
-    }
-
-    public boolean isCommandIssuer(Class<?> type) {
-        return JavacordCommandEvent.class.isAssignableFrom(type);
-    }
-
-    @Override
-    public JavacordCommandEvent getCommandIssuer(Object issuer) {
-        if (!(issuer instanceof MessageCreateEvent)) {
-            throw new IllegalArgumentException(issuer.getClass().getName() + " is not a MessageCreateEvent.");
-        }
-        return new JavacordCommandEvent(this, (MessageCreateEvent) issuer);
-    }
-
-    @Override
-    public RootCommand createRootCommand(String cmd) {
-        return new JavacordRootCommand(this, cmd);
-    }
-
-    @Override
-    public Collection<RootCommand> getRegisteredRootCommands() {
-        return Collections.unmodifiableCollection(commands.values());
-    }
-
-    @Override
-    public Locales getLocales() {
-        if (this.locales == null) {
-            this.locales = new JavacordLocales(this);
-            this.locales.loadLanguages();
-        }
-        return this.locales;
-    }
-
-    @Override
-    @SuppressWarnings("rawtypes")
-    public CommandExecutionContext createCommandContext(RegisteredCommand command, CommandParameter parameter, CommandIssuer sender, List<String> args, int i, Map<String, Object> passedArgs) {
-        return new JavacordCommandExecutionContext(command, parameter, (JavacordCommandEvent) sender, args, i, passedArgs);
-    }
-
-    @Override
-    @SuppressWarnings("rawtypes")
-    public CommandCompletionContext createCompletionContext(RegisteredCommand command, CommandIssuer sender, String input, String config, String[] args) {
-        // Not really going to be used;
-        //noinspection unchecked
-        return new CommandCompletionContext(command, sender, input, config, args);
-    }
-
-    @Override
-    public void log(LogLevel level, String message, Throwable throwable) {
-        Level logLevel = level == LogLevel.INFO ? Level.INFO : Level.SEVERE;
-        logger.log(logLevel, LogLevel.LOG_PREFIX + message);
-        if (throwable != null) {
-            for (String line : ACFPatterns.NEWLINE.split(ApacheCommonsExceptionUtil.getFullStackTrace(throwable))) {
-                logger.log(logLevel, LogLevel.LOG_PREFIX + line);
-            }
-        }
-    }
-
-    void dispatchEvent(MessageCreateEvent event) {
-        Message message = event.getMessage();
-        String msg = message.getContent();
-
-        CommandConfig config = getCommandConfig(event);
-
-        String prefixFound = null;
-        for (String prefix : config.getCommandPrefixes()) {
-            if (msg.startsWith(prefix)) {
-                prefixFound = prefix;
-                break;
-            }
-        }
-        if (prefixFound == null) {
-            return;
-        }
-
-        String[] args = ACFPatterns.SPACE.split(msg.substring(prefixFound.length()), -1);
-        if (args.length == 0) {
-            return;
-        }
-        String cmd = args[0].toLowerCase(Locale.ENGLISH);
-        JavacordRootCommand rootCommand = this.commands.get(cmd);
-        if (rootCommand == null) {
-            return;
-        }
-        if (args.length > 1) {
-            args = Arrays.copyOfRange(args, 1, args.length);
+    /**
+     * Registers a new command to its respective manager.
+     *
+     * @param command the command to register.
+     */
+    public void registerCommand(@NotNull BaseCommand command) {
+        if (command instanceof SlashBaseCommand) {
+            slashCommandManager.registerCommand(command);
         } else {
-            args = new String[0];
+            messageCommandManager.registerCommand(command);
         }
-        rootCommand.execute(this.getCommandIssuer(event), cmd, args);
     }
 
-    private CommandConfig getCommandConfig(MessageCreateEvent event) {
-        CommandConfig config = this.defaultConfig;
-        if (this.configProvider != null) {
-            CommandConfig provider = this.configProvider.provide(event);
-            if (provider != null) {
-                config = provider;
-            }
-        }
-        return config;
+    /**
+     * Registers a new command to both managers.
+     *
+     * @param command the command to register.
+     *
+     * @deprecated It is generally recommended to make separate commands for slash commands and message commands.
+     *             No support will be provided for this method, and it may be removed in the future.
+     */
+    @Deprecated
+    public void registerMultiCommand(@NotNull SlashBaseCommand command) {
+        slashCommandManager.registerCommand(command);
+        messageCommandManager.registerCommand(command);
     }
 
-    @Override
-    public String getCommandPrefix(CommandIssuer issuer) {
-        MessageCreateEvent event = ((JavacordCommandEvent) issuer).getEvent();
-        CommandConfig commandConfig = getCommandConfig(event);
-        List<String> prefixes = commandConfig.getCommandPrefixes();
-        return prefixes.isEmpty() ? "" : prefixes.get(0);
+    /**
+     * Adds command replacements to both managers.
+     *
+     * @param replacements the replacements to add.
+     */
+    public void addReplacements(@NotNull String... replacements) {
+        slashCommandManager.getCommandReplacements().addReplacements(replacements);
+        messageCommandManager.getCommandReplacements().addReplacements(replacements);
     }
 }

@@ -1,5 +1,5 @@
 /*
- * Copyright c 2021 Kevin Zuman (Greenadine)
+ * Copyright (c) 2023 Kevin Zuman (Greenadine)
  *
  *  Licensed under the Apache License, Version 2.0 (the "License");
  *  you may not use this file except in compliance with the License.
@@ -16,9 +16,15 @@
 
 package co.aikar.commands;
 
-import co.aikar.commands.annotation.*;
-import co.aikar.commands.javacord.contexts.Member;
-import co.aikar.commands.javacord.contexts.UnicodeEmoji;
+import co.aikar.commands.annotation.Single;
+import co.aikar.commands.annotation.Split;
+import co.aikar.commands.annotation.Values;
+import co.aikar.commands.contexts.ContextResolver;
+import co.aikar.commands.javacord.annotation.BotUser;
+import co.aikar.commands.javacord.annotation.CrossServer;
+import co.aikar.commands.javacord.context.Member;
+import co.aikar.commands.javacord.context.UnicodeEmoji;
+import co.aikar.commands.javacord.exception.JavacordInvalidCommandArgument;
 import com.google.common.collect.Iterables;
 import com.vdurmont.emoji.EmojiManager;
 import org.javacord.api.DiscordApi;
@@ -26,11 +32,9 @@ import org.javacord.api.entity.channel.*;
 import org.javacord.api.entity.emoji.CustomEmoji;
 import org.javacord.api.entity.emoji.Emoji;
 import org.javacord.api.entity.emoji.KnownCustomEmoji;
-import org.javacord.api.entity.message.Message;
 import org.javacord.api.entity.permission.Role;
 import org.javacord.api.entity.server.Server;
 import org.javacord.api.entity.user.User;
-import org.javacord.api.event.message.MessageCreateEvent;
 import org.javacord.api.util.DiscordRegexPattern;
 import org.jetbrains.annotations.NotNull;
 
@@ -41,165 +45,61 @@ import java.util.List;
 import java.util.Optional;
 
 /**
- * @since 0.1
- * @author Greenadine
+ * @since 0.1.0
  */
-public class JavacordCommandContexts extends CommandContexts<JavacordCommandExecutionContext> {
+@SuppressWarnings("unchecked")
+public abstract class JavacordCommandContexts<CE extends JavacordCommandEvent, CEC extends JavacordCommandExecutionContext<CE, CEC>>
+        extends CommandContexts<CEC> {
 
-    private final DiscordApi api;
+    protected final DiscordApi api;
 
-    @SuppressWarnings("unchecked,OptionalGetWithoutIsPresent")
-    public JavacordCommandContexts(JavacordCommandManager manager) {
+    @SuppressWarnings("OptionalGetWithoutIsPresent")
+    JavacordCommandContexts(@NotNull AbstractJavacordCommandManager manager) {
         super(manager);
         this.api = manager.getApi();
 
-        // Override ACF core context resolvers
-        this.registerContext(Short.class, c -> {
-            String number = c.popFirstArg();
+        /* Override ACF core's default resolvers to better fit Discord */
 
-            try {
-                return this.parseAndValidateNumber(number, c, -32768, (short)32767).shortValue();
-            } catch (NumberFormatException ex) {
-                throw new JavacordInvalidCommandArgument(MessageKeys.MUST_BE_A_NUMBER, "{num}", number);
-            }
-        });
-        this.registerContext(Short.TYPE, c -> {
-            String number = c.popFirstArg();
-
-            try {
-                return this.parseAndValidateNumber(number, c, -32768, (short)32767).shortValue();
-            } catch (NumberFormatException ex) {
-                throw new JavacordInvalidCommandArgument(MessageKeys.MUST_BE_A_NUMBER, "{num}", number);
-            }
-        });
-        this.registerContext(Integer.class, c -> {
-            String number = c.popFirstArg();
-
-            try {
-                return this.parseAndValidateNumber(number, c, -2147483648, 2147483647).intValue();
-            } catch (NumberFormatException ex) {
-                throw new JavacordInvalidCommandArgument(MessageKeys.MUST_BE_A_NUMBER, "{num}", number);
-            }
-        });
-        this.registerContext(Integer.TYPE, c -> {
-            String number = c.popFirstArg();
-
-            try {
-                return this.parseAndValidateNumber(number, c, -2147483648, 2147483647).intValue();
-            } catch (NumberFormatException ex) {
-                throw new JavacordInvalidCommandArgument(MessageKeys.MUST_BE_A_NUMBER, "{num}", number);
-            }
-        });
-        this.registerContext(Long.class, c -> {
-            String number = c.popFirstArg();
-
-            try {
-                return this.parseAndValidateNumber(number, c, -9223372036854775808L, 9223372036854775807L).longValue();
-            } catch (NumberFormatException ex) {
-                throw new JavacordInvalidCommandArgument(MessageKeys.MUST_BE_A_NUMBER, "{num}", number);
-            }
-        });
-        this.registerContext(Long.TYPE, c -> {
-            String number = c.popFirstArg();
-
-            try {
-                return this.parseAndValidateNumber(number, c, -9223372036854775808L, 9223372036854775807L).longValue();
-            } catch (NumberFormatException ex) {
-                throw new JavacordInvalidCommandArgument(MessageKeys.MUST_BE_A_NUMBER, "{num}", number);
-            }
-        });
-        this.registerContext(Float.class, c -> {
-            String number = c.popFirstArg();
-
-            try {
-                return this.parseAndValidateNumber(number, c, -3.4028235E38F, 3.4028235E38F).floatValue();
-            } catch (NumberFormatException ex) {
-                throw new JavacordInvalidCommandArgument(MessageKeys.MUST_BE_A_NUMBER, "{num}", number);
-            }
-        });
-        this.registerContext(Float.TYPE, c -> {
-            String number = c.popFirstArg();
-
-            try {
-                return this.parseAndValidateNumber(number, c, -3.4028235E38F, 3.4028235E38F).floatValue();
-            } catch (NumberFormatException ex) {
-                throw new JavacordInvalidCommandArgument(MessageKeys.MUST_BE_A_NUMBER, "{num}", number);
-            }
-        });
-        this.registerContext(Double.class, c -> {
-            String number = c.popFirstArg();
-
-            try {
-                return this.parseAndValidateNumber(number, c, -1.7976931348623157E308D, 1.7976931348623157E308D).doubleValue();
-            } catch (NumberFormatException ex) {
-                throw new JavacordInvalidCommandArgument(MessageKeys.MUST_BE_A_NUMBER, "{num}", number);
-            }
-        });
-        this.registerContext(Double.TYPE, c -> {
-            String number = c.popFirstArg();
-
-            try {
-                return this.parseAndValidateNumber(number, c, -1.7976931348623157E308D, 1.7976931348623157E308D).doubleValue();
-            } catch (NumberFormatException ex) {
-                throw new JavacordInvalidCommandArgument(MessageKeys.MUST_BE_A_NUMBER, "{num}", number);
-            }
-        });
-        this.registerContext(Number.class, c -> {
-            String number = c.popFirstArg();
-
-            try {
-                return this.parseAndValidateNumber(number, c, -1.7976931348623157E308D, 1.7976931348623157E308D);
-            } catch (NumberFormatException ex) {
-                throw new JavacordInvalidCommandArgument(MessageKeys.MUST_BE_A_NUMBER, "{num}", number);
-            }
-        });
-        this.registerContext(BigDecimal.class, c -> {
-            String numberStr = c.popFirstArg();
-
-            try {
-                BigDecimal number = ACFUtil.parseBigNumber(numberStr, c.hasFlag("suffixes"));
-                this.validateMinMax(c, number);
-                return number;
-            } catch (NumberFormatException ex) {
-                throw new JavacordInvalidCommandArgument(MessageKeys.MUST_BE_A_NUMBER, "{num}", numberStr);
-            }
-        });
-        this.registerContext(BigInteger.class, c -> {
-            String numberStr = c.popFirstArg();
-
-            try {
-                BigDecimal number = ACFUtil.parseBigNumber(numberStr, c.hasFlag("suffixes"));
-                this.validateMinMax(c, number);
-                return number.toBigIntegerExact();
-            } catch (NumberFormatException ex) {
-                throw new JavacordInvalidCommandArgument(MessageKeys.MUST_BE_A_NUMBER, "{num}", numberStr);
-            }
-        });
-        this.registerContext(Character.TYPE, c -> {
-            String s = c.popFirstArg();
-            if (s.length() > 1) {
+        // Primitives
+        registerContext(Long.class, Long.TYPE, c -> resolveNumber(c, Long.MIN_VALUE, Long.MAX_VALUE).longValue());
+        registerContext(Integer.class, Integer.TYPE, c -> resolveNumber(c, Integer.MIN_VALUE, Integer.MAX_VALUE).intValue());
+        registerContext(Short.class, Short.TYPE, c -> resolveNumber(c, Short.MIN_VALUE, Short.MAX_VALUE).shortValue());
+        registerContext(Byte.class, Byte.TYPE, c -> resolveNumber(c, Byte.MIN_VALUE, Byte.MAX_VALUE).byteValue());
+        registerContext(Double.class, Double.TYPE, c -> resolveNumber(c, Double.MIN_VALUE, Double.MAX_VALUE).doubleValue());
+        registerContext(Float.class, Float.TYPE, c -> resolveNumber(c, Float.MIN_VALUE, Float.MAX_VALUE).floatValue());
+        registerContext(Float.class, Float.TYPE, c -> resolveNumber(c, Float.MIN_VALUE, Float.MAX_VALUE).floatValue());
+        registerContext(Character.class, Character.TYPE, c -> {
+            String arg = c.popFirstArg();
+            if (arg.length() > 1) {
                 throw new JavacordInvalidCommandArgument(MessageKeys.MUST_BE_MAX_LENGTH, "{max}", String.valueOf(1));
             } else {
-                return s.charAt(0);
+                return arg.charAt(0);
             }
         });
-        this.registerContext(String.class, c -> {
+
+        // Numbers
+        registerContext(Number.class, c -> resolveNumber(c, Double.MIN_VALUE, Double.MAX_VALUE));
+        registerContext(BigDecimal.class, this::resolveBigNumber);
+        registerContext(BigInteger.class, this::resolveBigNumber);
+
+        // Strings
+        registerContext(String.class, c -> {
             if (c.hasAnnotation(Values.class)) {
                 return c.popFirstArg();
+            }
+
+            String val = c.isLastArg() && !c.hasAnnotation(Single.class) ? ACFUtil.join(c.getArgs()) : c.popFirstArg();
+            Integer minLen = c.getFlagValue("minlen", (Integer) null);
+            Integer maxLen = c.getFlagValue("maxlen", (Integer) null);
+            if (minLen != null && val.length() < minLen) {
+                throw new JavacordInvalidCommandArgument(MessageKeys.MUST_BE_MIN_LENGTH, "{min}", String.valueOf(minLen));
+            } else if (maxLen != null && val.length() > maxLen) {
+                throw new JavacordInvalidCommandArgument(MessageKeys.MUST_BE_MAX_LENGTH, "{max}", String.valueOf(minLen));
             } else {
-                String ret = c.isLastArg() && !c.hasAnnotation(Single.class) ? ACFUtil.join(c.getArgs()) : c.popFirstArg();
-                Integer minLen = c.getFlagValue("minlen", (Integer) null);
-                Integer maxLen = c.getFlagValue("maxlen", (Integer) null);
-                if (minLen != null && ret.length() < minLen) {
-                    throw new JavacordInvalidCommandArgument(MessageKeys.MUST_BE_MIN_LENGTH, "{min}", String.valueOf(minLen));
-                } else if (maxLen != null && ret.length() > maxLen) {
-                    throw new JavacordInvalidCommandArgument(MessageKeys.MUST_BE_MAX_LENGTH, "{max}", String.valueOf(minLen));
-                } else {
-                    return ret;
-                }
+                return val;
             }
         });
-        this.registerContext(String[].class, c -> {
+        registerContext(String[].class, c -> {
             List<String> args = c.getArgs();
             String val;
             if (c.isLastArg() && !c.hasAnnotation(Single.class)) {
@@ -225,32 +125,44 @@ public class JavacordCommandContexts extends CommandContexts<JavacordCommandExec
                 return result;
             }
         });
-        this.registerContext(Enum.class, (c) -> {
+
+        registerContext(Enum.class, (c) -> {
             String first = c.popFirstArg();
+            //noinspection deprecation
             Class<? extends Enum<?>> enumCls = (Class<? extends Enum<?>>) c.getParam().getType();
             Enum<?> match = ACFUtil.simpleMatch(enumCls, first);
             if (match == null) {
                 List<String> names = ACFUtil.enumNames(enumCls);
-                throw new InvalidCommandArgument(MessageKeys.PLEASE_SPECIFY_ONE_OF, "{valid}", ACFUtil.join(names, ", "));
+                throw new JavacordInvalidCommandArgument(MessageKeys.PLEASE_SPECIFY_ONE_OF, "{valid}", ACFUtil.join(names, ", "));
             } else {
                 return match;
             }
         });
 
-        // Javacord context resolvers
-        this.registerIssuerOnlyContext(JavacordCommandEvent.class, CommandExecutionContext::getIssuer);
-        this.registerIssuerOnlyContext(MessageCreateEvent.class, c -> c.issuer.getIssuer());
-        this.registerIssuerOnlyContext(DiscordApi.class, c -> api);
-        this.registerIssuerOnlyContext(Message.class, c -> c.issuer.getIssuer().getMessage());
-        this.registerIssuerOnlyContext(ChannelType.class, c -> c.issuer.getIssuer().getChannel().getType());
-        this.registerIssuerOnlyContext(Server.class, c -> {
-            if (!c.issuer.getIssuer().isServerMessage()) {
+        /* Javacord-specific resolvers */
+        registerIssuerOnlyContext(DiscordApi.class, c -> api);
+        registerIssuerOnlyContext(JavacordCommandEvent.class, CommandExecutionContext::getIssuer);
+        registerIssuerOnlyContext(MessageCommandEvent.class, c -> {
+            if (!(c.issuer instanceof MessageCommandEvent)) {
+                throw new JavacordInvalidCommandArgument("Command was not triggered by a message. Use SlashCommandEvent or CommandEvent instead.");
+            }
+            return (MessageCommandEvent) c.issuer;
+        });
+        registerIssuerOnlyContext(SlashCommandEvent.class, c -> {
+            if (!(c.issuer instanceof SlashCommandEvent)) {
+                throw new JavacordInvalidCommandArgument("Command was not triggered by a slash command. Use MessageCommandEvent or CommandEvent instead.");
+            }
+            return (SlashCommandEvent) c.issuer;
+        });
+        registerIssuerOnlyContext(ChannelType.class, c -> c.issuer.getChannel().getType());
+        registerIssuerOnlyContext(Server.class, c -> {
+            if (!c.issuer.isInServer()) {
                 throw new JavacordInvalidCommandArgument(JavacordMessageKeys.SERVER_ONLY);
             } else {
-                return c.issuer.getIssuer().getServer().get(); // No need for 'isPresent()' due to 'MessageCreateEvent#isServerMessage()'
+                return c.issuer.getServer().get(); // No need for 'isPresent()' due to 'MessageCreateEvent#isServerMessage()'
             }
         });
-        this.registerIssuerAwareContext(User.class, c -> {
+        registerIssuerAwareContext(User.class, c -> {
             if (c.hasAnnotation(BotUser.class)) {
                 return api.getYourself();
             }
@@ -290,17 +202,16 @@ public class JavacordCommandContexts extends CommandContexts<JavacordCommandExec
                 if (user == null && !isOptional) {
                     throw new JavacordInvalidCommandArgument(JavacordMessageKeys.COULD_NOT_FIND_USER);
                 }
-
                 return user;
             }
         });
-        this.registerIssuerAwareContext(Member.class, c -> {
-            if (!c.issuer.getIssuer().isServerMessage()) {
+        registerIssuerAwareContext(Member.class, c -> {
+            if (!c.issuer.isInServer()) {
                 throw new JavacordInvalidCommandArgument(JavacordMessageKeys.SERVER_ONLY);
             }
 
             if (c.hasAnnotation(BotUser.class)) {
-                return new Member(api.getYourself(), c.issuer.getIssuer().getServer().get());
+                return new Member(api.getYourself(), c.issuer.getServer().get());
             }
 
             if (!c.hasFlag("other")) {
@@ -333,19 +244,19 @@ public class JavacordCommandContexts extends CommandContexts<JavacordCommandExec
                 if (user == null && !isOptional) {
                     throw new JavacordInvalidCommandArgument(JavacordMessageKeys.COULD_NOT_FIND_USER);
                 }
-                if (user != null && !c.issuer.getIssuer().getServer().get().isMember(user)) {
+                if (user != null && !c.issuer.getServer().get().isMember(user)) {
                     throw new JavacordInvalidCommandArgument(JavacordMessageKeys.USER_NOT_MEMBER_OF_SERVER);
                 }
                 if (user != null && c.hasFlag("humanonly") && user.isBot()) {
                     throw new JavacordInvalidCommandArgument(JavacordMessageKeys.USER_IS_BOT);
                 }
 
-                return user != null ? new Member(user, c.issuer.getIssuer().getServer().get()) : null;
+                return user != null ? new Member(user, c.issuer.getServer().get()) : null;
             }
         });
-        this.registerIssuerAwareContext(Channel.class, c -> {
+        registerIssuerAwareContext(Channel.class, c -> {
             if (!c.hasFlag("other")) {
-                return c.issuer.getEvent().getChannel();
+                return c.issuer.getChannel();
             }
 
             boolean isCrossServer = c.hasAnnotation(CrossServer.class);
@@ -353,54 +264,16 @@ public class JavacordCommandContexts extends CommandContexts<JavacordCommandExec
             Channel channel = null;
             if (DiscordRegexPattern.CHANNEL_MENTION.matcher(arg).matches()) {
                 String id = arg.replaceAll("[^0-9]", ""); // Extract non-negative integers to retrieve ID
-                channel = isCrossServer || !c.issuer.getIssuer().getServer().isPresent()
+                channel = isCrossServer || !c.issuer.getServer().isPresent()
                         ? api.getChannelById(id).isPresent()
-                            ? api.getChannelById(id).get() : null
-                        : c.issuer.getIssuer().getServer().get().getChannelById(id).isPresent()
-                            ? c.issuer.getIssuer().getServer().get().getChannelById(id).get() : null;
+                        ? api.getChannelById(id).get() : null
+                        : c.issuer.getServer().get().getChannelById(id).isPresent()
+                        ? c.issuer.getServer().get().getChannelById(id).get() : null;
             }
 
-            if (channel != null)
+            if (channel != null) {
                 c.popFirstArg(); // Consume input
-            else {
-                if (!c.hasFlag("require")) {
-                    throw new JavacordInvalidCommandArgument(JavacordMessageKeys.COULD_NOT_FIND_CHANNEL);
-                }
-                channel = c.issuer.getEvent().getChannel();
-            }
-            return channel;
-        });
-        this.registerIssuerOnlyContext(PrivateChannel.class, c -> {
-            if (!c.issuer.getIssuer().isPrivateMessage()) {
-                throw new JavacordInvalidCommandArgument(JavacordMessageKeys.PRIVATE_ONLY);
-            }
-            return c.issuer.getIssuer().getPrivateChannel().get(); // No need for 'isPresent()' due to 'MessageCreateEvent#isPrivateMessage()'
-        });
-//        this.registerIssuerOnlyContext(GroupChannel.class, c -> {
-//            if (!c.issuer.getIssuer().isGroupMessage()) {
-//                throw new JavacordInvalidCommandArgument(JavacordMessageKeys.GROUP_ONLY);
-//            }
-//            return c.issuer.getIssuer().getGroupChannel().get(); // No need for 'isPresent()' due to 'MessageCreateEvent#isGroupMessage()'
-//        });
-        this.registerIssuerAwareContext(TextChannel.class, c -> {
-            if (!c.hasFlag("other")) {
-                return c.issuer.getEvent().getChannel();
-            }
-            boolean isCrossServer = c.hasAnnotation(CrossServer.class);
-            String arg = c.getFirstArg(); // Test input
-            TextChannel channel = null;
-            if (DiscordRegexPattern.CHANNEL_MENTION.matcher(arg).matches()) {
-                String id = arg.replaceAll("[^0-9]", ""); // Extract non-negative integers to retrieve ID
-                channel = isCrossServer || !c.issuer.getIssuer().getServer().isPresent()
-                        ? api.getTextChannelById(id).isPresent()
-                            ? api.getTextChannelById(id).get() : null
-                        : c.issuer.getIssuer().getServer().get().getTextChannelById(id).isPresent()
-                            ? c.issuer.getIssuer().getServer().get().getTextChannelById(id).get() : null;
-            }
-
-            if (channel != null)
-                c.popFirstArg(); // Consume input
-            else {
+            } else {
                 if (!c.hasFlag("require")) {
                     throw new JavacordInvalidCommandArgument(JavacordMessageKeys.COULD_NOT_FIND_CHANNEL);
                 }
@@ -408,38 +281,72 @@ public class JavacordCommandContexts extends CommandContexts<JavacordCommandExec
             }
             return channel;
         });
-        this.registerIssuerAwareContext(ServerTextChannel.class, c -> {
-            if (!c.issuer.getIssuer().getServer().isPresent()) {
+        registerIssuerOnlyContext(PrivateChannel.class, c -> {
+            if (!c.issuer.isInPrivate()) {
+                throw new JavacordInvalidCommandArgument(JavacordMessageKeys.PRIVATE_ONLY);
+            }
+            return (PrivateChannel) c.issuer.getChannel();
+        });
+        registerIssuerAwareContext(TextChannel.class, c -> {
+            if (!c.hasFlag("other")) {
+                return c.issuer.getChannel();
+            }
+
+            boolean isCrossServer = c.hasAnnotation(CrossServer.class);
+            String arg = c.getFirstArg(); // Test input
+            TextChannel channel = null;
+            if (DiscordRegexPattern.CHANNEL_MENTION.matcher(arg).matches()) {
+                String id = arg.replaceAll("[^0-9]", ""); // Extract non-negative integers to retrieve ID
+                channel = isCrossServer || !c.issuer.getServer().isPresent()
+                        ? api.getTextChannelById(id).isPresent()
+                        ? api.getTextChannelById(id).get() : null
+                        : c.issuer.getServer().get().getTextChannelById(id).isPresent()
+                        ? c.issuer.getServer().get().getTextChannelById(id).get() : null;
+            }
+
+            if (channel != null) {
+                c.popFirstArg(); // Consume input
+            } else {
+                if (!c.hasFlag("require")) {
+                    throw new JavacordInvalidCommandArgument(JavacordMessageKeys.COULD_NOT_FIND_CHANNEL);
+                }
+                channel = c.issuer.getChannel();
+            }
+            return channel;
+        });
+        registerIssuerAwareContext(ServerTextChannel.class, c -> {
+            if (!c.issuer.isInServer()) {
                 throw new JavacordInvalidCommandArgument(JavacordMessageKeys.SERVER_ONLY);
             }
             if (!c.hasFlag("other")) {
                 return c.issuer.getChannel().asServerTextChannel().get();
             }
+
             boolean isCrossServer = c.hasAnnotation(CrossServer.class);
             String arg = c.getFirstArg(); // Test input
             ServerTextChannel channel = null;
             if (DiscordRegexPattern.CHANNEL_MENTION.matcher(arg).matches()) {
                 String id = arg.replaceAll("[^0-9]", ""); // Extract non-negative integers to retrieve ID
-                channel = isCrossServer || !c.issuer.getIssuer().getServer().isPresent()
+                channel = isCrossServer || !c.issuer.getServer().isPresent()
                         ? api.getServerTextChannelById(id).isPresent()
-                            ? api.getServerTextChannelById(id).get() : null
-                        : c.issuer.getIssuer().getServer().get().getTextChannelById(id).isPresent()
-                            ? c.issuer.getIssuer().getServer().get().getTextChannelById(id).get() : null;
+                        ? api.getServerTextChannelById(id).get() : null
+                        : c.issuer.getServer().get().getTextChannelById(id).isPresent()
+                        ? c.issuer.getServer().get().getTextChannelById(id).get() : null;
             }
 
-            if (channel != null)
+            if (channel != null) {
                 c.popFirstArg(); // Consume input
-            else {
+            } else {
                 if (!c.hasFlag("require")) {
                     throw new JavacordInvalidCommandArgument(JavacordMessageKeys.COULD_NOT_FIND_CHANNEL);
                 }
-                channel = c.issuer.getIssuer().getServerTextChannel().get();
+                channel = c.issuer.getChannel().asServerTextChannel().get();
             }
             return channel;
         });
-        this.registerIssuerAwareContext(VoiceChannel.class, c -> {
+        registerIssuerAwareContext(VoiceChannel.class, c -> {
             if (!c.hasFlag("other")) {
-                if (c.issuer.getIssuer().isServerMessage() && c.issuer.getMember().isInVoiceChannel()) {
+                if (c.issuer.isInServer() && c.issuer.getMember().isInVoiceChannel()) {
                     return c.issuer.getMember().getConnectedVoiceChannel().get(); // No need for 'isPresent()' due to 'Member#isInVoiceChannel()'
                 } else {
                     throw new JavacordInvalidCommandArgument(JavacordMessageKeys.USER_NOT_IN_VOICE_CHANNEL);
@@ -450,11 +357,11 @@ public class JavacordCommandContexts extends CommandContexts<JavacordCommandExec
             VoiceChannel channel = null;
             if (DiscordRegexPattern.CHANNEL_MENTION.matcher(arg).matches()) {
                 String id = arg.replaceAll("[^0-9]", ""); // Extract non-negative integers to retrieve ID
-                channel = isCrossServer || !c.issuer.getIssuer().getServer().isPresent()
+                channel = isCrossServer || !c.issuer.getServer().isPresent()
                         ? api.getVoiceChannelById(id).isPresent()
-                            ? api.getVoiceChannelById(id).get() : null
-                        : c.issuer.getIssuer().getServer().get().getVoiceChannelById(id).isPresent()
-                            ? c.issuer.getIssuer().getServer().get().getVoiceChannelById(id).get() : null;
+                        ? api.getVoiceChannelById(id).get() : null
+                        : c.issuer.getServer().get().getVoiceChannelById(id).isPresent()
+                        ? c.issuer.getServer().get().getVoiceChannelById(id).get() : null;
             }
 
             if (channel != null) {
@@ -466,9 +373,9 @@ public class JavacordCommandContexts extends CommandContexts<JavacordCommandExec
             }
             return channel;
         });
-        this.registerIssuerAwareContext(ServerVoiceChannel.class, c -> {
+        registerIssuerAwareContext(ServerVoiceChannel.class, c -> {
             if (!c.hasFlag("other")) {
-                if (c.issuer.getIssuer().isServerMessage() && c.issuer.getMember().isInVoiceChannel()) {
+                if (c.issuer.isInServer() && c.issuer.getMember().isInVoiceChannel()) {
                     return c.issuer.getMember().getConnectedVoiceChannel().get(); // No need for 'isPresent()' due to 'Member#isInVoiceChannel()'
                 } else {
                     throw new JavacordInvalidCommandArgument(JavacordMessageKeys.USER_NOT_IN_VOICE_CHANNEL);
@@ -479,11 +386,11 @@ public class JavacordCommandContexts extends CommandContexts<JavacordCommandExec
             ServerVoiceChannel channel = null;
             if (DiscordRegexPattern.CHANNEL_MENTION.matcher(arg).matches()) {
                 String id = arg.replaceAll("[^0-9]", ""); // Extract non-negative integers to retrieve ID
-                channel = isCrossServer || !c.issuer.getIssuer().getServer().isPresent()
+                channel = isCrossServer || !c.issuer.getServer().isPresent()
                         ? api.getServerVoiceChannelById(id).isPresent()
-                            ? api.getServerVoiceChannelById(id).get() : null
-                        : c.issuer.getIssuer().getServer().get().getVoiceChannelById(id).isPresent()
-                            ? c.issuer.getIssuer().getServer().get().getVoiceChannelById(id).get() : null;
+                        ? api.getServerVoiceChannelById(id).get() : null
+                        : c.issuer.getServer().get().getVoiceChannelById(id).isPresent()
+                        ? c.issuer.getServer().get().getVoiceChannelById(id).get() : null;
             }
 
             if (channel != null) {
@@ -495,7 +402,7 @@ public class JavacordCommandContexts extends CommandContexts<JavacordCommandExec
             }
             return channel;
         });
-        this.registerContext(Role.class, c -> {
+        registerContext(Role.class, c -> {
             boolean isCrossServer = c.hasAnnotation(CrossServer.class);
 
             String arg = c.isLastArg() ? String.join(" ", c.getArgs()) : c.popFirstArg();
@@ -507,19 +414,19 @@ public class JavacordCommandContexts extends CommandContexts<JavacordCommandExec
             Optional<Role> role = Optional.empty();
             if (DiscordRegexPattern.ROLE_MENTION.matcher(arg).matches()) {
                 String id = arg.replaceAll("[^0-9]", ""); // Extract non-negative integers to retrieve ID
-                role = (!isCrossServer && c.issuer.getIssuer().getServer().isPresent())
-                        ? c.issuer.getIssuer().getServer().get().getRoleById(id)
+                role = (!isCrossServer && c.issuer.getServer().isPresent())
+                        ? c.issuer.getServer().get().getRoleById(id)
                         : api.getRoleById(id);
             }
             else {
                 try {
                     long id = Long.parseLong(arg);
-                    role = (!isCrossServer && c.issuer.getIssuer().getServer().isPresent())
-                            ? c.issuer.getIssuer().getServer().get().getRoleById(id)
+                    role = (!isCrossServer && c.issuer.getServer().isPresent())
+                            ? c.issuer.getServer().get().getRoleById(id)
                             : api.getRoleById(id);
                 } catch (NumberFormatException ex) {
-                    Collection<Role> roles = (!isCrossServer && c.issuer.getIssuer().getServer().isPresent())
-                            ? c.issuer.getIssuer().getServer().get().getRolesByNameIgnoreCase(arg)
+                    Collection<Role> roles = (!isCrossServer && c.issuer.getServer().isPresent())
+                            ? c.issuer.getServer().get().getRolesByNameIgnoreCase(arg)
                             : api.getRolesByNameIgnoreCase(arg);
 
                     if (roles.size() > 1) {
@@ -536,7 +443,7 @@ public class JavacordCommandContexts extends CommandContexts<JavacordCommandExec
             }
             return role.get();
         });
-        this.registerContext(Emoji.class, c -> {
+        registerContext(Emoji.class, c -> {
             String arg = c.popFirstArg();
 
             if (!c.isOptional() && (arg == null || arg.isEmpty())) {
@@ -559,7 +466,7 @@ public class JavacordCommandContexts extends CommandContexts<JavacordCommandExec
             }
             return emoji;
         });
-        this.registerContext(UnicodeEmoji.class, c -> {
+        registerContext(UnicodeEmoji.class, c -> {
             String arg = c.popFirstArg();
 
             if (!c.isOptional() && (arg == null || arg.isEmpty())) {
@@ -571,7 +478,7 @@ public class JavacordCommandContexts extends CommandContexts<JavacordCommandExec
             }
             return new UnicodeEmoji(arg);
         });
-        this.registerContext(CustomEmoji.class, c -> {
+        registerContext(CustomEmoji.class, c -> {
             String arg = c.popFirstArg();
 
             if (!c.isOptional() && (arg == null || arg.isEmpty())) {
@@ -597,7 +504,7 @@ public class JavacordCommandContexts extends CommandContexts<JavacordCommandExec
             }
             return emoji.get();
         });
-        this.registerContext(KnownCustomEmoji.class, c -> {
+        registerContext(KnownCustomEmoji.class, c -> {
             String arg = c.popFirstArg();
 
             if (!c.isOptional() && (arg == null || arg.isEmpty())) {
@@ -625,18 +532,40 @@ public class JavacordCommandContexts extends CommandContexts<JavacordCommandExec
         });
     }
 
+    /* Utility methods */
+
+    private <T extends Number> T resolveBigNumber(@NotNull CEC c) {
+        String arg = c.popFirstArg();
+        try {
+            T number = (T) ACFUtil.parseBigNumber(arg, c.hasFlag("suffixes"));
+            this.validateMinMax(c, number);
+            return number;
+        } catch (NumberFormatException ex) {
+            throw new JavacordInvalidCommandArgument(MessageKeys.MUST_BE_A_NUMBER, "{num}", arg);
+        }
+    }
+
+    private Number resolveNumber(@NotNull CEC c, @NotNull Number minValue, @NotNull Number maxValue) {
+        String number = c.popFirstArg();
+        try {
+            return this.parseAndValidateNumber(number, c, minValue, maxValue).shortValue();
+        } catch (NumberFormatException ex) {
+            throw new JavacordInvalidCommandArgument(MessageKeys.MUST_BE_A_NUMBER, "{num}", number);
+        }
+    }
+
     @NotNull
-    private Number parseAndValidateNumber(String number, JavacordCommandExecutionContext c, Number minValue, Number maxValue) throws InvalidCommandArgument {
+    private Number parseAndValidateNumber(String number, CEC c, Number minValue, Number maxValue) throws JavacordInvalidCommandArgument {
         Number val = ACFUtil.parseNumber(number, c.hasFlag("suffixes"));
         this.validateMinMax(c, val, minValue, maxValue);
         return val;
     }
 
-    private void validateMinMax(JavacordCommandExecutionContext c, Number val) throws InvalidCommandArgument {
+    private void validateMinMax(CEC c, Number val) throws JavacordInvalidCommandArgument {
         this.validateMinMax(c, val, null, null);
     }
 
-    private void validateMinMax(JavacordCommandExecutionContext c, Number val, Number minValue, Number maxValue) throws InvalidCommandArgument {
+    private void validateMinMax(CEC c, Number val, Number minValue, Number maxValue) throws JavacordInvalidCommandArgument {
         minValue = c.getFlagValue("min", minValue);
         maxValue = c.getFlagValue("max", maxValue);
         if (maxValue != null && val.doubleValue() > maxValue.doubleValue()) {
@@ -644,5 +573,10 @@ public class JavacordCommandContexts extends CommandContexts<JavacordCommandExec
         } else if (minValue != null && val.doubleValue() < minValue.doubleValue()) {
             throw new JavacordInvalidCommandArgument(MessageKeys.PLEASE_SPECIFY_AT_LEAST, "{min}", String.valueOf(minValue));
         }
+    }
+
+    private <T> void registerContext(Class<T> clazz1, Class<T> clazz2, ContextResolver<T, CEC> supplier) {
+        registerContext(clazz1, supplier);
+        registerContext(clazz2, supplier);
     }
 }

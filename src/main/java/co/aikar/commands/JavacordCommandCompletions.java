@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2021 Kevin Zuman (Greenadine)
+ * Copyright (c) 2023 Kevin Zuman (Greenadine)
  *
  *  Licensed under the Apache License, Version 2.0 (the "License");
  *  you may not use this file except in compliance with the License.
@@ -22,10 +22,14 @@ import java.util.Collections;
 import java.util.List;
 
 /**
- * @since 0.1
- * @author Greenadine
+ * @since 0.1.0
  */
 public class JavacordCommandCompletions extends CommandCompletions<CommandCompletionContext<?>> {
+
+    /*
+        TODO check if this can be implemented for slash commands
+     */
+
     private final boolean initialized;
 
     public JavacordCommandCompletions(CommandManager manager) {

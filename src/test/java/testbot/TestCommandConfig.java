@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2021 Kevin Zuman (Greenadine)
+ * Copyright (c) 2023 Kevin Zuman (Greenadine)
  *
  *  Licensed under the Apache License, Version 2.0 (the "License");
  *  you may not use this file except in compliance with the License.
@@ -14,9 +14,22 @@
  *  limitations under the License.
  */
 
-package co.aikar.commands;
+package testbot;
 
-public interface CommandPermissionResolver {
+import co.aikar.commands.CommandConfig;
+import org.jetbrains.annotations.NotNull;
 
-    boolean hasPermission(JavacordCommandManager manager, JavacordCommandEvent event, String permission);
+import java.util.List;
+import java.util.concurrent.CopyOnWriteArrayList;
+
+public class TestCommandConfig implements CommandConfig {
+
+    @NotNull
+    private final List<String> commandPrefixes = new CopyOnWriteArrayList<>(new String[] {"j!"});
+
+    @NotNull
+    @Override
+    public List<String> getCommandPrefixes() {
+        return commandPrefixes;
+    }
 }

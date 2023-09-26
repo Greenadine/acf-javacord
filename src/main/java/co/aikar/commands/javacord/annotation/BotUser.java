@@ -14,31 +14,21 @@
  *  limitations under the License.
  */
 
-package co.aikar.commands;
+package co.aikar.commands.javacord.annotation;
 
-import org.javacord.api.event.interaction.InteractionCreateEvent;
-import org.javacord.api.event.message.MessageCreateEvent;
-import org.jetbrains.annotations.NotNull;
-
-import java.util.List;
+import java.lang.annotation.ElementType;
+import java.lang.annotation.Retention;
+import java.lang.annotation.RetentionPolicy;
+import java.lang.annotation.Target;
 
 /**
- * @since 0.1.0
+ * The {@link BotUser} annotation is to mark that a parameter should be resolved in relation to the bots user object,
+ * instead of being resolved from regular command context.
+ *
+ * @since 0.3.0
+ * @author Greenadine
  */
-public interface CommandConfig extends CommandConfigProvider {
-
-    @NotNull
-    List<String> getCommandPrefixes();
-
-    @Override
-    @NotNull
-    default CommandConfig provide(@NotNull MessageCreateEvent event) {
-        return this;
-    }
-
-    @Override
-    @NotNull
-    default CommandConfig provide(@NotNull InteractionCreateEvent event) {
-        return this;
-    }
+@Target(ElementType.PARAMETER)
+@Retention(RetentionPolicy.RUNTIME)
+public @interface BotUser {
 }

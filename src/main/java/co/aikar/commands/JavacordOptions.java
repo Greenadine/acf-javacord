@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2021 Kevin Zuman (Greenadine)
+ * Copyright (c) 2023 Kevin Zuman (Greenadine)
  *
  *  Licensed under the Apache License, Version 2.0 (the "License");
  *  you may not use this file except in compliance with the License.
@@ -20,13 +20,13 @@ import org.javacord.api.DiscordApi;
 import org.jetbrains.annotations.NotNull;
 
 /**
- * @since 0.1
- * @author Greenadine
+ * @since 0.1.0
  */
 public class JavacordOptions {
     CommandConfig defaultConfig = new JavacordCommandConfig();
-    CommandConfigProvider configProvider = null;
-    CommandPermissionResolver permissionResolver = new JavacordCommandPermissionResolver();
+    CommandConfigProvider messageConfigProvider = null;
+    CommandConfigProvider slashConfigProvider = null;
+    JavacordPermissionResolver permissionResolver = new JavacordPermissionResolver();
 
     public JavacordOptions() {}
 
@@ -35,15 +35,30 @@ public class JavacordOptions {
         return this;
     }
 
-    public JavacordOptions configProvider(@NotNull CommandConfigProvider configProvider) {
-        this.configProvider = configProvider;
+    public JavacordOptions messageConfigProvider(@NotNull CommandConfigProvider configProvider) {
+        this.messageConfigProvider = configProvider;
         return this;
     }
 
-    public JavacordOptions permissionResolver(@NotNull CommandPermissionResolver permissionResolver) {
+    public JavacordOptions slashConfigProvider(@NotNull CommandConfigProvider configProvider) {
+        slashConfigProvider = configProvider;
+        return this;
+    }
+
+    public JavacordOptions permissionResolver(@NotNull JavacordPermissionResolver permissionResolver) {
         this.permissionResolver = permissionResolver;
         return this;
     }
 
-    public JavacordCommandManager create(DiscordApi api) { return new JavacordCommandManager(api, this); }
+    public JavacordCommandManager createManager(@NotNull DiscordApi api) {
+        return new JavacordCommandManager(api, this);
+    }
+
+    public MessageCommandManager createMessageManager(@NotNull DiscordApi api) {
+        return new MessageCommandManager(api, this);
+    }
+
+    public SlashCommandManager createSlashManager(@NotNull DiscordApi api) {
+        return new SlashCommandManager(api, this);
+    }
 }

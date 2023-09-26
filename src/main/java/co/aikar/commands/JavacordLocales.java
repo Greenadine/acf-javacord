@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2021 Kevin Zuman (Greenadine)
+ * Copyright (c) 2023 Kevin Zuman (Greenadine)
  *
  *  Licensed under the Apache License, Version 2.0 (the "License");
  *  you may not use this file except in compliance with the License.
@@ -17,12 +17,11 @@
 package co.aikar.commands;
 
 /**
- * @since 0.1
- * @author Greenadine
+ * @since 0.5.0
  */
 public class JavacordLocales extends Locales {
 
-    public JavacordLocales(JavacordCommandManager manager) {
+    public JavacordLocales(AbstractJavacordCommandManager manager) {
         super(manager);
         this.addBundleClassLoader(manager.getApi().getClass().getClassLoader());
     }
