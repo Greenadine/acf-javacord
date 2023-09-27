@@ -43,13 +43,14 @@ public class TestCommand extends BaseCommand {
 
     @Subcommand("ping")
     public void onPing(MessageCommandEvent event) {
-        event.reply("Testing latency...").thenAcceptAsync(message -> {
-            double messageTimestamp = message.getCreationTimestamp().toEpochMilli();
-            double currentTimestamp = System.currentTimeMillis();
-            double ping = Math.abs(Math.round((currentTimestamp - messageTimestamp) / 100));
+        event.reply("Testing latency...")
+                .thenAcceptAsync(message -> {
+                        double messageTimestamp = message.getCreationTimestamp().toEpochMilli();
+                        double currentTimestamp = System.currentTimeMillis();
+                        double ping = Math.abs(Math.round((currentTimestamp - messageTimestamp) / 100));
 
-            message.edit(String.format("My API latency is %.0fms.", ping));
-        });
+                        message.edit(String.format("My API latency is %.0fms.", ping));
+                    });
     }
 
     @Subcommand("sudo")

@@ -47,7 +47,7 @@ public class JavacordRootCommand implements RootCommand {
         if (defCommand == null || !command.subCommands.get(BaseCommand.DEFAULT).isEmpty()) {
             defCommand = command;
         }
-        addChildShared((List<BaseCommand>) children, (SetMultimap<String, RegisteredCommand>) subCommands, command);
+        addChildShared(children, subCommands, command);
     }
 
     @Override
@@ -57,12 +57,12 @@ public class JavacordRootCommand implements RootCommand {
 
     @Override
     public SetMultimap<String, RegisteredCommand> getSubCommands() {
-        return (SetMultimap<String, RegisteredCommand>) subCommands;
+        return subCommands;
     }
 
     @Override
     public List<BaseCommand> getChildren() {
-        return (List<BaseCommand>) children;
+        return children;
     }
 
     @Override

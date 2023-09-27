@@ -16,9 +16,12 @@
 
 package co.aikar.commands;
 
+import co.aikar.commands.annotation.Description;
+import co.aikar.commands.annotation.PreCommand;
 import co.aikar.commands.annotation.Subcommand;
 import co.aikar.commands.contexts.ContextResolver;
 import co.aikar.commands.contexts.IssuerOnlyContextResolver;
+import co.aikar.commands.javacord.annotation.Choices;
 import co.aikar.commands.javacord.annotation.CommandOptions;
 import co.aikar.commands.javacord.annotation.ServerCommand;
 import co.aikar.commands.javacord.util.JavacordUtils;
@@ -27,16 +30,17 @@ import com.google.common.base.Preconditions;
 import org.javacord.api.DiscordApi;
 import org.javacord.api.entity.Mentionable;
 import org.javacord.api.entity.channel.Channel;
+import org.javacord.api.entity.channel.ChannelType;
 import org.javacord.api.entity.permission.Role;
 import org.javacord.api.entity.server.Server;
 import org.javacord.api.entity.user.User;
 import org.javacord.api.interaction.*;
 import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
 
-import java.lang.annotation.Annotation;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Map;
+import java.lang.reflect.InvocationTargetException;
+import java.lang.reflect.Method;
+import java.util.*;
 import java.util.concurrent.CompletableFuture;
 
 /**
@@ -70,6 +74,7 @@ public class SlashBaseCommand extends BaseCommand {
         registerAsSlashCommand();
     }
 
+
     /**
      * Initializes fields used for registering the command as a slash command.
      */
@@ -91,7 +96,7 @@ public class SlashBaseCommand extends BaseCommand {
         SlashCommandBuilder builder = createAndApplyOptions(getClass(), commandName, description);
 
         // Register all direct subcommands
-        createSubcommands(this).forEach(builder::addOption);
+        createSubcommands(this, false).forEach(builder::addOption);
         createSubcommandGroups(this).forEach(builder::addOption);
 
         // Determine whether to register globally or for a specific server
@@ -101,8 +106,8 @@ public class SlashBaseCommand extends BaseCommand {
             ServerCommand serverCommand = getClass().getAnnotation(ServerCommand.class);
 
             // If an ID has been defined
-            if (serverCommand.id() != 0L) {
-                server = api.getServerById(serverCommand.id()).orElse(null);
+            if (serverCommand.value() != 0L) {
+                server = api.getServerById(serverCommand.value()).orElse(null);
             }
             else if (!serverCommand.name().isEmpty()) {
                 server = api.getServersByName(serverCommand.name()).stream().findAny().orElse(null);
@@ -170,7 +175,7 @@ public class SlashBaseCommand extends BaseCommand {
 
                 // Register nested subcommand groups
                 // TODO this does not work with a nested class within a nested class, for whatever reason
-                createSubcommandGroups(subScope).forEach(builder::addOption);
+                //createSubcommandGroups(subScope).forEach(builder::addOption);
 
                 subcommandGroups.add(builder.build());
             }
@@ -187,19 +192,11 @@ public class SlashBaseCommand extends BaseCommand {
      */
     @NotNull
     private SlashCommandOptionBuilder createSubcommandGroup(@NotNull String name, @NotNull BaseCommand scope) {
-        SlashCommandOptionBuilder builder = new SlashCommandOptionBuilder()
+        return new SlashCommandOptionBuilder()
                 .setType(SlashCommandOptionType.SUB_COMMAND_GROUP)
                 .setName(name)
-                .setDescription(scope.description);
-
-        // Register methods as subcommands
-        for (Map.Entry<String, RegisteredCommand> entry : scope.subCommands.entries()) {
-            String subcommandName = getSubcommandName(entry.getKey());
-            SlashCommandOption option = createSubcommand(subcommandName, entry.getValue());
-            builder.addOption(option);
-        }
-
-        return builder;
+                .setDescription(scope.description)
+                .setOptions(createSubcommands(scope, true));
     }
 
     /**
@@ -210,11 +207,11 @@ public class SlashBaseCommand extends BaseCommand {
      * @return the created {@link SlashCommandOption subcommands}.
      */
     @NotNull
-    private List<SlashCommandOption> createSubcommands(@NotNull BaseCommand scope) {
+    private List<SlashCommandOption> createSubcommands(@NotNull BaseCommand scope, boolean isSubcommandGroup) {
         final List<SlashCommandOption> subcommands = new ArrayList<>();
 
         for (Map.Entry<String, RegisteredCommand> entry : scope.subCommands.entries()) {
-            if (StringUtils.containsWhitespace(entry.getKey())) {
+            if (isSubcommandGroup && StringUtils.containsWhitespace(entry.getKey())) {
                 continue; // These are registered as subcommand groups
             }
             String subcommandName = getSubcommandName(entry.getKey());
@@ -243,10 +240,15 @@ public class SlashBaseCommand extends BaseCommand {
             if (isIssuerOnlyParameter(parameter)) { // Ignore issuer-only parameters
                 continue;
             }
-
-            createParameter(parameter.getName(), parameter);
-
-            // TODO register parameters
+            if (!parameter.getParameter().isAnnotationPresent(Description.class)) {
+                manager.log(LogLevel.ERROR, "Parameter '" + parameter.getName() + "' for subcommand '" + name + "' is missing the @Description annotation.");
+                continue;
+            }
+//            System.out.println("Registering parameter '" + parameter.getName() + "' for subcommand '" + name + "'.");
+            SlashCommandOption paramOption = createParameter(parameter.getName(), parameter);
+            if (paramOption != null) {
+                builder.addOption(paramOption);
+            }
         }
         return builder.build();
     }
@@ -260,17 +262,100 @@ public class SlashBaseCommand extends BaseCommand {
      * @return the created {@link SlashCommandOption}.
      */
     private SlashCommandOption createParameter(@NotNull String name, @NotNull CommandParameter parameter) {
-        Class<? extends Annotation> paramAnnoClass = co.aikar.commands.javacord.annotation.CommandParameter.class;
+        SlashCommandOptionType parameterType = getParameterType(parameter);
+        if (parameterType == SlashCommandOptionType.UNKNOWN) {
+            manager.log(LogLevel.ERROR, "Invalid parameter type '" + parameter.getType().getSimpleName() + "' for parameter '" + parameter.getName() + "'.");
+            return null;
+        }
+
+        String description = annotations.getAnnotationValue(parameter.getParameter(), Description.class);
+        if (description.isEmpty()) {
+            manager.log(LogLevel.ERROR, "Description for parameter '" + parameter.getName() + "' cannot be empty.");
+            return null;
+        }
 
         SlashCommandOptionBuilder builder = new SlashCommandOptionBuilder()
-                .setType(getParameterType(parameter))
+                .setType(parameterType)
                 .setName(name)
-                .setDescription(annotations.getAnnotationValue(parameter.getParameter(), paramAnnoClass))
+                .setDescription(description)
                 .setRequired(!parameter.isOptional());
 
-        // TODO implement
-
+        // Get options from flags
+        //noinspection unchecked
+        Map<String, String> flags = parameter.getFlags();
+        switch (parameterType) {
+            case STRING:
+                if (flags.containsKey("autocomplete")) {
+                    builder.setAutocompletable(true);
+//                    System.out.println("- Marked as auto-completable");
+                }
+                if (flags.containsKey("minlen")) {
+                    long minLength = Long.parseLong(flags.get("minlen"));
+                    builder.setMinLength(minLength);
+//                    System.out.println("- Set min length to" + minLength);
+                }
+                if (flags.containsKey("maxlen")) {
+                    long maxLength = Long.parseLong(flags.get("maxlen"));
+                    builder.setMaxLength(maxLength);
+//                    System.out.println("- Set max length to" + maxLength);
+                }
+                registerChoices(builder, parameter);
+                break;
+            case LONG:
+            case DECIMAL:
+                if (flags.containsKey("autocomplete")) {
+                    builder.setAutocompletable(true);
+//                    System.out.println("- Marked as auto-completable");
+                }
+                registerChoices(builder, parameter);
+                break;
+            case CHANNEL:
+                if (flags.containsKey("channeltypes")) {
+                    String[] channelTypes = flags.get("channeltypes").split(",");
+                    for (String channelType : channelTypes) {
+                        try {
+//                            System.out.println("- Added channel type '" + channelType + "'.");
+                            builder.addChannelType(ChannelType.valueOf(channelType.toUpperCase()));
+                        } catch (IllegalArgumentException ex) {
+                            manager.log(LogLevel.ERROR, "Invalid channel type '" + channelType + "' for parameter '" + parameter.getName() + "'.");
+                        }
+                    }
+                }
+                break;
+        }
         return builder.build();
+    }
+
+    /**
+     * Registers the choices for the given {@link CommandParameter command parameter}.
+     *
+     * @param builder the {@link SlashCommandOptionBuilder builder} to register the choices to.
+     * @param parameter the command parameter to register the choices for.
+     */
+    private void registerChoices(@NotNull SlashCommandOptionBuilder builder, @NotNull CommandParameter parameter) {
+        if (annotations.hasAnnotation(parameter.getParameter(), Choices.class)) {
+            String choices = annotations.getAnnotationValue(parameter.getParameter(), Choices.class);
+            for (String choice : choices.split(",")) {
+                String choiceName;
+                String choiceValue;
+                if (StringUtils.containsEquals(choice)) {
+                    String[] choiceSplit = StringUtils.splitOnEquals(choice);
+                    if (choiceSplit.length != 2) {
+                        manager.log(LogLevel.ERROR, "Invalid choice '" + choice + "' for parameter '" + parameter.getName() + "'.");
+                        continue;
+                    }
+                    choiceName = choiceSplit[0];
+                    choiceValue = choiceSplit[1];
+                } else {
+                    choiceName = choice;
+                    choiceValue = choice;
+                }
+
+//                System.out.println("- Added choice '" + choiceName + "' with value '" + choiceValue + "'.");
+
+                builder.addChoice(createChoice(choiceName, choiceValue));
+            }
+        }
     }
 
     /**
@@ -322,22 +407,6 @@ public class SlashBaseCommand extends BaseCommand {
     }
 
     /**
-     * Returns whether the given command parameter's type is registered as an issuer-only parameter,
-     * meaning it should be ignored while registering the command as a slash command.
-     *
-     * @param parameter the parameter to check.
-     *
-     * @return {@code true} if the parameter is an issuer-only parameter, {@code false} otherwise.
-     */
-    private boolean isIssuerOnlyParameter(@NotNull CommandParameter parameter) {
-        Map<Class<?>, ? extends ContextResolver<?, ?>> contextMap = manager.getCommandContexts().contextMap;
-        if (!contextMap.containsKey(parameter.getType())) {
-            return false;
-        }
-        return contextMap.get(parameter.getType()) instanceof IssuerOnlyContextResolver;
-    }
-
-    /**
      * Creates a new choice with the given name and value for a command parameter.
      *
      * @param name the name of the choice.
@@ -363,6 +432,22 @@ public class SlashBaseCommand extends BaseCommand {
             return split[split.length - 1];
         }
         return name;
+    }
+
+    /**
+     * Returns whether the given command parameter's type is registered as an issuer-only parameter,
+     * meaning it should be ignored while registering the command as a slash command.
+     *
+     * @param parameter the parameter to check.
+     *
+     * @return {@code true} if the parameter is an issuer-only parameter, {@code false} otherwise.
+     */
+    private boolean isIssuerOnlyParameter(@NotNull CommandParameter parameter) {
+        Map<Class<?>, ? extends ContextResolver<?, ?>> contextMap = manager.getCommandContexts().contextMap;
+        if (!contextMap.containsKey(parameter.getType())) {
+            return false;
+        }
+        return contextMap.get(parameter.getType()) instanceof IssuerOnlyContextResolver;
     }
 
     /**

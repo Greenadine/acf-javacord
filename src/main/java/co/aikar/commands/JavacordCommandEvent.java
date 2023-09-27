@@ -85,9 +85,6 @@ public abstract class JavacordCommandEvent implements CommandIssuer {
         return permissionResolver == null || permissionResolver.hasPermission(manager, this, permission);
     }
 
-    @Override
-    public void sendMessageInternal(String message) { /* Do nothing */  }
-
     /**
      * Gets the {@link User} that invoked the command.
      *

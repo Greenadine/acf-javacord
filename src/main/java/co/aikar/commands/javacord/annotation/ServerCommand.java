@@ -30,6 +30,6 @@ import java.lang.annotation.Target;
 @Target(ElementType.TYPE)
 @Retention(RetentionPolicy.RUNTIME)
 public @interface ServerCommand {
-    long id() default 0L;
+    long value() default 0L;
     String name() default "";
 }

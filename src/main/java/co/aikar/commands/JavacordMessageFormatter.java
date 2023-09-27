@@ -16,8 +16,6 @@
 
 package co.aikar.commands;
 
-import co.aikar.commands.MessageFormatter;
-
 /**
  * Message formatter for Javacord.
  *

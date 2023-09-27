@@ -16,75 +16,30 @@
 
 package testbot;
 
-import co.aikar.commands.BaseCommand;
 import co.aikar.commands.SlashBaseCommand;
 import co.aikar.commands.SlashCommandEvent;
 import co.aikar.commands.annotation.CommandAlias;
 import co.aikar.commands.annotation.Description;
-import co.aikar.commands.annotation.Optional;
 import co.aikar.commands.annotation.Subcommand;
-import co.aikar.commands.javacord.annotation.CommandParameter;
-import co.aikar.commands.javacord.context.Member;
 
 @SuppressWarnings("all")
 @CommandAlias("slash")
 @Description("Various test commands.")
 public class TestSlashCommand extends SlashBaseCommand {
 
-    /*
-     * Command signature: /slash test <channel>
-     */
-    @Subcommand("test1")
-    @Description("Test subcommand.")
-    public void onTest(SlashCommandEvent event, Member member) {
+    @Subcommand("ping")
+    @Description("Test bot latency.")
+    public void onPing(SlashCommandEvent event) {
+        double startMillis = System.currentTimeMillis();
         event.newImmediateResponse()
-                .setContent("Hello, " + member.getMentionTag() + "!")
-                .respond();
-    }
+                .setContent("Testing latency...")
+                .respond()
+                .thenAcceptAsync(updater -> {
+                        double currentMillis = System.currentTimeMillis();
+                        double ping = Math.abs(Math.round((currentMillis - startMillis) / 100));
 
-    /*
-     * Command signature: /slash ban <user> [reason]
-     */
-    @Subcommand("ban")
-    @Description("'Ban' a user.")
-    public void onBan(SlashCommandEvent event, Member member, @CommandParameter("The reason the member was banned.") @Optional String reason) {
-        if (reason == null) {
-            reason = "No reason provided.";
-        }
-
-        event.newImmediateResponse()
-                .setContent("Banned " + member.getMentionTag() + " for " + reason + ". Not really, but let's pretend.")
-                .respond();
-    }
-
-    /*
-     * This is a test subcommand group.
-     */
-    @Subcommand("group")
-    @Description("Test subcommand group.")
-    public class TestSubCommandGroup extends BaseCommand {
-
-        /*
-         * Command signature: /slash sub test
-         * This is a test subcommand of a subcommand group.
-         */
-        @Subcommand("test2")
-        @Description("Test subcommand.")
-        public void onTest(SlashCommandEvent event) {
-            event.newImmediateResponse()
-                    .setContent("Test 2 success!")
-                    .respond();
-        }
-
-//        @Subcommand("anothergroup")
-//        public class TestSubSubCommandGroup extends BaseCommand {
-//            @Subcommand("test3")
-//            @Description("Test subcommand.")
-//            public void onTest(SlashCommandEvent event) {
-//                event.newImmediateResponse()
-//                        .setContent("Test 3 success!")
-//                        .respond();
-//            }
-//        }
+                        updater.setContent(String.format("My API latency is %.0fms.", ping))
+                                .update();
+                    });
     }
 }

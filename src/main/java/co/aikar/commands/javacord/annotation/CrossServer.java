@@ -30,7 +30,6 @@ import java.lang.annotation.Target;
  * </p>
  *
  * @since 0.1.0
- * @author Greenadine
  */
 @Target(ElementType.PARAMETER)
 @Retention(RetentionPolicy.RUNTIME)

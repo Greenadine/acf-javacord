@@ -21,15 +21,8 @@ import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
 
-/**
- *
- * @since 0.5.0
- */
 @Target(ElementType.PARAMETER)
 @Retention(RetentionPolicy.RUNTIME)
-public @interface CommandParameter {
+public @interface Choices {
     String value();
-    long minLength() default 0;
-    long maxLength() default 6000;
-
 }

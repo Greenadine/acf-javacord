@@ -65,6 +65,11 @@ public class MessageCommandManager
     }
 
     @Override
+    public JavacordRootCommand createRootCommand(String cmd) {
+        return new JavacordRootCommand(this, cmd);
+    }
+
+    @Override
     public boolean isCommandIssuer(Class<?> type) {
         return MessageCommandEvent.class.isAssignableFrom(type);
     }

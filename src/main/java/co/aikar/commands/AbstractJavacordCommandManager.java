@@ -20,6 +20,7 @@ import co.aikar.commands.apachecommonslang.ApacheCommonsExceptionUtil;
 import org.javacord.api.DiscordApi;
 import org.jetbrains.annotations.NotNull;
 
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Locale;
 import java.util.Map;
@@ -99,11 +100,6 @@ public abstract class AbstractJavacordCommandManager<
         // Not really going to be used;
         //noinspection unchecked
         return new CommandCompletionContext(command, sender, input, config, args);
-    }
-
-    @Override
-    public JavacordRootCommand createRootCommand(String cmd) {
-        return new JavacordRootCommand(this, cmd);
     }
 
     @Override
@@ -261,12 +257,11 @@ public abstract class AbstractJavacordCommandManager<
             return;
         }
         // TODO commented out because it was breaking slash commands, unsure if this has any side effects
-        //if (args.length > 1) {
-        //    args = Arrays.copyOfRange(args, 1, args.length);
-        //} else {
-        //    args = new String[0];
-        //}
-
+//        if (args.length > 1) {
+//            args = Arrays.copyOfRange(args, 1, args.length);
+//        } else {
+//            args = new String[0];
+//        }
         rootCommand.execute(this.getCommandIssuer(event), cmd, args);
     }
 }

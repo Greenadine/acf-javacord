@@ -18,9 +18,13 @@ package co.aikar.commands;
 
 import org.javacord.api.event.interaction.InteractionCreateEvent;
 import org.javacord.api.interaction.SlashCommandInteraction;
+import org.javacord.api.interaction.SlashCommandInteractionOption;
 import org.javacord.api.interaction.callback.InteractionFollowupMessageBuilder;
 import org.javacord.api.interaction.callback.InteractionImmediateResponseBuilder;
 import org.jetbrains.annotations.NotNull;
+
+import java.util.ArrayList;
+import java.util.List;
 
 /**
  * Represents a command event that was triggered by a slash command.
@@ -33,6 +37,7 @@ public class SlashCommandEvent extends JavacordCommandEvent {
 
     private final InteractionCreateEvent event;
     private final SlashCommandInteraction interaction;
+    private final List<SlashCommandInteractionOption> args;
 
     @SuppressWarnings("OptionalGetWithoutIsPresent")
     public SlashCommandEvent(@NotNull SlashCommandManager manager, @NotNull InteractionCreateEvent event) {
@@ -40,12 +45,27 @@ public class SlashCommandEvent extends JavacordCommandEvent {
 
         this.event = event;
         this.interaction = event.getSlashCommandInteraction().get();
+        this.args = new ArrayList<>(interaction.getArguments());
     }
 
     @Override
     @SuppressWarnings("unchecked")
     public InteractionCreateEvent getIssuer() {
         return event;
+    }
+
+    @Override
+    public void sendMessageInternal(String message) {
+        newImmediateResponse().setContent(message).respond();
+    }
+
+    /**
+     * Gets the arguments of the slash command.
+     *
+     * @return the command arguments.
+     */
+    public List<SlashCommandInteractionOption> getArgs() {
+        return args;
     }
 
     /**

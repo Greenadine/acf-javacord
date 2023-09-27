@@ -45,9 +45,10 @@ import java.util.Optional;
  * @since 0.5.0
  * @see JavacordCommandContexts
  */
+@SuppressWarnings("unchecked")
 public class MessageCommandContexts extends JavacordCommandContexts<MessageCommandEvent, MessageCommandExecutionContext> {
 
-    @SuppressWarnings("OptionalGetWithoutIsPresent,unchecked")
+    @SuppressWarnings("OptionalGetWithoutIsPresent")
     MessageCommandContexts(@NotNull MessageCommandManager manager) {
         super(manager);
 
@@ -60,7 +61,7 @@ public class MessageCommandContexts extends JavacordCommandContexts<MessageComma
         registerContext(Byte.class, Byte.TYPE, c -> resolveNumber(c, Byte.MIN_VALUE, Byte.MAX_VALUE).byteValue());
         registerContext(Double.class, Double.TYPE, c -> resolveNumber(c, Double.MIN_VALUE, Double.MAX_VALUE).doubleValue());
         registerContext(Float.class, Float.TYPE, c -> resolveNumber(c, Float.MIN_VALUE, Float.MAX_VALUE).floatValue());
-        registerContext(Float.class, Float.TYPE, c -> resolveNumber(c, Float.MIN_VALUE, Float.MAX_VALUE).floatValue());
+        registerContext(Boolean.class, Boolean.TYPE, c -> ACFUtil.isTruthy(c.popFirstArg()));
         registerContext(Character.class, Character.TYPE, c -> {
             String arg = c.popFirstArg();
             if (arg.length() > 1) {
@@ -119,6 +120,7 @@ public class MessageCommandContexts extends JavacordCommandContexts<MessageComma
             }
         });
 
+        // Enums
         registerContext(Enum.class, (c) -> {
             String first = c.popFirstArg();
             //noinspection deprecation
@@ -134,97 +136,95 @@ public class MessageCommandContexts extends JavacordCommandContexts<MessageComma
 
 
         /* Javacord-specific resolvers */
+        registerIssuerOnlyContext(MessageCommandEvent.class, c -> c.issuer);
         registerIssuerAwareContext(User.class, c -> {
             if (c.hasAnnotation(BotUser.class)) {
                 return api.getYourself();
             }
-
             if (!c.hasFlag("other")) {
                 return c.issuer.getUser();
-            } else {
-                boolean isOptional = c.isOptional();
-                String arg = c.isLastArg() ? String.join(" ", c.getArgs()) : c.getFirstArg(); // Test input
+            }
 
-                if (!isOptional && (arg == null || arg.isEmpty())) {
-                    throw new JavacordInvalidCommandArgument(JavacordMessageKeys.PLEASE_SPECIFY_USER);
-                }
+            boolean isOptional = c.isOptional();
+            String arg = c.isLastArg() ? String.join(" ", c.getArgs()) : c.getFirstArg(); // Test input
 
-                User user = null;
-                if (!(arg == null || arg.isEmpty())) {
-                    if (DiscordRegexPattern.USER_MENTION.matcher(arg).matches()) {
-                        String id = arg.replaceAll("[^0-9]", ""); // Extract non-negative integers from string
-                        user = api.getUserById(id).join();
+            if (!isOptional && (arg == null || arg.isEmpty())) {
+                throw new JavacordInvalidCommandArgument(JavacordMessageKeys.PLEASE_SPECIFY_USER);
+            }
 
-                        if (c.hasFlag("humanonly") && user.isBot()) {
-                            throw new JavacordInvalidCommandArgument(JavacordMessageKeys.USER_IS_BOT);
-                        }
+            User user = null;
+            if (!(arg == null || arg.isEmpty())) {
+                if (DiscordRegexPattern.USER_MENTION.matcher(arg).matches()) {
+                    String id = arg.replaceAll("[^0-9]", ""); // Extract non-negative integers from string
+                    user = api.getUserById(id).join();
 
+                    if (c.hasFlag("humanonly") && user.isBot()) {
+                        throw new JavacordInvalidCommandArgument(JavacordMessageKeys.USER_IS_BOT);
+                    }
+
+                    c.popFirstArg(); // Consume input
+                } else {
+                    Collection<User> users = api.getCachedUsersByNameIgnoreCase(arg);
+                    if (users.size() > 1 && !c.isOptional()) {
+                        throw new JavacordInvalidCommandArgument(JavacordMessageKeys.TOO_MANY_USERS_WITH_NAME);
+                    } else if (!users.isEmpty()) {
+                        user = Iterables.get(users, 0);
                         c.popFirstArg(); // Consume input
-                    } else {
-                        Collection<User> users = api.getCachedUsersByNameIgnoreCase(arg);
-                        if (users.size() > 1 && !c.isOptional()) {
-                            throw new JavacordInvalidCommandArgument(JavacordMessageKeys.TOO_MANY_USERS_WITH_NAME);
-                        } else if (!users.isEmpty()) {
-                            user = Iterables.get(users, 0);
-                            c.popFirstArg(); // Consume input
-                        }
                     }
                 }
-
-                if (user == null && !isOptional) {
-                    throw new JavacordInvalidCommandArgument(JavacordMessageKeys.COULD_NOT_FIND_USER);
-                }
-                return user;
             }
+
+            if (user == null && !isOptional) {
+                throw new JavacordInvalidCommandArgument(JavacordMessageKeys.COULD_NOT_FIND_USER);
+            }
+            return user;
         });
         registerIssuerAwareContext(Member.class, c -> {
             if (!c.issuer.isInServer()) {
                 throw new JavacordInvalidCommandArgument(JavacordMessageKeys.SERVER_ONLY);
             }
-
             if (c.hasAnnotation(BotUser.class)) {
                 return new Member(api.getYourself(), c.issuer.getServer().get());
             }
-
             if (!c.hasFlag("other")) {
                 return c.issuer.getMember();
-            } else {
-                boolean isOptional = c.isOptional();
-                String arg = c.isLastArg() ? String.join(" ", c.getArgs()) : c.getFirstArg(); // Test input
+            }
 
-                if (!isOptional && (arg == null || arg.isEmpty())) {
-                    throw new JavacordInvalidCommandArgument(JavacordMessageKeys.PLEASE_SPECIFY_USER);
-                }
+            boolean isOptional = c.isOptional();
+            String arg = c.isLastArg() ? String.join(" ", c.getArgs()) : c.getFirstArg(); // Test input
 
-                User user = null;
-                if (!(arg == null || arg.isEmpty())) {
-                    if (DiscordRegexPattern.USER_MENTION.matcher(arg).matches()) {
-                        String id = arg.replaceAll("[^0-9]", ""); // Extract non-negative integers from string
-                        user = api.getUserById(id).join();
+            if (!isOptional && (arg == null || arg.isEmpty())) {
+                throw new JavacordInvalidCommandArgument(JavacordMessageKeys.PLEASE_SPECIFY_USER);
+            }
+
+            User user = null;
+            if (!(arg == null || arg.isEmpty())) {
+                if (DiscordRegexPattern.USER_MENTION.matcher(arg).matches()) {
+                    String id = arg.replaceAll("[^0-9]", ""); // Extract non-negative integers from string
+                    user = api.getUserById(id).join();
+                    c.popFirstArg(); // Consume input
+                } else {
+                    Collection<User> users = api.getCachedUsersByNameIgnoreCase(arg);
+                    if (users.size() > 1 && !c.isOptional()) {
+                        throw new JavacordInvalidCommandArgument(JavacordMessageKeys.TOO_MANY_USERS_WITH_NAME);
+                    } else if (!users.isEmpty()) {
+                        user = Iterables.get(users, 0);
                         c.popFirstArg(); // Consume input
-                    } else {
-                        Collection<User> users = api.getCachedUsersByNameIgnoreCase(arg);
-                        if (users.size() > 1 && !c.isOptional()) {
-                            throw new JavacordInvalidCommandArgument(JavacordMessageKeys.TOO_MANY_USERS_WITH_NAME);
-                        } else if (!users.isEmpty()) {
-                            user = Iterables.get(users, 0);
-                            c.popFirstArg(); // Consume input
-                        }
                     }
                 }
-
-                if (user == null && !isOptional) {
-                    throw new JavacordInvalidCommandArgument(JavacordMessageKeys.COULD_NOT_FIND_USER);
-                }
-                if (user != null && !c.issuer.getServer().get().isMember(user)) {
-                    throw new JavacordInvalidCommandArgument(JavacordMessageKeys.USER_NOT_MEMBER_OF_SERVER);
-                }
-                if (user != null && c.hasFlag("humanonly") && user.isBot()) {
-                    throw new JavacordInvalidCommandArgument(JavacordMessageKeys.USER_IS_BOT);
-                }
-
-                return user != null ? new Member(user, c.issuer.getServer().get()) : null;
             }
+
+            if (user == null && !isOptional) {
+                throw new JavacordInvalidCommandArgument(JavacordMessageKeys.COULD_NOT_FIND_USER);
+            }
+            if (user != null && !c.issuer.getServer().get().isMember(user)) {
+                throw new JavacordInvalidCommandArgument(JavacordMessageKeys.USER_NOT_MEMBER_OF_SERVER);
+            }
+            if (user != null && c.hasFlag("humanonly") && user.isBot()) {
+                throw new JavacordInvalidCommandArgument(JavacordMessageKeys.USER_IS_BOT);
+            }
+
+            return user != null ? new Member(user, c.issuer.getServer().get()) : null;
         });
         registerIssuerAwareContext(Channel.class, c -> {
             if (!c.hasFlag("other")) {
@@ -502,5 +502,34 @@ public class MessageCommandContexts extends JavacordCommandContexts<MessageComma
             }
             return emoji.get();
         });
+    }
+
+    /* Utility methods */
+
+    private <T extends Number> T resolveBigNumber(@NotNull MessageCommandExecutionContext c) {
+        String arg = c.popFirstArg();
+        try {
+            T number = (T) ACFUtil.parseBigNumber(arg, c.hasFlag("suffixes"));
+            this.validateMinMax(c, number);
+            return number;
+        } catch (NumberFormatException ex) {
+            throw new JavacordInvalidCommandArgument(MessageKeys.MUST_BE_A_NUMBER, "{num}", arg);
+        }
+    }
+
+    private Number resolveNumber(@NotNull MessageCommandExecutionContext c, @NotNull Number minValue, @NotNull Number maxValue) {
+        String number = c.popFirstArg();
+        try {
+            return this.parseAndValidateNumber(number, c, minValue, maxValue).shortValue();
+        } catch (NumberFormatException ex) {
+            throw new JavacordInvalidCommandArgument(MessageKeys.MUST_BE_A_NUMBER, "{num}", number);
+        }
+    }
+
+    @NotNull
+    private Number parseAndValidateNumber(String number, MessageCommandExecutionContext c, Number minValue, Number maxValue) throws JavacordInvalidCommandArgument {
+        Number val = ACFUtil.parseNumber(number, c.hasFlag("suffixes"));
+        this.validateMinMax(c, val, minValue, maxValue);
+        return val;
     }
 }

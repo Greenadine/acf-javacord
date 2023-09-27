@@ -20,12 +20,11 @@ import com.google.common.base.Preconditions;
 import org.javacord.api.DiscordApi;
 import org.javacord.api.event.interaction.InteractionCreateEvent;
 import org.javacord.api.interaction.SlashCommandInteraction;
+import org.javacord.api.interaction.SlashCommandInteractionOption;
 import org.jetbrains.annotations.NotNull;
 
-import java.util.Collection;
-import java.util.Collections;
-import java.util.List;
-import java.util.Map;
+import java.lang.reflect.Method;
+import java.util.*;
 
 /**
  * A {@link CommandManager} implementation for Javacord for slash commands.
@@ -91,7 +90,22 @@ public class SlashCommandManager
 
     @Override
     public SlashCommandExecutionContext createCommandContext(RegisteredCommand command, CommandParameter parameter, CommandIssuer sender, List<String> args, int i, Map<String, Object> passedArgs) {
-        return new SlashCommandExecutionContext(command, parameter, (SlashCommandEvent) sender, args, i, passedArgs);
+        throw new UnsupportedOperationException();
+    }
+
+    @Override
+    public SlashRootCommand createRootCommand(String cmd) {
+        return new SlashRootCommand(this, cmd);
+    }
+
+    @Override
+    @SuppressWarnings("rawtypes")
+    public RegisteredCommand createRegisteredCommand(BaseCommand command, String cmdname, Method method, String prefSubcommand) {
+        return new SlashRegisteredCommand(command, cmdname, method, prefSubcommand);
+    }
+
+    public SlashCommandExecutionContext createCommandContext(@NotNull SlashRegisteredCommand command, @NotNull CommandParameter parameter, @NotNull SlashCommandEvent event, @NotNull List<SlashCommandInteractionOption> args) {
+        return new SlashCommandExecutionContext(command, parameter, event, args);
     }
 
     /**

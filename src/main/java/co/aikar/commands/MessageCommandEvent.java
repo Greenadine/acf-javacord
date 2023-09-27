@@ -48,6 +48,11 @@ public class MessageCommandEvent extends JavacordCommandEvent {
     }
 
     @Override
+    public void sendMessageInternal(String message) {
+        event.getChannel().sendMessage(message);
+    }
+
+    @Override
     public boolean isInServer() {
         return event.isServerMessage();
     }

@@ -26,7 +26,6 @@ import java.lang.annotation.Target;
  * instead of being resolved from regular command context.
  *
  * @since 0.3.0
- * @author Greenadine
  */
 @Target(ElementType.PARAMETER)
 @Retention(RetentionPolicy.RUNTIME)

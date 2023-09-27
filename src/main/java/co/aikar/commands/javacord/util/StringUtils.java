@@ -24,26 +24,50 @@ public final class StringUtils {
 
     private static final Pattern SPACE_MATCHER = Pattern.compile(".*\\s.*");
     private static final Pattern SPACE_SPLITTER = Pattern.compile("\\s+");
+    private static final Pattern EQUALS_MATCHER = Pattern.compile(".*=.*");
+    private static final Pattern EQUALS_SPLITTER = Pattern.compile("=");
 
     /**
-     * Checks if the given {@link String} contains whitespace.
+     * Checks if the given string contains whitespace.
      *
-     * @param str the {@link String} to check.
+     * @param str the string to check.
      *
-     * @return {@code true} if the given {@link String} contains whitespace, {@code false} otherwise.
+     * @return {@code true} if the given string contains whitespace, {@code false} otherwise.
      */
     public static boolean containsWhitespace(@NotNull String str) {
         return SPACE_MATCHER.matcher(str).matches();
     }
 
     /**
-     * Splits the given {@link String} on whitespace.
+     * Splits the given string on whitespace.
      *
-     * @param str the {@link String} to split.
+     * @param str the string to split.
      *
-     * @return the split {@link String}.
+     * @return the split string.
      */
     public static String[] splitOnWhitespace(@NotNull String str) {
         return SPACE_SPLITTER.split(str);
+    }
+
+    /**
+     * Checks if the given string contains the '=' character.
+     *
+     * @param str the string to check
+     *
+     * @return {@code true} if the given string contains the '=' character, {@code false} otherwise
+     */
+    public static boolean containsEquals(@NotNull String str) {
+        return EQUALS_MATCHER.matcher(str).matches();
+    }
+
+    /**
+     * Splits the given string on the '=' character.
+     *
+     * @param str the string to split.
+     *
+     * @return the split string.
+     */
+    public static String[] splitOnEquals(@NotNull String str) {
+        return EQUALS_SPLITTER.split(str);
     }
 }
