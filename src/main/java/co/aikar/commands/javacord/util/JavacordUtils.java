@@ -18,7 +18,7 @@ package co.aikar.commands.javacord.util;
 
 import org.jetbrains.annotations.NotNull;
 
-public final class Util {
+public final class JavacordUtils {
 
     /**
      * Returns the root cause of the given {@link Throwable}.

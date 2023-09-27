@@ -16,24 +16,20 @@
 
 package co.aikar.commands.javacord.annotation;
 
-import org.javacord.api.entity.permission.PermissionType;
-
 import java.lang.annotation.ElementType;
 import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
 
 /**
- * The {@link CommandOptions} annotation is used to define the options for a slash command.
+ * The {@link ServerCommand} annotation is used to define a command as a server command.
+ * Either a name or an ID of a server has to be provided. If both are defined, the ID will be used.
  *
  * @since 0.5.0
  */
-@Target({ElementType.TYPE, ElementType.METHOD})
+@Target(ElementType.TYPE)
 @Retention(RetentionPolicy.RUNTIME)
-public @interface CommandOptions {
-    boolean defaultEnabledForEveryone() default true;
-    PermissionType[] defaultEnabledForPermissions() default {};
-    boolean defaultDisabled() default false;
-    boolean enabledInDms() default true;
-    boolean isNsfw() default false;
+public @interface ServerCommand {
+    long id() default 0L;
+    String name() default "";
 }

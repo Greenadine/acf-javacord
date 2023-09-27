@@ -13,12 +13,12 @@
     <groupId>dev.greenadine.acfjavacord</groupId>
     <artifactId>acf-javacord</artifactId>
     <version>0.5.0</version>
-    <packaging>pom</packaging>
+    <packaging>jar</packaging>
 
     <developers>
         <developer>
             <name>Greenadine</name>
-            <email>kevin@greenadine.dev</email>
+            <email>contact@greenadine.dev</email>
             <url>https://greenadine.dev</url>
         </developer>
     </developers>
@@ -33,11 +33,11 @@
     <distributionManagement>
         <repository>
             <id>greenadinedev-public</id>
-            <url>http://165.22.84.252:8081/repository/maven-public/</url>
+            <url>http://46.51.204.184:8080/repository/maven-public/</url>
         </repository>
         <snapshotRepository>
             <id>greenadinedev-snapshot</id>
-            <url>http://165.22.84.252:8081/repository/maven-snapshots/</url>
+            <url>http://46.51.204.184:8080/repository/maven-snapshots/</url>
         </snapshotRepository>
 
         <!--
@@ -103,6 +103,7 @@
             <artifactId>javacord</artifactId>
             <version>3.8.0</version>
             <type>pom</type>
+            <scope>provided</scope>
         </dependency>
         <dependency>
             <groupId>co.aikar</groupId>

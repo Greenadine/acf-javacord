@@ -16,16 +16,28 @@
 
 package co.aikar.commands;
 
+import co.aikar.commands.annotation.Subcommand;
+import co.aikar.commands.contexts.ContextResolver;
+import co.aikar.commands.contexts.IssuerOnlyContextResolver;
 import co.aikar.commands.javacord.annotation.CommandOptions;
-import co.aikar.commands.javacord.annotation.SubcommandOptions;
-import co.aikar.commands.javacord.util.Util;
-import org.javacord.api.interaction.SlashCommandBuilder;
-import org.javacord.api.interaction.SlashCommandOption;
-import org.javacord.api.interaction.SlashCommandOptionBuilder;
-import org.javacord.api.interaction.SlashCommandOptionType;
+import co.aikar.commands.javacord.annotation.ServerCommand;
+import co.aikar.commands.javacord.util.JavacordUtils;
+import co.aikar.commands.javacord.util.StringUtils;
+import com.google.common.base.Preconditions;
+import org.javacord.api.DiscordApi;
+import org.javacord.api.entity.Mentionable;
+import org.javacord.api.entity.channel.Channel;
+import org.javacord.api.entity.permission.Role;
+import org.javacord.api.entity.server.Server;
+import org.javacord.api.entity.user.User;
+import org.javacord.api.interaction.*;
 import org.jetbrains.annotations.NotNull;
 
+import java.lang.annotation.Annotation;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Map;
+import java.util.concurrent.CompletableFuture;
 
 /**
  * A {@code BaseSlashCommand} is defined as a command group of related slash commands.
@@ -42,73 +54,66 @@ import java.util.Map;
 @SuppressWarnings("rawtypes")
 public class SlashBaseCommand extends BaseCommand {
 
-    /**
-     * Gets the manager of the command as a {@link SlashCommandManager}.
-     *
-     * @return the manager of the command.
+    /* TODO:
+     *  - Add support for name localizations
+     *  - Add support for description localizations
      */
-    SlashCommandManager getManager() {
-        return (SlashCommandManager) manager;
-    }
+    
+    private DiscordApi api;
+    private Annotations annotations;
 
     @Override
     void onRegister(@NotNull CommandManager manager) {
         super.onRegister(manager);
+        
+        init();
         registerAsSlashCommand();
+    }
+
+    /**
+     * Initializes fields used for registering the command as a slash command.
+     */
+    private void init() {
+        this.api = ((SlashCommandManager) manager).api;
+        this.annotations = manager.getAnnotations();
     }
 
     /**
      * Registers the command as a slash command to Discord.
      */
-    @SuppressWarnings("DataFlowIssue")
     private void registerAsSlashCommand() {
+        Preconditions.checkArgument(commandName != null && !commandName.isEmpty() && commandName.length() <= 32,
+                "Command name must be between 1-32 characters.");
+        Preconditions.checkArgument(description != null && !description.isEmpty() && description.length() <= 100,
+                "Command description must be between 1-100 characters.");
+
         // Create base slash command
         SlashCommandBuilder builder = createAndApplyOptions(getClass(), commandName, description);
 
-        // Register methods as subcommands
-        for (Map.Entry<String, RegisteredCommand> entry : subCommands.entries()) {
-            if (ACFPatterns.SPACE.split(entry.getKey()).length > 1) {
-                continue; // These are registered as subcommand groups
+        // Register all direct subcommands
+        createSubcommands(this).forEach(builder::addOption);
+        createSubcommandGroups(this).forEach(builder::addOption);
+
+        // Determine whether to register globally or for a specific server
+        Server server = null;
+
+        if (getClass().isAnnotationPresent(ServerCommand.class)) {
+            ServerCommand serverCommand = getClass().getAnnotation(ServerCommand.class);
+
+            // If an ID has been defined
+            if (serverCommand.id() != 0L) {
+                server = api.getServerById(serverCommand.id()).orElse(null);
             }
-            System.out.println("Registering subcommand: " + entry.getKey() + " for " + commandName + "...'");
-            SlashCommandOption option = createSubcommand(entry.getKey(), entry.getValue());
-            builder.addOption(option);
+            else if (!serverCommand.name().isEmpty()) {
+                server = api.getServersByName(serverCommand.name()).stream().findAny().orElse(null);
+            }
         }
 
-        /*
-        TODO fix subcommand groups
-
-        final Annotations annotations = manager.getAnnotations();
-
-        // Register sub scopes as subcommand groups with their own subcommands
-        for (BaseCommand subScope : subScopes) {
-            if (!annotations.hasAnnotation(subScope.getClass(), Subcommand.class)) {
-                manager.log(LogLevel.ERROR, "Subcommand group '" + subScope.getClass().getSimpleName() + "' of command '" + commandName + "' is missing the @Subcommand annotation.");
-                continue;
-            }
-            String name = annotations.getAnnotationValue(subScope.getClass(), Subcommand.class);
-            System.out.println("Registering subcommand group '" + name + "' for command '" + commandName + "'...");
-
-            SlashCommandOptionBuilder subCommandGroup = createSubcommandGroup(name, subScope);
-            builder.addOption(subCommandGroup.build());
-        }*/
-
-        // Notify that subcommand groups are currently unsupported
-        if (!subScopes.isEmpty()) {
-            manager.log(LogLevel.INFO, "Found subcommand groups (inner classes) for command '" + commandName + "'. Subcommand groups are not yet supported. Subcommands will for now not be registered.");
+        if (server != null) {
+            registerForServer(builder, server);
+        } else {
+            registerGlobally(builder);
         }
-
-        builder.createGlobal(getManager().api)
-                .exceptionally(throwable -> {
-                    String directCause = throwable.getClass().getSimpleName();
-                    String rootCause = Util.getRootCause(throwable).getClass().getSimpleName();
-                    if (directCause.equals(rootCause)) {
-                        manager.log(LogLevel.ERROR, "Failed to register slash command '" + commandName + "'. Cause: " + directCause + ".", throwable);
-                    } else {
-                        manager.log(LogLevel.ERROR, "Failed to register slash command '" + commandName + "'. Cause: " + directCause +  " (" + rootCause + ").", throwable);
-                    }
-                    return null;
-                });
     }
 
     /**
@@ -126,48 +131,96 @@ public class SlashBaseCommand extends BaseCommand {
         SlashCommandBuilder builder = new SlashCommandBuilder()
                 .setName(name)
                 .setDescription(description);
-        if (!clazz.isAnnotationPresent(CommandOptions.class)) {
-            return builder;
-        }
 
-        final CommandOptions options = clazz.getAnnotation(CommandOptions.class);
+        // TODO test if this works as intended
+        if (clazz.isAnnotationPresent(CommandOptions.class)) {
+            final CommandOptions options = clazz.getAnnotation(CommandOptions.class);
 
-        builder.setEnabledInDms(options.enabledInDms());
-        builder.setNsfw(options.isNsfw());
+            builder.setEnabledInDms(options.enabledInDms());
+            builder.setNsfw(options.isNsfw());
 
-        if (options.defaultEnabledForEveryone()) {
-            builder.setDefaultEnabledForEveryone();
-        }
-        if (options.defaultEnabledForPermissions().length > 0) {
-            builder.setDefaultEnabledForPermissions(options.defaultEnabledForPermissions());
-        }
-        if (options.defaultDisabled()) {
-            builder.setDefaultDisabled();
+            if (options.defaultEnabledForEveryone()) {
+                builder.setDefaultEnabledForEveryone();
+            }
+            if (options.defaultEnabledForPermissions().length > 0) {
+                builder.setDefaultEnabledForPermissions(options.defaultEnabledForPermissions());
+            }
+            if (options.defaultDisabled()) {
+                builder.setDefaultDisabled();
+            }
         }
         return builder;
     }
 
     /**
-     * Creates a new {@link SlashCommandOptionBuilder subcommand group} from the given sub scope.
+     * Registers all sub-scopes of the given scope as subcommand groups.
+     */
+    @NotNull
+    private List<SlashCommandOption> createSubcommandGroups(@NotNull BaseCommand scope) {
+        final ArrayList<SlashCommandOption> subcommandGroups = new ArrayList<>();
+
+        if (!scope.subScopes.isEmpty()) {
+            for (BaseCommand subScope : scope.subScopes) {
+                if (!annotations.hasAnnotation(subScope.getClass(), Subcommand.class)) {
+                    manager.log(LogLevel.ERROR, "Subcommand group '" + subScope.getClass().getSimpleName() + "' of scope '" + scope.commandName + "' is missing the @Subcommand annotation.");
+                }
+
+                String name = annotations.getAnnotationValue(subScope.getClass(), Subcommand.class);
+                SlashCommandOptionBuilder builder = createSubcommandGroup(name, subScope);
+
+                // Register nested subcommand groups
+                // TODO this does not work with a nested class within a nested class, for whatever reason
+                createSubcommandGroups(subScope).forEach(builder::addOption);
+
+                subcommandGroups.add(builder.build());
+            }
+        }
+        return subcommandGroups;
+    }
+
+    /**
+     * Creates a new {@link SlashCommandOptionBuilder subcommand group} from the given scope.
      *
-     * @param subScope the sub scope to create the subcommand group from.
+     * @param scope the scope to create the subcommand group from.
      *
      * @return the created {@link SlashCommandOptionBuilder}.
      */
     @NotNull
-    private SlashCommandOptionBuilder createSubcommandGroup(@NotNull String name, @NotNull BaseCommand subScope) {
+    private SlashCommandOptionBuilder createSubcommandGroup(@NotNull String name, @NotNull BaseCommand scope) {
         SlashCommandOptionBuilder builder = new SlashCommandOptionBuilder()
                 .setType(SlashCommandOptionType.SUB_COMMAND_GROUP)
                 .setName(name)
-                .setDescription(subScope.description);
+                .setDescription(scope.description);
 
         // Register methods as subcommands
-        for (Map.Entry<String, RegisteredCommand> entry : subScope.subCommands.entries()) {
-            SlashCommandOption option = createSubcommand(entry.getKey(), entry.getValue());
+        for (Map.Entry<String, RegisteredCommand> entry : scope.subCommands.entries()) {
+            String subcommandName = getSubcommandName(entry.getKey());
+            SlashCommandOption option = createSubcommand(subcommandName, entry.getValue());
             builder.addOption(option);
         }
 
         return builder;
+    }
+
+    /**
+     * Gets all registered subcommands of the given scope and creates a new {@link SlashCommandOption subcommand} from them.
+     *
+     * @param scope the scope to create the subcommands from.
+     *
+     * @return the created {@link SlashCommandOption subcommands}.
+     */
+    @NotNull
+    private List<SlashCommandOption> createSubcommands(@NotNull BaseCommand scope) {
+        final List<SlashCommandOption> subcommands = new ArrayList<>();
+
+        for (Map.Entry<String, RegisteredCommand> entry : scope.subCommands.entries()) {
+            if (StringUtils.containsWhitespace(entry.getKey())) {
+                continue; // These are registered as subcommand groups
+            }
+            String subcommandName = getSubcommandName(entry.getKey());
+            subcommands.add(createSubcommand(subcommandName, entry.getValue()));
+        }
+        return subcommands;
     }
 
     /**
@@ -185,18 +238,167 @@ public class SlashBaseCommand extends BaseCommand {
                 .setName(name)
                 .setDescription(command.helpText);
 
-        if (command.method.isAnnotationPresent(SubcommandOptions.class)) {
-            SubcommandOptions options = command.method.getAnnotation(SubcommandOptions.class);
+        // Check parameters
+        for (CommandParameter parameter : command.parameters) {
+            if (isIssuerOnlyParameter(parameter)) { // Ignore issuer-only parameters
+                continue;
+            }
 
-            builder.setAutocompletable(options.isAutoCompletable());
-            builder.setLongMinValue(options.longMinValue());
-            builder.setLongMaxValue(options.longMaxValue());
-            builder.setDecimalMinValue(options.decimalMinValue());
-            builder.setDecimalMaxValue(options.decimalMaxValue());
-            builder.setMinLength(options.minLength());
-            builder.setMaxLength(options.maxLength());
+            createParameter(parameter.getName(), parameter);
+
+            // TODO register parameters
         }
+        return builder.build();
+    }
+
+    /**
+     * Creates a new {@link SlashCommandOption} for the given command parameter.
+     *
+     * @param name the name of the parameter.
+     * @param parameter the parameter to create the option from.
+     *
+     * @return the created {@link SlashCommandOption}.
+     */
+    private SlashCommandOption createParameter(@NotNull String name, @NotNull CommandParameter parameter) {
+        Class<? extends Annotation> paramAnnoClass = co.aikar.commands.javacord.annotation.CommandParameter.class;
+
+        SlashCommandOptionBuilder builder = new SlashCommandOptionBuilder()
+                .setType(getParameterType(parameter))
+                .setName(name)
+                .setDescription(annotations.getAnnotationValue(parameter.getParameter(), paramAnnoClass))
+                .setRequired(!parameter.isOptional());
+
+        // TODO implement
 
         return builder.build();
+    }
+
+    /**
+     * Gets the appropriate {@link SlashCommandOptionType} for the given {@link CommandParameter}.
+     *
+     * @param parameter the parameter to get the type for.
+     *
+     * @return the appropriate {@link SlashCommandOptionType} for the parameter.
+     */
+    private SlashCommandOptionType getParameterType(@NotNull CommandParameter parameter) {
+        Class<?> type = parameter.getType();
+
+        if (Integer.class.isAssignableFrom(type)
+                || Long.class.isAssignableFrom(type)) {
+            return SlashCommandOptionType.LONG;
+        }
+        else if (Boolean.class.isAssignableFrom(type)) {
+            return SlashCommandOptionType.BOOLEAN;
+        }
+        else if (User.class.isAssignableFrom(type)) {
+            return SlashCommandOptionType.USER;
+        }
+        else if (Channel.class.isAssignableFrom(type)) {
+            return SlashCommandOptionType.CHANNEL;
+        }
+        else if (Role.class.isAssignableFrom(type)) {
+            return SlashCommandOptionType.ROLE;
+        }
+        else if (Mentionable.class.isAssignableFrom(type)) {
+            return SlashCommandOptionType.MENTIONABLE;
+        }
+        else if (Double.class.isAssignableFrom(type)
+                || Float.class.isAssignableFrom(type)) { // TODO check if float is supported
+            return SlashCommandOptionType.DECIMAL;
+        }
+        return SlashCommandOptionType.STRING;
+    }
+
+    /**
+     * Creates a new choice with the given name and value for a command parameter.
+     *
+     * @param name the name of the choice.
+     * @param value the value of the choice.
+     *
+     * @return the created {@link SlashCommandOptionChoice}.
+     */
+    private SlashCommandOptionChoice createChoice(@NotNull String name, @NotNull String value) {
+        return SlashCommandOptionChoice.create(name, value);
+    }
+
+    /**
+     * Returns whether the given command parameter's type is registered as an issuer-only parameter,
+     * meaning it should be ignored while registering the command as a slash command.
+     *
+     * @param parameter the parameter to check.
+     *
+     * @return {@code true} if the parameter is an issuer-only parameter, {@code false} otherwise.
+     */
+    private boolean isIssuerOnlyParameter(@NotNull CommandParameter parameter) {
+        Map<Class<?>, ? extends ContextResolver<?, ?>> contextMap = manager.getCommandContexts().contextMap;
+        if (!contextMap.containsKey(parameter.getType())) {
+            return false;
+        }
+        return contextMap.get(parameter.getType()) instanceof IssuerOnlyContextResolver;
+    }
+
+    /**
+     * Creates a new choice with the given name and value for a command parameter.
+     *
+     * @param name the name of the choice.
+     * @param value the value of the choice.
+     *
+     * @return the created {@link SlashCommandOptionChoice}.
+     */
+    private SlashCommandOptionChoice createChoice(@NotNull String name, long value) {
+        return SlashCommandOptionChoice.create(name, value);
+    }
+
+    /**
+     * Gets the correct name of the subcommand from the given string.
+     *
+     * @param name the string to get the subcommand name from.
+     *
+     * @return the correct name of the subcommand.
+     */
+    @NotNull
+    private String getSubcommandName(@NotNull String name) {
+        if (StringUtils.containsWhitespace(name)) {
+            String[] split = StringUtils.splitOnWhitespace(name);
+            return split[split.length - 1];
+        }
+        return name;
+    }
+
+    /**
+     * Registers the given slash command globally.
+     *
+     * @param builder the slash command to register.
+     */
+    private void registerGlobally(@NotNull SlashCommandBuilder builder) {
+        handleException(builder.createGlobal(api));
+    }
+
+    /**
+     * Registers the given slash command for the given server.
+     *
+     * @param builder the slash command to register.
+     * @param server the server to register the slash command for.
+     */
+    private void registerForServer(@NotNull SlashCommandBuilder builder, @NotNull Server server) {
+        handleException(builder.createForServer(api, server.getId()));
+    }
+
+    /**
+     * Handles any exceptions thrown while registering the command as a slash command.
+     *
+     * @param future the future to handle.
+     */
+    private void handleException(CompletableFuture<?> future) {
+        future.exceptionally(throwable -> {
+            String directCause = throwable.getClass().getSimpleName();
+            String rootCause = JavacordUtils.getRootCause(throwable).getClass().getSimpleName();
+            if (directCause.equals(rootCause)) {
+                manager.log(LogLevel.ERROR, "Failed to register slash command '" + commandName + "'. Cause: " + directCause + ".", throwable);
+            } else {
+                manager.log(LogLevel.ERROR, "Failed to register slash command '" + commandName + "'. Cause: " + directCause +  " (" + rootCause + ").", throwable);
+            }
+            return null;
+        });
     }
 }

@@ -22,19 +22,14 @@ import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
 
 /**
- * The {@link SubcommandOptions} annotation is used to define the options for a <b>slash</b> subcommand.
  *
  * @since 0.5.0
- * @author Greenadine
  */
-@Target({ElementType.TYPE, ElementType.METHOD})
+@Target(ElementType.PARAMETER)
 @Retention(RetentionPolicy.RUNTIME)
-public @interface SubcommandOptions {
-    boolean isAutoCompletable() default false;
-    long longMinValue() default Long.MIN_VALUE;
-    long longMaxValue() default Long.MAX_VALUE;
-    double decimalMinValue() default Double.MIN_VALUE;
-    double decimalMaxValue() default Double.MAX_VALUE;
-    long minLength() default 0; // TODO check what the actual default value is
-    long maxLength() default Integer.MAX_VALUE;
+public @interface CommandParameter {
+    String value();
+    long minLength() default 0;
+    long maxLength() default 6000;
+
 }

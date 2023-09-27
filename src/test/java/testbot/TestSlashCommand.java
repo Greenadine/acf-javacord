@@ -21,7 +21,9 @@ import co.aikar.commands.SlashBaseCommand;
 import co.aikar.commands.SlashCommandEvent;
 import co.aikar.commands.annotation.CommandAlias;
 import co.aikar.commands.annotation.Description;
+import co.aikar.commands.annotation.Optional;
 import co.aikar.commands.annotation.Subcommand;
+import co.aikar.commands.javacord.annotation.CommandParameter;
 import co.aikar.commands.javacord.context.Member;
 
 @SuppressWarnings("all")
@@ -30,10 +32,9 @@ import co.aikar.commands.javacord.context.Member;
 public class TestSlashCommand extends SlashBaseCommand {
 
     /*
-     * /slash test
-     * NOTE: This is a test subcommand.
+     * Command signature: /slash test <channel>
      */
-    @Subcommand("test")
+    @Subcommand("test1")
     @Description("Test subcommand.")
     public void onTest(SlashCommandEvent event, Member member) {
         event.newImmediateResponse()
@@ -42,24 +43,48 @@ public class TestSlashCommand extends SlashBaseCommand {
     }
 
     /*
-     * NOTE: This is a test subcommand group.
-     * THESE ARE NOT YET SUPPORTED. These will for now be ignored.
+     * Command signature: /slash ban <user> [reason]
      */
-    @Subcommand("sub")
+    @Subcommand("ban")
+    @Description("'Ban' a user.")
+    public void onBan(SlashCommandEvent event, Member member, @CommandParameter("The reason the member was banned.") @Optional String reason) {
+        if (reason == null) {
+            reason = "No reason provided.";
+        }
+
+        event.newImmediateResponse()
+                .setContent("Banned " + member.getMentionTag() + " for " + reason + ". Not really, but let's pretend.")
+                .respond();
+    }
+
+    /*
+     * This is a test subcommand group.
+     */
+    @Subcommand("group")
     @Description("Test subcommand group.")
-    public class TestSubCommand extends BaseCommand {
+    public class TestSubCommandGroup extends BaseCommand {
 
         /*
-         * /slash sub test
-         * NOTE: This is a test subcommand of a subcommand group.
-         * Because subcommand groups are currently not yet supported, these will for now also be ignored.
+         * Command signature: /slash sub test
+         * This is a test subcommand of a subcommand group.
          */
-        @Subcommand("test")
+        @Subcommand("test2")
         @Description("Test subcommand.")
         public void onTest(SlashCommandEvent event) {
             event.newImmediateResponse()
-                    .setContent("Test success!")
+                    .setContent("Test 2 success!")
                     .respond();
         }
+
+//        @Subcommand("anothergroup")
+//        public class TestSubSubCommandGroup extends BaseCommand {
+//            @Subcommand("test3")
+//            @Description("Test subcommand.")
+//            public void onTest(SlashCommandEvent event) {
+//                event.newImmediateResponse()
+//                        .setContent("Test 3 success!")
+//                        .respond();
+//            }
+//        }
     }
 }
