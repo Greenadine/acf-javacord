@@ -18,7 +18,6 @@ package co.aikar.commands;
 
 import co.aikar.commands.annotation.Split;
 import co.aikar.commands.javacord.annotation.BotUser;
-import co.aikar.commands.javacord.annotation.CrossServer;
 import co.aikar.commands.javacord.annotation.Issuer;
 import co.aikar.commands.javacord.context.Member;
 import co.aikar.commands.javacord.exception.JavacordInvalidCommandArgument;
@@ -103,7 +102,7 @@ public class SlashCommandContexts extends JavacordCommandContexts<SlashCommandEv
         });
 
         /* Javacord-specific resolvers */
-        registerIssuerOnlyContext(SlashCommandEvent.class, c -> c.issuer);
+        registerIssuerOnlyContext(SlashCommandEvent.class, CommandExecutionContext::getIssuer);
         registerIssuerAwareContext(User.class, c -> {
             if (c.hasAnnotation(BotUser.class)) {
                 return api.getYourself();
@@ -263,6 +262,7 @@ public class SlashCommandContexts extends JavacordCommandContexts<SlashCommandEv
             throw new JavacordInvalidCommandArgument(MessageKeys.MUST_BE_A_NUMBER, "{num}", c.getNextArg().getName());
         }
         Number number = c.popNextLong();
+        System.out.println("Number: " + number);
         validateMinMax(c, number, minValue, maxValue);
         return Optional.of(number);
     }
@@ -275,6 +275,7 @@ public class SlashCommandContexts extends JavacordCommandContexts<SlashCommandEv
             throw new JavacordInvalidCommandArgument(MessageKeys.MUST_BE_A_NUMBER, "{num}", c.getNextArg().getName());
         }
         Number number = c.popNextDecimal();
+        System.out.println("Decimal number: " + number);
         validateMinMax(c, number, minValue, maxValue);
         return Optional.of(number);
     }

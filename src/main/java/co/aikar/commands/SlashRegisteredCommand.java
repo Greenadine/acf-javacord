@@ -44,13 +44,13 @@ public class SlashRegisteredCommand extends RegisteredCommand {
         preCommand();
 
         try {
-            this.manager.getCommandConditions().validateConditions(context);
+            manager.getCommandConditions().validateConditions(context);
             Map<String, Object> passedArgs = resolveContexts(event);
             if (passedArgs == null) {
                 return;
             }
 
-            Object obj = this.method.invoke(this.scope, passedArgs.values().toArray());
+            Object obj = method.invoke(scope, passedArgs.values().toArray());
             if (obj instanceof CompletionStage) {
                 CompletionStage<?> future = (CompletionStage<?>) obj;
                 future.exceptionally((t) -> {
@@ -88,6 +88,7 @@ public class SlashRegisteredCommand extends RegisteredCommand {
 
             Set<String> parameterPermissions = parameter.getRequiredPermissions();
             if (args.isEmpty() && !(isLast && type == String[].class)) {
+                // TODO: not sure if this is necessary for slash commands, works fine without it (for now)
 //                if (allowOptional && parameter.getDefaultValue() != null) {
 //                    args.add(parameter.getDefaultValue());
 //                }
@@ -112,18 +113,19 @@ public class SlashRegisteredCommand extends RegisteredCommand {
                     return null;
                 }
             } else {
-                if (!this.manager.hasPermission(event, parameterPermissions)) {
+                if (!manager.hasPermission(event, parameterPermissions)) {
                     event.sendMessage(MessageType.ERROR, MessageKeys.PERMISSION_DENIED_PARAMETER, "{param}", parameterName);
                     throw new JavacordInvalidCommandArgument();
                 }
             }
 
-            if (parameter.getValues() != null) {
-                SlashCommandInteractionOption arg = !args.isEmpty() ? args.get(0) : null;
-
-                // TODO: implement command completions
-                // TODO: implement possible values
-            }
+            // TODO: implement command completions
+            // TODO: implement possible values
+//            if (parameter.getValues() != null) {
+//                SlashCommandInteractionOption arg = !args.isEmpty() ? args.get(0) : null;
+//
+//                // Do stuff
+//            }
 
             Object paramValue = resolver.getContext(context);
 

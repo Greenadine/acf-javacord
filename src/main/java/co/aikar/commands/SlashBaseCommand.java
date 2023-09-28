@@ -17,7 +17,6 @@
 package co.aikar.commands;
 
 import co.aikar.commands.annotation.Description;
-import co.aikar.commands.annotation.PreCommand;
 import co.aikar.commands.annotation.Subcommand;
 import co.aikar.commands.contexts.ContextResolver;
 import co.aikar.commands.contexts.IssuerOnlyContextResolver;
@@ -29,7 +28,6 @@ import co.aikar.commands.javacord.util.StringUtils;
 import com.google.common.base.Preconditions;
 import org.javacord.api.DiscordApi;
 import org.javacord.api.entity.Mentionable;
-import org.javacord.api.entity.channel.Channel;
 import org.javacord.api.entity.channel.ChannelType;
 import org.javacord.api.entity.channel.ServerChannel;
 import org.javacord.api.entity.permission.Role;
@@ -39,9 +37,9 @@ import org.javacord.api.interaction.*;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
-import java.lang.reflect.InvocationTargetException;
-import java.lang.reflect.Method;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Map;
 import java.util.concurrent.CompletableFuture;
 
 /**
@@ -62,6 +60,7 @@ public class SlashBaseCommand extends BaseCommand {
     /* TODO:
      *  - Add support for name localizations
      *  - Add support for description localizations
+     *  - Add support for parameter completions/possible values (in SlashRegisteredCommand#resolveContexts)
      */
     
     private DiscordApi api;
@@ -75,6 +74,35 @@ public class SlashBaseCommand extends BaseCommand {
         registerAsSlashCommand();
     }
 
+    /**
+     * @deprecated Tab completion is (currently) not supported for slash commands.
+     * @throws UnsupportedOperationException always.
+     */
+    @Override
+    @Deprecated
+    public List<String> tabComplete(CommandIssuer issuer, String commandLabel, String[] args) {
+        throw new UnsupportedOperationException("Tab completion is (currently) not supported for slash commands.");
+    }
+
+    /**
+     * @deprecated Tab completion is (currently) not supported for slash commands.
+     * @throws UnsupportedOperationException always.
+     */
+    @Override
+    @Deprecated
+    public List<String> tabComplete(CommandIssuer issuer, String commandLabel, String[] args, boolean isAsync) throws IllegalArgumentException {
+        throw new UnsupportedOperationException("Tab completion is (currently) not supported for slash commands.");
+    }
+
+    /**
+     * @deprecated Feature is not necessary, as Discord shows the syntax of a command in the slash command UI.
+     * @throws UnsupportedOperationException always.
+     */
+    @Override
+    @Deprecated
+    public void showSyntax(CommandIssuer issuer, RegisteredCommand cmd) {
+        throw new UnsupportedOperationException("Showing the syntax of a slash command is not supported.");
+    }
 
     /**
      * Initializes fields used for registering the command as a slash command.
@@ -94,7 +122,7 @@ public class SlashBaseCommand extends BaseCommand {
                 "Command description must be between 1-100 characters.");
 
         // Create base slash command
-        SlashCommandBuilder builder = createAndApplyOptions(getClass(), commandName, description);
+        SlashCommandBuilder builder = createAndApplyOptions();
 
         // Register all direct subcommands
         createSubcommands(this, false).forEach(builder::addOption);
@@ -123,24 +151,20 @@ public class SlashBaseCommand extends BaseCommand {
     }
 
     /**
-     * Creates a new {@link SlashCommandBuilder} from the given command with the given name and description
-     * and applies the options from the {@link CommandOptions} annotation.
-     *
-     * @param clazz the command's class.
-     * @param name the name of the command.
-     * @param description the description of the command.
+     * Creates a new {@link SlashCommandBuilder} for this command and applies the options from the
+     * {@link CommandOptions} annotation, if present.
      *
      * @return the created {@link SlashCommandBuilder}.
      */
     @NotNull
-    private SlashCommandBuilder createAndApplyOptions(@NotNull Class<? extends BaseCommand> clazz, @NotNull String name, @NotNull String description) {
+    private SlashCommandBuilder createAndApplyOptions() {
         SlashCommandBuilder builder = new SlashCommandBuilder()
-                .setName(name)
+                .setName(commandName)
                 .setDescription(description);
 
         // TODO test if this works as intended
-        if (clazz.isAnnotationPresent(CommandOptions.class)) {
-            final CommandOptions options = clazz.getAnnotation(CommandOptions.class);
+        if (getClass().isAnnotationPresent(CommandOptions.class)) {
+            final CommandOptions options = getClass().getAnnotation(CommandOptions.class);
 
             builder.setEnabledInDms(options.enabledInDms());
             builder.setNsfw(options.isNsfw());
@@ -262,8 +286,10 @@ public class SlashBaseCommand extends BaseCommand {
      *
      * @return the created {@link SlashCommandOption}.
      */
+    @Nullable
     private SlashCommandOption createParameter(@NotNull String name, @NotNull CommandParameter parameter) {
         SlashCommandOptionType parameterType = getParameterType(parameter);
+        System.out.println("Parameter type for '" + parameter.getName() + "' of command '" + commandName + "' is '" + parameterType.name() + "'.");
         if (parameterType == SlashCommandOptionType.UNKNOWN) {
             manager.log(LogLevel.ERROR, "Invalid parameter type '" + parameter.getType().getSimpleName() + "' for parameter '" + parameter.getName() + "'.");
             return null;
@@ -353,6 +379,7 @@ public class SlashBaseCommand extends BaseCommand {
      * @param parameter the command parameter to register the choices for.
      */
     private void registerChoices(@NotNull SlashCommandOptionBuilder builder, @NotNull CommandParameter parameter) {
+        // TODO: check if this works as intended
         if (annotations.hasAnnotation(parameter.getParameter(), Choices.class)) {
             String choices = annotations.getAnnotationValue(parameter.getParameter(), Choices.class);
             for (String choice : choices.split(",")) {
@@ -373,6 +400,12 @@ public class SlashBaseCommand extends BaseCommand {
 
 //                System.out.println("- Added choice '" + choiceName + "' with value '" + choiceValue + "'.");
 
+                try {
+                    long value = Long.parseLong(choiceValue);
+                    builder.addChoice(createChoice(choiceName, value));
+                    continue;
+                } catch (NumberFormatException ignored) { }
+
                 builder.addChoice(createChoice(choiceName, choiceValue));
             }
         }
@@ -388,70 +421,28 @@ public class SlashBaseCommand extends BaseCommand {
     private SlashCommandOptionType getParameterType(@NotNull CommandParameter parameter) {
         Class<?> type = parameter.getType();
 
-        if (Integer.class.isAssignableFrom(type)
-                || Long.class.isAssignableFrom(type)) {
-            return SlashCommandOptionType.LONG;
-        }
-        else if (Boolean.class.isAssignableFrom(type)) {
-            return SlashCommandOptionType.BOOLEAN;
-        }
-        else if (User.class.isAssignableFrom(type)) {
-            return SlashCommandOptionType.USER;
-        }
-        else if (Channel.class.isAssignableFrom(type)) {
-            return SlashCommandOptionType.CHANNEL;
-        }
-        else if (Role.class.isAssignableFrom(type)) {
-            return SlashCommandOptionType.ROLE;
-        }
-        else if (Mentionable.class.isAssignableFrom(type)) {
-            return SlashCommandOptionType.MENTIONABLE;
-        }
-        else if (Double.class.isAssignableFrom(type)
-                || Float.class.isAssignableFrom(type)) { // TODO check if float is supported
+        if (isInstanceOfAny(type, Double.class, Double.TYPE, Float.class, Float.TYPE)) {
             return SlashCommandOptionType.DECIMAL;
         }
-        return SlashCommandOptionType.STRING;
-    }
-
-    /**
-     * Creates a new choice with the given name and value for a command parameter.
-     *
-     * @param name the name of the choice.
-     * @param value the value of the choice.
-     *
-     * @return the created {@link SlashCommandOptionChoice}.
-     */
-    private SlashCommandOptionChoice createChoice(@NotNull String name, @NotNull String value) {
-        return SlashCommandOptionChoice.create(name, value);
-    }
-
-    /**
-     * Creates a new choice with the given name and value for a command parameter.
-     *
-     * @param name the name of the choice.
-     * @param value the value of the choice.
-     *
-     * @return the created {@link SlashCommandOptionChoice}.
-     */
-    private SlashCommandOptionChoice createChoice(@NotNull String name, long value) {
-        return SlashCommandOptionChoice.create(name, value);
-    }
-
-    /**
-     * Gets the correct name of the subcommand from the given string.
-     *
-     * @param name the string to get the subcommand name from.
-     *
-     * @return the correct name of the subcommand.
-     */
-    @NotNull
-    private String getSubcommandName(@NotNull String name) {
-        if (StringUtils.containsWhitespace(name)) {
-            String[] split = StringUtils.splitOnWhitespace(name);
-            return split[split.length - 1];
+        else if (isInstanceOfAny(type, Long.class, Long.TYPE, Integer.class, Integer.TYPE, Short.class, Short.TYPE, Byte.class, Byte.TYPE)) {
+            return SlashCommandOptionType.LONG;
         }
-        return name;
+        else if (isInstanceOfAny(type, Boolean.class, Boolean.TYPE)) {
+            return SlashCommandOptionType.BOOLEAN;
+        }
+        else if (isInstanceOf(type, User.class)) {
+            return SlashCommandOptionType.USER;
+        }
+        else if (isInstanceOf(type, ServerChannel.class)) {
+            return SlashCommandOptionType.CHANNEL;
+        }
+        else if (isInstanceOf(type, Role.class)) {
+            return SlashCommandOptionType.ROLE;
+        }
+        else if (isInstanceOf(type, Mentionable.class)) {
+            return SlashCommandOptionType.MENTIONABLE;
+        }
+        return SlashCommandOptionType.STRING;
     }
 
     /**
@@ -494,7 +485,7 @@ public class SlashBaseCommand extends BaseCommand {
      *
      * @param future the future to handle.
      */
-    private void handleException(CompletableFuture<?> future) {
+    private void handleException(@NotNull CompletableFuture<?> future) {
         future.exceptionally(throwable -> {
             String directCause = throwable.getClass().getSimpleName();
             String rootCause = JavacordUtils.getRootCause(throwable).getClass().getSimpleName();
@@ -505,5 +496,74 @@ public class SlashBaseCommand extends BaseCommand {
             }
             return null;
         });
+    }
+
+    /**
+     * Returns whether the given type is assignable from any of the given types.
+     *
+     * @param type the type to check.
+     * @param types the types to check against.
+     *
+     * @return {@code true} if the type is assignable from any of the given types, {@code false} otherwise.
+     */
+    private static boolean isInstanceOfAny(@NotNull Class<?> type, Class<?> @NotNull... types) {
+        for (Class<?> t : types) {
+            if (t.isAssignableFrom(type)) {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    /**
+     * Returns whether the given type is assignable from the given other type.
+     *
+     * @param type the type to check.
+     * @param other the other type to check against.
+     *
+     * @return {@code true} if the type is assignable from the other type, {@code false} otherwise.
+     */
+    private static boolean isInstanceOf(@NotNull Class<?> type, @NotNull Class<?> other) {
+        return other.isAssignableFrom(type);
+    }
+
+    /**
+     * Creates a new choice with the given name and value for a command parameter.
+     *
+     * @param name the name of the choice.
+     * @param value the value of the choice.
+     *
+     * @return the created {@link SlashCommandOptionChoice}.
+     */
+    private static SlashCommandOptionChoice createChoice(@NotNull String name, @NotNull String value) {
+        return SlashCommandOptionChoice.create(name, value);
+    }
+
+    /**
+     * Creates a new choice with the given name and value for a command parameter.
+     *
+     * @param name the name of the choice.
+     * @param value the value of the choice.
+     *
+     * @return the created {@link SlashCommandOptionChoice}.
+     */
+    private static SlashCommandOptionChoice createChoice(@NotNull String name, long value) {
+        return SlashCommandOptionChoice.create(name, value);
+    }
+
+    /**
+     * Gets the correct name of the subcommand from the given string.
+     *
+     * @param name the string to get the subcommand name from.
+     *
+     * @return the correct name of the subcommand.
+     */
+    @NotNull
+    private static String getSubcommandName(@NotNull String name) {
+        if (StringUtils.containsWhitespace(name)) {
+            String[] split = StringUtils.splitOnWhitespace(name);
+            return split[split.length - 1];
+        }
+        return name;
     }
 }
