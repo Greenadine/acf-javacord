@@ -16,6 +16,8 @@
 
 package co.aikar.commands;
 
+import co.aikar.commands.annotation.Description;
+import co.aikar.commands.annotation.Subcommand;
 import com.google.common.base.Preconditions;
 import org.javacord.api.DiscordApi;
 import org.javacord.api.event.interaction.InteractionCreateEvent;
@@ -101,6 +103,8 @@ public class SlashCommandManager
     @Override
     @SuppressWarnings("rawtypes")
     public RegisteredCommand createRegisteredCommand(BaseCommand command, String cmdname, Method method, String prefSubcommand) {
+        Preconditions.checkArgument(method.isAnnotationPresent(Subcommand.class), "Subcommand is missing @Subcommand annotation.");
+        Preconditions.checkArgument(method.isAnnotationPresent(Description.class), "Subcommand is missing @Description annotation.");
         return new SlashRegisteredCommand(command, cmdname, method, prefSubcommand);
     }
 

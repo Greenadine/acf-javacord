@@ -27,4 +27,22 @@ public abstract class JavacordCommandExecutionContext<CE extends JavacordCommand
     JavacordCommandExecutionContext(RegisteredCommand cmd, CommandParameter param, CE event, List<String> args, int index, Map<String, Object> passedArgs) {
         super(cmd, param, event, args, index, passedArgs);
     }
+
+    /**
+     * Checks whether the command was issued in a server channel.
+     *
+     * @return {@code true} if the command was issued in a server channel, {@code false} otherwise.
+     */
+    public boolean isInServer() {
+        return issuer.isInServer();
+    }
+
+    /**
+     * Checks whether the command was issued in a private channel.
+     *
+     * @return {@code true} if the command was issued in a private channel, {@code false} otherwise.
+     */
+    public boolean isInPrivate() {
+        return issuer.isInPrivate();
+    }
 }

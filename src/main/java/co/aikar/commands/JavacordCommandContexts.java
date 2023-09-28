@@ -66,19 +66,14 @@ public abstract class JavacordCommandContexts<CE extends JavacordCommandEvent, C
         }
     }
 
-    protected <T> void registerContext(Class<T> clazz1, Class<T> clazz2, ContextResolver<T, CEC> supplier) {
-        registerContext(clazz1, supplier);
-        registerContext(clazz2, supplier);
+    @SuppressWarnings("unchecked")
+    protected <T> void registerContext(Class<? extends T> clazz1, Class<? extends T> clazz2, ContextResolver<? extends T, CEC> supplier) {
+        registerContext((Class<T>) clazz1, (ContextResolver<T, CEC> ) supplier);
+        registerContext((Class<T>) clazz2, (ContextResolver<T, CEC> ) supplier);
     }
 
     protected <T> void registerOptionalContext(Class<T> clazz1, Class<T> clazz2, OptionalContextResolver<T, CEC> supplier) {
         registerOptionalContext(clazz1, supplier);
         registerOptionalContext(clazz2, supplier);
-    }
-
-    protected <T> void registerContext(ContextResolver<T, CEC> supplier, Class<T>... classes) {
-        for (Class<T> clazz : classes) {
-            registerContext(clazz, supplier);
-        }
     }
 }

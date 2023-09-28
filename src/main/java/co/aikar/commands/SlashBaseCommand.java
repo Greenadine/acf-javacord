@@ -31,6 +31,7 @@ import org.javacord.api.DiscordApi;
 import org.javacord.api.entity.Mentionable;
 import org.javacord.api.entity.channel.Channel;
 import org.javacord.api.entity.channel.ChannelType;
+import org.javacord.api.entity.channel.ServerChannel;
 import org.javacord.api.entity.permission.Role;
 import org.javacord.api.entity.server.Server;
 import org.javacord.api.entity.user.User;
@@ -310,16 +311,35 @@ public class SlashBaseCommand extends BaseCommand {
                 registerChoices(builder, parameter);
                 break;
             case CHANNEL:
-                if (flags.containsKey("channeltypes")) {
-                    String[] channelTypes = flags.get("channeltypes").split(",");
-                    for (String channelType : channelTypes) {
-                        try {
-//                            System.out.println("- Added channel type '" + channelType + "'.");
-                            builder.addChannelType(ChannelType.valueOf(channelType.toUpperCase()));
-                        } catch (IllegalArgumentException ex) {
-                            manager.log(LogLevel.ERROR, "Invalid channel type '" + channelType + "' for parameter '" + parameter.getName() + "'.");
+                Class<?> paramType = parameter.getType();
+
+                // TODO: check if this works as intended
+                switch (paramType.getSimpleName()) {
+                    case "ServerChannel":
+                        // Add all server channel types
+                        for (ChannelType channelType : ChannelType.values()) {
+                            if (channelType.name().startsWith("SERVER_")) {
+                                builder.addChannelType(channelType);
+                            }
                         }
-                    }
+                        break;
+                    case "ServerTextChannel":
+                        builder.addChannelType(ChannelType.SERVER_TEXT_CHANNEL);
+                        break;
+                    case "ServerVoiceChannel":
+                        builder.addChannelType(ChannelType.SERVER_VOICE_CHANNEL);
+                        break;
+                    case "ServerForumChannel":
+                        builder.addChannelType(ChannelType.SERVER_FORUM_CHANNEL);
+                        break;
+                    case "ServerThreadChannel":
+                        builder.addChannelType(ChannelType.SERVER_PRIVATE_THREAD);
+                        builder.addChannelType(ChannelType.SERVER_PUBLIC_THREAD);
+                        builder.addChannelType(ChannelType.SERVER_NEWS_THREAD);
+                        break;
+                    case "ServerStageVoiceChannel":
+                        builder.addChannelType(ChannelType.SERVER_STAGE_VOICE_CHANNEL);
+                        break;
                 }
                 break;
         }

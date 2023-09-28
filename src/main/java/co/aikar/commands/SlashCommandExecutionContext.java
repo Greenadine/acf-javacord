@@ -16,9 +16,11 @@
 
 package co.aikar.commands;
 
+import com.google.common.base.Preconditions;
 import org.javacord.api.entity.Attachment;
 import org.javacord.api.entity.Mentionable;
 import org.javacord.api.entity.channel.Channel;
+import org.javacord.api.entity.channel.ServerChannel;
 import org.javacord.api.entity.permission.Role;
 import org.javacord.api.entity.user.User;
 import org.javacord.api.interaction.SlashCommandInteractionOption;
@@ -30,6 +32,7 @@ import java.util.List;
 /**
  * @since 0.5.0
  */
+@SuppressWarnings("OptionalGetWithoutIsPresent")
 public class SlashCommandExecutionContext extends JavacordCommandExecutionContext<SlashCommandEvent, SlashCommandExecutionContext> {
 
     private final List<SlashCommandInteractionOption> args;
@@ -86,12 +89,60 @@ public class SlashCommandExecutionContext extends JavacordCommandExecutionContex
     }
 
     /**
+     * Removes and returns the next argument from the list of arguments as a string.
+     *
+     * @return the next argument as a string.
+     *
+     * @throws IllegalArgumentException if the next argument is not a string.
+     */
+    public String popNextString() {
+        Preconditions.checkArgument(isNextString(), "Next argument is not a string.");
+        return popNextArg().getStringValue().orElse(null);
+    }
+
+    /**
+     * Gets the next argument from the list of arguments as a string.
+     *
+     * @return the next argument as a string.
+     *
+     * @throws IllegalArgumentException if the next argument is not a string.
+     */
+    public String getNextString() {
+        Preconditions.checkArgument(isNextString(), "Next argument is not a string.");
+        return getNextArg().getStringValue().orElse(null);
+    }
+
+    /**
      * Checks whether the next argument in the list of arguments is a string.
      *
      * @return {@code true} if the next argument is a string, {@code false} otherwise.
      */
     public boolean isNextString() {
-        return getNextArg().getStringValue().isPresent();
+        return !args.isEmpty() && getNextArg().getStringValue().isPresent();
+    }
+
+    /**
+     * Removes and returns the next argument from the list of arguments as a {@code boolean}.
+     *
+     * @return the next argument as a {@code boolean}.
+     *
+     * @throws IllegalArgumentException if the next argument is not a {@code boolean}.
+     */
+    public boolean popNextBoolean() {
+        Preconditions.checkArgument(isNextBoolean(), "Next argument is not a boolean.");
+        return popNextArg().getBooleanValue().get();
+    }
+
+    /**
+     * Gets the next argument from the list of arguments as a {@code boolean}.
+     *
+     * @return the next argument as a {@code boolean}.
+     *
+     * @throws IllegalArgumentException if the next argument is not a {@code boolean}.
+     */
+    public boolean getNextBoolean() {
+        Preconditions.checkArgument(isNextBoolean(), "Next argument is not a boolean.");
+        return getNextArg().getBooleanValue().get();
     }
 
     /**
@@ -100,7 +151,31 @@ public class SlashCommandExecutionContext extends JavacordCommandExecutionContex
      * @return {@code true} if the next argument is a {@code boolean}, {@code false} otherwise.
      */
     public boolean isNextBoolean() {
-        return getNextArg().getBooleanValue().isPresent();
+        return !args.isEmpty() && getNextArg().getBooleanValue().isPresent();
+    }
+
+    /**
+     * Removes and returns the next argument from the list of arguments as a {@code boolean}.
+     *
+     * @return the next argument as a {@code boolean}.
+     *
+     * @throws IllegalArgumentException if the next argument is not a {@code boolean}.
+     */
+    public long popNextLong() {
+        Preconditions.checkArgument(isNextLong(), "Next argument is not a long.");
+        return popNextArg().getLongValue().get();
+    }
+
+    /**
+     * Gets the next argument from the list of arguments as a {@code boolean}.
+     *
+     * @return the next argument as a {@code boolean}.
+     *
+     * @throws IllegalArgumentException if the next argument is not a {@code boolean}.
+     */
+    public long getNextLong() {
+        Preconditions.checkArgument(isNextLong(), "Next argument is not a long.");
+        return getNextArg().getLongValue().get();
     }
 
     /**
@@ -109,7 +184,31 @@ public class SlashCommandExecutionContext extends JavacordCommandExecutionContex
      * @return {@code true} if the next argument is a {@code long}, {@code false} otherwise.
      */
     public boolean isNextLong() {
-        return getNextArg().getLongValue().isPresent();
+        return !args.isEmpty() && getNextArg().getLongValue().isPresent();
+    }
+
+    /**
+     * Removes and returns the next argument from the list of arguments as a {@code boolean}.
+     *
+     * @return the next argument as a {@code boolean}.
+     *
+     * @throws IllegalArgumentException if the next argument is not a {@code boolean}.
+     */
+    public double popNextDecimal() {
+        Preconditions.checkArgument(isNextDecimal(), "Next argument is not a decimal.");
+        return popNextArg().getDecimalValue().get();
+    }
+
+    /**
+     * Gets the next argument from the list of arguments as a {@code boolean}.
+     *
+     * @return the next argument as a {@code boolean}.
+     *
+     * @throws IllegalArgumentException if the next argument is not a {@code boolean}.
+     */
+    public double getNextDecimal() {
+        Preconditions.checkArgument(isNextDecimal(), "Next argument is not a decimal.");
+        return getNextArg().getDecimalValue().get();
     }
 
     /**
@@ -118,7 +217,31 @@ public class SlashCommandExecutionContext extends JavacordCommandExecutionContex
      * @return {@code true} if the next argument is a {@code double}, {@code false} otherwise.
      */
     public boolean isNextDecimal() {
-        return getNextArg().getDecimalValue().isPresent();
+        return !args.isEmpty() && getNextArg().getDecimalValue().isPresent();
+    }
+
+    /**
+     * Removes and returns the next argument from the list of arguments as a {@code boolean}.
+     *
+     * @return the next argument as a {@code boolean}.
+     *
+     * @throws IllegalArgumentException if the next argument is not a {@code boolean}.
+     */
+    public User popNextUser() {
+        Preconditions.checkArgument(isNextUser(), "Next argument is not a user.");
+        return popNextArg().getUserValue().get();
+    }
+
+    /**
+     * Gets the next argument from the list of arguments as a {@code boolean}.
+     *
+     * @return the next argument as a {@code boolean}.
+     *
+     * @throws IllegalArgumentException if the next argument is not a {@code boolean}.
+     */
+    public User getNextUser() {
+        Preconditions.checkArgument(isNextUser(), "Next argument is not a user.");
+        return getNextArg().getUserValue().get();
     }
 
     /**
@@ -127,7 +250,31 @@ public class SlashCommandExecutionContext extends JavacordCommandExecutionContex
      * @return {@code true} if the next argument is a user, {@code false} otherwise.
      */
     public boolean isNextUser() {
-        return getNextArg().getUserValue().isPresent();
+        return !args.isEmpty() && getNextArg().getUserValue().isPresent();
+    }
+
+    /**
+     * Removes and returns the next argument from the list of arguments as a {@code boolean}.
+     *
+     * @return the next argument as a {@code boolean}.
+     *
+     * @throws IllegalArgumentException if the next argument is not a {@code boolean}.
+     */
+    public ServerChannel popNextChannel() {
+        Preconditions.checkArgument(isNextChannel(), "Next argument is not a server channel.");
+        return popNextArg().getChannelValue().get();
+    }
+
+    /**
+     * Gets the next argument from the list of arguments as a {@code boolean}.
+     *
+     * @return the next argument as a {@code boolean}.
+     *
+     * @throws IllegalArgumentException if the next argument is not a {@code boolean}.
+     */
+    public ServerChannel getNextChannel() {
+        Preconditions.checkArgument(isNextChannel(), "Next argument is not a server channel.");
+        return getNextArg().getChannelValue().get();
     }
 
     /**
@@ -136,7 +283,31 @@ public class SlashCommandExecutionContext extends JavacordCommandExecutionContex
      * @return {@code true} if the next argument is a channel, {@code false} otherwise.`
      */
     public boolean isNextChannel() {
-        return getNextArg().getChannelValue().isPresent();
+        return !args.isEmpty() && getNextArg().getChannelValue().isPresent();
+    }
+
+    /**
+     * Removes and returns the next argument from the list of arguments as a {@code boolean}.
+     *
+     * @return the next argument as a {@code boolean}.
+     *
+     * @throws IllegalArgumentException if the next argument is not a {@code boolean}.
+     */
+    public Role popNextRole() {
+        Preconditions.checkArgument(isNextRole(), "Next argument is not a role.");
+        return popNextArg().getRoleValue().get();
+    }
+
+    /**
+     * Gets the next argument from the list of arguments as a {@code boolean}.
+     *
+     * @return the next argument as a {@code boolean}.
+     *
+     * @throws IllegalArgumentException if the next argument is not a {@code boolean}.
+     */
+    public Role getNextRole() {
+        Preconditions.checkArgument(isNextRole(), "Next argument is not a role.");
+        return getNextArg().getRoleValue().get();
     }
 
     /**
@@ -145,7 +316,31 @@ public class SlashCommandExecutionContext extends JavacordCommandExecutionContex
      * @return {@code true} if the next argument is a role, {@code false} otherwise.`
      */
     public boolean isNextRole() {
-        return getNextArg().getRoleValue().isPresent();
+        return !args.isEmpty() && getNextArg().getRoleValue().isPresent();
+    }
+
+    /**
+     * Removes and returns the next argument from the list of arguments as a {@code boolean}.
+     *
+     * @return the next argument as a {@code boolean}.
+     *
+     * @throws IllegalArgumentException if the next argument is not a {@code boolean}.
+     */
+    public Mentionable popNextMentionable() {
+        Preconditions.checkArgument(isNextMentionable(), "Next argument is not a mentionable.");
+        return popNextArg().getMentionableValue().get();
+    }
+
+    /**
+     * Gets the next argument from the list of arguments as a {@code boolean}.
+     *
+     * @return the next argument as a {@code boolean}.
+     *
+     * @throws IllegalArgumentException if the next argument is not a {@code boolean}.
+     */
+    public Mentionable getNextMentionable() {
+        Preconditions.checkArgument(isNextMentionable(), "Next argument is not a mentionable.");
+        return getNextArg().getMentionableValue().get();
     }
 
     /**
@@ -155,6 +350,30 @@ public class SlashCommandExecutionContext extends JavacordCommandExecutionContex
      */
     public boolean isNextMentionable() {
         return getNextArg().getMentionableValue().isPresent();
+    }
+
+    /**
+     * Removes and returns the next argument from the list of arguments as a {@code boolean}.
+     *
+     * @return the next argument as a {@code boolean}.
+     *
+     * @throws IllegalArgumentException if the next argument is not a {@code boolean}.
+     */
+    public Attachment popNextAttachment() {
+        Preconditions.checkArgument(isNextAttachment(), "Next argument is not an attachment.");
+        return popNextArg().getAttachmentValue().get();
+    }
+
+    /**
+     * Gets the next argument from the list of arguments as a {@code boolean}.
+     *
+     * @return the next argument as a {@code boolean}.
+     *
+     * @throws IllegalArgumentException if the next argument is not a {@code boolean}.
+     */
+    public Attachment getNextAttachment() {
+        Preconditions.checkArgument(isNextAttachment(), "Next argument is not an attachment.");
+        return getNextArg().getAttachmentValue().get();
     }
 
     /**
