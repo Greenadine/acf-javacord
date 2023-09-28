@@ -19,9 +19,10 @@ package testbot;
 import co.aikar.commands.SlashBaseCommand;
 import co.aikar.commands.SlashCommandEvent;
 import co.aikar.commands.annotation.*;
+import co.aikar.commands.javacord.annotation.Choices;
 import co.aikar.commands.javacord.annotation.Issuer;
 import co.aikar.commands.javacord.context.Member;
-import org.javacord.api.entity.channel.ServerChannel;
+import org.javacord.api.entity.channel.*;
 import org.javacord.api.entity.user.User;
 
 @SuppressWarnings("all")
@@ -54,12 +55,30 @@ public class TestSlashCommand extends SlashBaseCommand {
                 .respond();
     }
 
+    @Subcommand("stringchoice")
+    @Description("Pick a choice.")
+    public void onStringchoice(SlashCommandEvent event,
+                         @Description("Your choice.") @Choices("test1=one,test2=two,test3=three") String message) {
+        event.newImmediateResponse()
+                .setContent(message) // Will send "one" if "test1" is selected, "two" if "test2" is selected, etc.
+                .respond();
+    }
+
     @Subcommand("long")
     @Description("Send a long as the bot.")
     public void onLong(SlashCommandEvent event,
                        @Description("The long to send.") long l) {
         event.newImmediateResponse()
                 .setContent("Long: " + l)
+                .respond();
+    }
+
+    @Subcommand("longchoice")
+    @Description("Send a long as the bot.")
+    public void onLongchoice(SlashCommandEvent event,
+                       @Description("Your choice.") @Choices("test1=1.0,test2=2,test3=3") long l) {
+        event.newImmediateResponse()
+                .setContent("Long: " + l) // Will be 1 if "test1" is selected, 2 if "test2" is selected, etc.
                 .respond();
     }
 
@@ -83,7 +102,7 @@ public class TestSlashCommand extends SlashBaseCommand {
 
     @Subcommand("char")
     @Description("Send a character as the bot.")
-    public void onDouble(SlashCommandEvent event,
+    public void onChar(SlashCommandEvent event,
                          @Description("The double to send.") char c) {
         event.newImmediateResponse()
                 .setContent("Double: " + c)
@@ -122,7 +141,52 @@ public class TestSlashCommand extends SlashBaseCommand {
     public void onChannel(SlashCommandEvent event,
                           @Description("The channel to get the name of.") ServerChannel channel) {
         event.newImmediateResponse()
-                .setContent("Channel name: " + channel.getName())
+                .setContent("Server channel name: " + channel.getName())
+                .respond();
+    }
+
+    @Subcommand("textchannel")
+    @Description("Get the name of a text channel.")
+    public void onTextchannel(SlashCommandEvent event,
+                          @Description("The text channel to get the name of.") ServerTextChannel channel) {
+        event.newImmediateResponse()
+                .setContent("Server text channel name: " + channel.getName())
+                .respond();
+    }
+
+    @Subcommand("voicechannel")
+    @Description("Get the name of a voice channel.")
+    public void onVoicechannel(SlashCommandEvent event,
+                              @Description("The voice channel to get the name of.") ServerTextChannel channel) {
+        event.newImmediateResponse()
+                .setContent("Server voice channel name: " + channel.getName())
+                .respond();
+    }
+
+    @Subcommand("stagevoicechannel")
+    @Description("Get the name of a stage voice channel.")
+    public void onStagevoicechannel(SlashCommandEvent event,
+                               @Description("The stage channel to get the name of.") ServerStageVoiceChannel channel) {
+        event.newImmediateResponse()
+                .setContent("Server stage voice channel name: " + channel.getName())
+                .respond();
+    }
+
+    @Subcommand("forumchannel")
+    @Description("Get the name of a forum channel.")
+    public void onForumChannel(SlashCommandEvent event,
+                               @Description("The forum channel to get the name of.") ServerForumChannel channel) {
+        event.newImmediateResponse()
+                .setContent("Server forum channel name: " + channel.getName())
+                .respond();
+    }
+
+    @Subcommand("threadchannel")
+    @Description("Get the name of a thread channel.")
+    public void onThreadchannel(SlashCommandEvent event,
+                               @Description("The thread channel to get the name of.") ServerThreadChannel channel) {
+        event.newImmediateResponse()
+                .setContent("Server thread channel name: " + channel.getName())
                 .respond();
     }
 }

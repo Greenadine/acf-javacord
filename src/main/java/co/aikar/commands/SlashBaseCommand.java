@@ -37,9 +37,7 @@ import org.javacord.api.interaction.*;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 import java.util.concurrent.CompletableFuture;
 
 /**
@@ -58,9 +56,12 @@ import java.util.concurrent.CompletableFuture;
 public class SlashBaseCommand extends BaseCommand {
 
     /* TODO:
-     *  - Add support for name localizations
-     *  - Add support for description localizations
-     *  - Add support for parameter completions/possible values (in SlashRegisteredCommand#resolveContexts)
+     *  - Add support for parameter completions/possible values;
+     *  - Add support for more types to choices. Choices currently only support strings and numbers (except for doubles
+     *    and floats. This might be possible by allowing contexts to be resolved through strings, as Discord only allows
+     *    for strings and longs to be used for the values of choices;
+     *  - Add support for name localizations;
+     *  - Add support for description localizations;
      */
     
     private DiscordApi api;
@@ -72,36 +73,6 @@ public class SlashBaseCommand extends BaseCommand {
         
         init();
         registerAsSlashCommand();
-    }
-
-    /**
-     * @deprecated Tab completion is (currently) not supported for slash commands.
-     * @throws UnsupportedOperationException always.
-     */
-    @Override
-    @Deprecated
-    public List<String> tabComplete(CommandIssuer issuer, String commandLabel, String[] args) {
-        throw new UnsupportedOperationException("Tab completion is (currently) not supported for slash commands.");
-    }
-
-    /**
-     * @deprecated Tab completion is (currently) not supported for slash commands.
-     * @throws UnsupportedOperationException always.
-     */
-    @Override
-    @Deprecated
-    public List<String> tabComplete(CommandIssuer issuer, String commandLabel, String[] args, boolean isAsync) throws IllegalArgumentException {
-        throw new UnsupportedOperationException("Tab completion is (currently) not supported for slash commands.");
-    }
-
-    /**
-     * @deprecated Feature is not necessary, as Discord shows the syntax of a command in the slash command UI.
-     * @throws UnsupportedOperationException always.
-     */
-    @Override
-    @Deprecated
-    public void showSyntax(CommandIssuer issuer, RegisteredCommand cmd) {
-        throw new UnsupportedOperationException("Showing the syntax of a slash command is not supported.");
     }
 
     /**
@@ -191,12 +162,15 @@ public class SlashBaseCommand extends BaseCommand {
 
         if (!scope.subScopes.isEmpty()) {
             for (BaseCommand subScope : scope.subScopes) {
+                if (!(subScope instanceof SlashBaseCommand)) {
+                    continue;
+                }
                 if (!annotations.hasAnnotation(subScope.getClass(), Subcommand.class)) {
                     manager.log(LogLevel.ERROR, "Subcommand group '" + subScope.getClass().getSimpleName() + "' of scope '" + scope.commandName + "' is missing the @Subcommand annotation.");
                 }
 
                 String name = annotations.getAnnotationValue(subScope.getClass(), Subcommand.class);
-                SlashCommandOptionBuilder builder = createSubcommandGroup(name, subScope);
+                SlashCommandOptionBuilder builder = createSubcommandGroup(name, (SlashBaseCommand) subScope);
 
                 // Register nested subcommand groups
                 // TODO this does not work with a nested class within a nested class, for whatever reason
@@ -216,7 +190,7 @@ public class SlashBaseCommand extends BaseCommand {
      * @return the created {@link SlashCommandOptionBuilder}.
      */
     @NotNull
-    private SlashCommandOptionBuilder createSubcommandGroup(@NotNull String name, @NotNull BaseCommand scope) {
+    private SlashCommandOptionBuilder createSubcommandGroup(@NotNull String name, @NotNull SlashBaseCommand scope) {
         return new SlashCommandOptionBuilder()
                 .setType(SlashCommandOptionType.SUB_COMMAND_GROUP)
                 .setName(name)
@@ -232,17 +206,23 @@ public class SlashBaseCommand extends BaseCommand {
      * @return the created {@link SlashCommandOption subcommands}.
      */
     @NotNull
-    private List<SlashCommandOption> createSubcommands(@NotNull BaseCommand scope, boolean isSubcommandGroup) {
-        final List<SlashCommandOption> subcommands = new ArrayList<>();
+    private List<SlashCommandOption> createSubcommands(@NotNull SlashBaseCommand scope, boolean isSubcommandGroup) {
+        final Map<String, SlashCommandOption> subcommands = new LinkedHashMap<>();
 
         for (Map.Entry<String, RegisteredCommand> entry : scope.subCommands.entries()) {
             if (isSubcommandGroup && StringUtils.containsWhitespace(entry.getKey())) {
                 continue; // These are registered as subcommand groups
             }
+
             String subcommandName = getSubcommandName(entry.getKey());
-            subcommands.add(createSubcommand(subcommandName, entry.getValue()));
+            SlashCommandOption subcommandOption = createSubcommand(subcommandName, entry.getValue());
+            if (subcommands.containsKey(subcommandName)) {
+                manager.log(LogLevel.ERROR, "Duplicate subcommand '" + subcommandName + "' found for scope '" + scope.commandName + "'.");
+                continue;
+            }
+            subcommands.put(subcommandName, subcommandOption);
         }
-        return subcommands;
+        return new ArrayList<>(subcommands.values());
     }
 
     /**
@@ -289,7 +269,6 @@ public class SlashBaseCommand extends BaseCommand {
     @Nullable
     private SlashCommandOption createParameter(@NotNull String name, @NotNull CommandParameter parameter) {
         SlashCommandOptionType parameterType = getParameterType(parameter);
-        System.out.println("Parameter type for '" + parameter.getName() + "' of command '" + commandName + "' is '" + parameterType.name() + "'.");
         if (parameterType == SlashCommandOptionType.UNKNOWN) {
             manager.log(LogLevel.ERROR, "Invalid parameter type '" + parameter.getType().getSimpleName() + "' for parameter '" + parameter.getName() + "'.");
             return null;
@@ -379,7 +358,6 @@ public class SlashBaseCommand extends BaseCommand {
      * @param parameter the command parameter to register the choices for.
      */
     private void registerChoices(@NotNull SlashCommandOptionBuilder builder, @NotNull CommandParameter parameter) {
-        // TODO: check if this works as intended
         if (annotations.hasAnnotation(parameter.getParameter(), Choices.class)) {
             String choices = annotations.getAnnotationValue(parameter.getParameter(), Choices.class);
             for (String choice : choices.split(",")) {
@@ -400,13 +378,16 @@ public class SlashBaseCommand extends BaseCommand {
 
 //                System.out.println("- Added choice '" + choiceName + "' with value '" + choiceValue + "'.");
 
-                try {
-                    long value = Long.parseLong(choiceValue);
-                    builder.addChoice(createChoice(choiceName, value));
-                    continue;
-                } catch (NumberFormatException ignored) { }
-
-                builder.addChoice(createChoice(choiceName, choiceValue));
+                if (isNumericType(parameter.getType())) {
+                    try {
+                        long value = Long.parseLong(choiceValue);
+                        builder.addChoice(createChoice(choiceName, value));
+                    } catch (NumberFormatException ex) {
+                        manager.log(LogLevel.ERROR, "Invalid choice '" + choice + "' for parameter '" + parameter.getName() + "': value is not a number or contains decimals.");
+                    }
+                } else {
+                    builder.addChoice(createChoice(choiceName, choiceValue));
+                }
             }
         }
     }
@@ -528,6 +509,19 @@ public class SlashBaseCommand extends BaseCommand {
     }
 
     /**
+     * Returns whether the given type is any (primitive) numeric type.
+     *
+     * @param type the type to check.
+     *
+     * @return {@code true} if the type is a numeric type, {@code false} otherwise.
+     */
+    private static boolean isNumericType(@NotNull Class<?> type) {
+        return isInstanceOfAny(type,
+                Long.class, Long.TYPE, Integer.class, Integer.TYPE, Short.class, Short.TYPE, Byte.class, Byte.TYPE,
+                Double.class, Double.TYPE, Float.class, Float.TYPE);
+    }
+
+    /**
      * Creates a new choice with the given name and value for a command parameter.
      *
      * @param name the name of the choice.
@@ -565,5 +559,35 @@ public class SlashBaseCommand extends BaseCommand {
             return split[split.length - 1];
         }
         return name;
+    }
+
+    /**
+     * @deprecated Tab completion is (currently) not supported for slash commands.
+     * @throws UnsupportedOperationException always.
+     */
+    @Override
+    @Deprecated
+    public List<String> tabComplete(CommandIssuer issuer, String commandLabel, String[] args) {
+        throw new UnsupportedOperationException("Tab completion is (currently) not supported for slash commands.");
+    }
+
+    /**
+     * @deprecated Tab completion is (currently) not supported for slash commands.
+     * @throws UnsupportedOperationException always.
+     */
+    @Override
+    @Deprecated
+    public List<String> tabComplete(CommandIssuer issuer, String commandLabel, String[] args, boolean isAsync) throws IllegalArgumentException {
+        throw new UnsupportedOperationException("Tab completion is (currently) not supported for slash commands.");
+    }
+
+    /**
+     * @deprecated Feature is not necessary, as Discord shows the syntax of a command in the slash command UI.
+     * @throws UnsupportedOperationException always.
+     */
+    @Override
+    @Deprecated
+    public void showSyntax(CommandIssuer issuer, RegisteredCommand cmd) {
+        throw new UnsupportedOperationException("Showing the syntax of a slash command is not supported.");
     }
 }
