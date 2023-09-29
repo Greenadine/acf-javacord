@@ -19,6 +19,7 @@ package co.aikar.commands.javacord.context;
 import com.google.common.base.Preconditions;
 import com.vdurmont.emoji.EmojiManager;
 import org.javacord.api.entity.emoji.Emoji;
+import org.jetbrains.annotations.NotNull;
 
 import java.util.Optional;
 
@@ -32,7 +33,7 @@ public class UnicodeEmoji implements Emoji {
 
     private final String unicodeEmoji;
 
-    public UnicodeEmoji(String emoji) {
+    private UnicodeEmoji(String emoji) {
         Preconditions.checkArgument(EmojiManager.isEmoji(emoji), "The given string is not an emoji.");
         this.unicodeEmoji = emoji;
     }
@@ -47,16 +48,40 @@ public class UnicodeEmoji implements Emoji {
         return false;
     }
 
-    public boolean isUnicodeEmoji() {
-        return true;
+    @Override
+    public boolean isCustomEmoji() {
+        return false;
     }
 
-    public boolean isCustomEmoji() {
+    @Override
+    public boolean isKnownCustomEmoji() {
         return false;
     }
 
     @Override
     public String getMentionTag() {
         return unicodeEmoji;
+    }
+
+    /**
+     * Creates a new Unicode emoji from the given string.
+     *
+     * @param emoji the string to create the Unicode emoji from.
+     *
+     * @return the created Unicode emoji.
+     */
+    public static UnicodeEmoji from(@NotNull String emoji) {
+        return new UnicodeEmoji(emoji);
+    }
+
+    /**
+     * Checks if the given string is a Unicode emoji.
+     *
+     * @param str the string to check.
+     *
+     * @return {@code true} if the given string is a Unicode emoji, {@code false} otherwise.
+     */
+    public static boolean isUnicodeEmoji(@NotNull String str) {
+        return EmojiManager.isEmoji(str);
     }
 }

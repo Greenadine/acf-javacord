@@ -26,6 +26,8 @@ import java.util.Locale;
  * @author Greenadine
  */
 public enum JavacordMessageKeys implements MessageKeyProvider {
+
+    // General
     OWNER_ONLY,
     SERVER_ONLY,
     PRIVATE_ONLY,
@@ -42,7 +44,9 @@ public enum JavacordMessageKeys implements MessageKeyProvider {
     PLEASE_SPECIFY_ROLE,
     TOO_MANY_EMOJIS_WITH_NAME,
     COULD_NOT_FIND_EMOJI,
+    COULD_NOT_FIND_UNICODE_EMOJI,
     PLEASE_SPECIFY_EMOJI,
+    INVALID_CHANNEL_TYPE,
     ;
 
     private final MessageKey key = MessageKey.of("acf-javacord." + this.name().toLowerCase(Locale.ENGLISH));

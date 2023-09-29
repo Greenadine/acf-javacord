@@ -430,7 +430,7 @@ public class MessageCommandContexts extends JavacordCommandContexts<MessageComma
                 }
                 emoji = api.getCustomEmojiById(id).get();
             } else if (EmojiManager.isEmoji(arg)) {
-                emoji = new UnicodeEmoji(arg);
+                emoji = UnicodeEmoji.from(arg);
             }
 
             if (emoji == null) {
@@ -444,11 +444,10 @@ public class MessageCommandContexts extends JavacordCommandContexts<MessageComma
             if (!c.isOptional() && (arg == null || arg.isEmpty())) {
                 throw new JavacordInvalidCommandArgument(JavacordMessageKeys.PLEASE_SPECIFY_EMOJI);
             }
-
-            if (!EmojiManager.isEmoji(arg)) {
-                throw new JavacordInvalidCommandArgument(JavacordMessageKeys.COULD_NOT_FIND_EMOJI);
+            if (!UnicodeEmoji.isUnicodeEmoji(arg)) {
+                throw new JavacordInvalidCommandArgument(JavacordMessageKeys.COULD_NOT_FIND_UNICODE_EMOJI);
             }
-            return new UnicodeEmoji(arg);
+            return UnicodeEmoji.from(arg);
         });
         registerContext(CustomEmoji.class, c -> {
             String arg = c.popFirstArg();
@@ -457,24 +456,24 @@ public class MessageCommandContexts extends JavacordCommandContexts<MessageComma
                 throw new JavacordInvalidCommandArgument(JavacordMessageKeys.PLEASE_SPECIFY_EMOJI);
             }
 
-            Optional<KnownCustomEmoji> emoji = Optional.empty();
+            KnownCustomEmoji emoji = null;
             if (DiscordRegexPattern.CUSTOM_EMOJI.matcher(arg).matches()) {
                 String id = arg.replaceAll("[^0-9]", ""); // Extract non-negative integers to retrieve ID
-                emoji = api.getCustomEmojiById(id);
+                emoji = api.getCustomEmojiById(id).orElse(null);
             } else {
                 Collection<KnownCustomEmoji> emojis = api.getCustomEmojisByName(arg);
                 if (emojis.size() > 1) {
                     throw new JavacordInvalidCommandArgument(JavacordMessageKeys.TOO_MANY_EMOJIS_WITH_NAME);
                 }
                 if (!emojis.isEmpty()) {
-                    emoji = Optional.of(ACFUtil.getFirstElement(emojis));
+                    emoji = ACFUtil.getFirstElement(emojis);
                 }
             }
 
-            if (!emoji.isPresent()) {
+            if (emoji == null) {
                 throw new JavacordInvalidCommandArgument(JavacordMessageKeys.COULD_NOT_FIND_EMOJI);
             }
-            return emoji.get();
+            return emoji;
         });
         registerContext(KnownCustomEmoji.class, c -> {
             String arg = c.popFirstArg();

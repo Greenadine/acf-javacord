@@ -76,7 +76,7 @@ public class TestSlashCommand extends SlashBaseCommand {
     @Subcommand("longchoice")
     @Description("Send a long as the bot.")
     public void onLongchoice(SlashCommandEvent event,
-                       @Description("Your choice.") @Choices("test1=1.0,test2=2,test3=3") long l) {
+                       @Description("Your choice.") @Choices("test1=1,test2=2,test3=3") long l) {
         event.newImmediateResponse()
                 .setContent("Long: " + l) // Will be 1 if "test1" is selected, 2 if "test2" is selected, etc.
                 .respond();
@@ -157,7 +157,7 @@ public class TestSlashCommand extends SlashBaseCommand {
     @Subcommand("voicechannel")
     @Description("Get the name of a voice channel.")
     public void onVoicechannel(SlashCommandEvent event,
-                              @Description("The voice channel to get the name of.") ServerTextChannel channel) {
+                              @Description("The voice channel to get the name of.") ServerVoiceChannel channel) {
         event.newImmediateResponse()
                 .setContent("Server voice channel name: " + channel.getName())
                 .respond();
