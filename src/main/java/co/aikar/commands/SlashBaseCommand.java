@@ -56,12 +56,16 @@ import java.util.concurrent.CompletableFuture;
 public class SlashBaseCommand extends BaseCommand {
 
     /* TODO:
-     *  - Add support for parameter completions/possible values;
      *  - Add support for more types to choices. Choices currently only support strings and numbers (except for doubles
      *    and floats. This might be possible by allowing contexts to be resolved through strings, as Discord only allows
      *    for strings and longs to be used for the values of choices;
+     *
+     * TODO (lower priority):
      *  - Add support for name localizations;
      *  - Add support for description localizations;
+     *
+     * TODO (optional):
+     *  - Add support for parameter completions/possible values;
      */
     
     private DiscordApi api;
@@ -327,6 +331,7 @@ public class SlashBaseCommand extends BaseCommand {
                                 builder.addChannelType(channelType);
                             }
                         }
+                        builder.addChannelType(ChannelType.CHANNEL_CATEGORY);
                         break;
                     case "ServerTextChannel":
                         builder.addChannelType(ChannelType.SERVER_TEXT_CHANNEL);
@@ -344,6 +349,9 @@ public class SlashBaseCommand extends BaseCommand {
                         break;
                     case "ServerStageVoiceChannel":
                         builder.addChannelType(ChannelType.SERVER_STAGE_VOICE_CHANNEL);
+                        break;
+                    case "ChannelCategory":
+                        builder.addChannelType(ChannelType.CHANNEL_CATEGORY);
                         break;
                 }
                 break;
