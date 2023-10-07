@@ -14,22 +14,11 @@
  *  limitations under the License.
  */
 
-package testbot;
+package co.aikar.commands;
 
-import co.aikar.commands.CommandConfig;
-import org.jetbrains.annotations.NotNull;
-
-import java.util.List;
-import java.util.concurrent.CopyOnWriteArrayList;
-
-public class TestCommandConfig implements CommandConfig {
-
-    @NotNull
-    private final List<String> commandPrefixes = new CopyOnWriteArrayList<>(new String[] {"j!"});
-
-    @NotNull
-    @Override
-    public List<String> getCommandPrefixes() {
-        return commandPrefixes;
-    }
+public enum SlashCommandNodeType {
+    ROOT,
+    SUBCOMMAND_GROUP,
+    SUBCOMMAND,
+    PARAMETER
 }

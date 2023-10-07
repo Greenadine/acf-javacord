@@ -68,6 +68,9 @@ public class SlashCommandContexts extends JavacordCommandContexts<SlashCommandEv
             }
             String arg = c.popNextString();
             if (arg.length() > 1) {
+                if (c.isOptional()) {
+                    return null;
+                }
                 throw new JavacordInvalidCommandArgument(MessageKeys.MUST_BE_MAX_LENGTH, "{max}", String.valueOf(1));
             } else {
                 return arg.charAt(0);

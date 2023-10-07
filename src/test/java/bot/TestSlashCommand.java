@@ -14,16 +14,21 @@
  *  limitations under the License.
  */
 
-package testbot;
+package bot;
 
 import co.aikar.commands.SlashBaseCommand;
 import co.aikar.commands.SlashCommandEvent;
-import co.aikar.commands.annotation.*;
+import co.aikar.commands.annotation.CommandAlias;
+import co.aikar.commands.annotation.Description;
+import co.aikar.commands.annotation.Optional;
+import co.aikar.commands.annotation.Subcommand;
 import co.aikar.commands.javacord.annotation.Choices;
 import co.aikar.commands.javacord.annotation.Issuer;
 import co.aikar.commands.javacord.context.Member;
 import org.javacord.api.entity.channel.*;
 import org.javacord.api.entity.user.User;
+
+import java.util.StringJoiner;
 
 @SuppressWarnings("all")
 @CommandAlias("slash")
@@ -136,57 +141,58 @@ public class TestSlashCommand extends SlashBaseCommand {
                 .respond();
     }
 
+    @Subcommand("optionaltest")
+    @Description("Test optional parameters.")
+    public void onOptionaltest(SlashCommandEvent event,
+                               @Description("String.") @Optional String string,
+                               @Description("Optional integer.") @Optional Integer integer) {
+        StringJoiner joiner = new StringJoiner("\n");
+        joiner.add("String: " + string == null ? "null" : string);
+        joiner.add("Integer: " + integer == null ? "null" : String.valueOf(integer));
+
+        event.newImmediateResponse()
+                .setContent(joiner.toString())
+                .respond();
+    }
+
     @Subcommand("channel")
-    @Description("Get the name of a channel.")
-    public void onChannel(SlashCommandEvent event,
-                          @Description("The channel to get the name of.") ServerChannel channel) {
-        event.newImmediateResponse()
-                .setContent("Server channel name: " + channel.getName())
-                .respond();
-    }
+    @Description("Channel-related test commands.")
+    public class Channel extends SlashBaseCommand {
 
-    @Subcommand("textchannel")
-    @Description("Get the name of a text channel.")
-    public void onTextchannel(SlashCommandEvent event,
-                          @Description("The text channel to get the name of.") ServerTextChannel channel) {
-        event.newImmediateResponse()
-                .setContent("Server text channel name: " + channel.getName())
-                .respond();
-    }
+        @Subcommand("any")
+        @Description("Get the name of any type of server channel.")
+        public void onAny(SlashCommandEvent event,
+                          @Description("The server channel to get the name of.") ServerChannel channel) {
+            event.newImmediateResponse()
+                    .setContent("Server channel name: " + channel.getName())
+                    .respond();
+        }
 
-    @Subcommand("voicechannel")
-    @Description("Get the name of a voice channel.")
-    public void onVoicechannel(SlashCommandEvent event,
-                              @Description("The voice channel to get the name of.") ServerVoiceChannel channel) {
-        event.newImmediateResponse()
-                .setContent("Server voice channel name: " + channel.getName())
-                .respond();
-    }
+        @Subcommand("text")
+        @Description("Get the name of a server text channel.")
+        public void onText(SlashCommandEvent event,
+                                  @Description("The text channel to get the name of.") ServerTextChannel channel) {
+            event.newImmediateResponse()
+                    .setContent("Server text channel name: " + channel.getName())
+                    .respond();
+        }
 
-    @Subcommand("stagevoicechannel")
-    @Description("Get the name of a stage voice channel.")
-    public void onStagevoicechannel(SlashCommandEvent event,
-                               @Description("The stage channel to get the name of.") ServerStageVoiceChannel channel) {
-        event.newImmediateResponse()
-                .setContent("Server stage voice channel name: " + channel.getName())
-                .respond();
-    }
+        @Subcommand("forum")
+        @Description("Get the name of a server forum channel.")
+        public void onForum(SlashCommandEvent event,
+                                   @Description("The forum channel to get the name of.") ServerForumChannel channel) {
+            event.newImmediateResponse()
+                    .setContent("Server forum channel name: " + channel.getName())
+                    .respond();
+        }
 
-    @Subcommand("forumchannel")
-    @Description("Get the name of a forum channel.")
-    public void onForumChannel(SlashCommandEvent event,
-                               @Description("The forum channel to get the name of.") ServerForumChannel channel) {
-        event.newImmediateResponse()
-                .setContent("Server forum channel name: " + channel.getName())
-                .respond();
-    }
-
-    @Subcommand("threadchannel")
-    @Description("Get the name of a thread channel.")
-    public void onThreadchannel(SlashCommandEvent event,
-                               @Description("The thread channel to get the name of.") ServerThreadChannel channel) {
-        event.newImmediateResponse()
-                .setContent("Server thread channel name: " + channel.getName())
-                .respond();
+        @Subcommand("thread")
+        @Description("Get the name of a server thread channel.")
+        public void onThread(SlashCommandEvent event,
+                                    @Description("The thread channel to get the name of.") ServerThreadChannel channel) {
+            event.newImmediateResponse()
+                    .setContent("Server thread channel name: " + channel.getName())
+                    .respond();
+        }
     }
 }

@@ -14,23 +14,22 @@
  *  limitations under the License.
  */
 
-package co.aikar.commands.javacord.annotation;
+package co.aikar.commands.javacord.exception;
 
-import java.lang.annotation.ElementType;
-import java.lang.annotation.Retention;
-import java.lang.annotation.RetentionPolicy;
-import java.lang.annotation.Target;
+import org.jetbrains.annotations.NotNull;
 
 /**
- * The {@link ServerCommand} annotation is used to define a command as a server command.
- * <p>
- * Either a name or an ID of a server has to be provided. If both are defined, the ID will be prioritized.
+ * Thrown when an issue occurs while creating/registering slash commands.
  *
- * @since 0.5.0
+ * @since 0.1.0
  */
-@Target(ElementType.TYPE)
-@Retention(RetentionPolicy.RUNTIME)
-public @interface ServerCommand {
-    long value() default 0L;
-    String name() default "";
+public class SlashCommandRegistryException extends RuntimeException {
+
+    public SlashCommandRegistryException(@NotNull String message) {
+        super(message);
+    }
+
+    public SlashCommandRegistryException(@NotNull String message, @NotNull Throwable cause) {
+        super(message, cause);
+    }
 }

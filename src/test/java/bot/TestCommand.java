@@ -14,7 +14,7 @@
  *  limitations under the License.
  */
 
-package testbot;
+package bot;
 
 import co.aikar.commands.BaseCommand;
 import co.aikar.commands.MessageCommandEvent;

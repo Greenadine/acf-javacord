@@ -19,8 +19,6 @@ package co.aikar.commands;
 import org.javacord.api.DiscordApi;
 import org.jetbrains.annotations.NotNull;
 
-import java.util.concurrent.locks.Condition;
-
 /**
  * A {@link CommandManager} that handles both slash commands and message commands. It is a convenience class that
  * combines {@link MessageCommandManager} and {@link SlashCommandManager}.
@@ -75,20 +73,6 @@ public class JavacordCommandManager {
         } else {
             messageCommandManager.registerCommand(command);
         }
-    }
-
-    /**
-     * Registers a new command to both managers.
-     *
-     * @param command the command to register.
-     *
-     * @deprecated It is generally recommended to make separate commands for slash commands and message commands.
-     *             No support will be provided for this method, and it may be removed in the future.
-     */
-    @Deprecated
-    public void registerMultiCommand(@NotNull SlashBaseCommand command) {
-        slashCommandManager.registerCommand(command);
-        messageCommandManager.registerCommand(command);
     }
 
     /**

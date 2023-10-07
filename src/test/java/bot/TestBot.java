@@ -14,12 +14,13 @@
  *  limitations under the License.
  */
 
-package testbot;
+package bot;
 
 import co.aikar.commands.*;
 import org.javacord.api.DiscordApi;
 import org.javacord.api.DiscordApiBuilder;
 import org.javacord.api.entity.activity.ActivityType;
+import org.javacord.api.interaction.SlashCommand;
 
 import java.io.File;
 import java.io.IOException;
@@ -34,6 +35,7 @@ public class TestBot {
 
     public static String DEFAULT_PREFIX;
 
+    @SuppressWarnings("CallToPrintStackTrace")
     public static void main(String[] args) {
         String token;
 
@@ -51,9 +53,10 @@ public class TestBot {
         // Connect to bot user.
         api = new DiscordApiBuilder().setToken(token).setAllIntents().login().join();
 
+//        api.getGlobalSlashCommands().join().forEach(SlashCommand::delete);
         registerCommands();
 
-        api.updateActivity(ActivityType.WATCHING, DEFAULT_PREFIX + "help"); // Set activity
+        api.updateActivity(ActivityType.PLAYING, "with Kevin's sanity"); // Set activity
         System.out.println("Online!");
     }
 
@@ -62,7 +65,7 @@ public class TestBot {
      */
     private static void registerCommands() {
         COMMAND_MANAGER = new JavacordOptions().messageConfigProvider(new TestCommandConfig()).createManager(api); // Create command manager
-        DEFAULT_PREFIX = ((TestCommandConfig)COMMAND_MANAGER.getMessageCommandManager().getConfigProvider()).getCommandPrefixes().get(0); // Get command prefix
+        DEFAULT_PREFIX = ((TestCommandConfig) COMMAND_MANAGER.getMessageCommandManager().getConfigProvider()).getCommandPrefixes().get(0); // Get command prefix
 
         registerCommandReplacements();
 

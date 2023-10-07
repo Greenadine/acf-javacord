@@ -22,6 +22,7 @@ import org.javacord.api.event.message.MessageCreateEvent;
 import org.jetbrains.annotations.NotNull;
 
 import java.util.*;
+import java.util.logging.Logger;
 
 /**
  * A {@link CommandManager} implementation for Javacord for message commands.
@@ -37,6 +38,8 @@ public class MessageCommandManager
                     MessageCommandConditionContext>
 {
 
+    protected Logger logger;
+
     public MessageCommandManager(@NotNull DiscordApi api) {
         this(api, new JavacordOptions());
     }
@@ -44,6 +47,7 @@ public class MessageCommandManager
     public MessageCommandManager(@NotNull DiscordApi api, JavacordOptions options) {
         super(api, options);
 
+        this.logger = Logger.getLogger("co.aikar.commands.MessageCommandManager");
         this.contexts = new MessageCommandContexts(this);
         this.configProvider = options.messageConfigProvider;
 

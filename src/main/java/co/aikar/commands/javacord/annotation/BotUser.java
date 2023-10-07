@@ -22,8 +22,11 @@ import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
 
 /**
- * The {@link BotUser} annotation is to mark that a parameter should be resolved in relation to the bots user object,
- * instead of being resolved from regular command context.
+ * The {@link BotUser} annotation is used to mark that a parameter should be resolved in relation to the bots user object.
+ * <p>
+ * Putting this annotation on a parameter will force the parameter to be resolved in relation to the bots user object,
+ * instead of being resolved from regular command context. For example, if a parameter of type {@link org.javacord.api.entity.user.User}
+ * is marked with the {@link BotUser} annotation, it will be resolved to the bots user object, regardless of the command input.
  *
  * @since 0.3.0
  */

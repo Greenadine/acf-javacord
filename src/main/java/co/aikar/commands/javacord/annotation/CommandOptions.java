@@ -25,6 +25,9 @@ import java.lang.annotation.Target;
 
 /**
  * The {@link CommandOptions} annotation is used to define the options for a slash command.
+ * <p>
+ * The options defined in this annotation will be applied to the root command and all children (subcommands,
+ * subcommand groups).
  *
  * @since 0.5.0
  */

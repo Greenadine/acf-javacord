@@ -21,12 +21,17 @@ import co.aikar.commands.annotation.Subcommand;
 import com.google.common.base.Preconditions;
 import org.javacord.api.DiscordApi;
 import org.javacord.api.event.interaction.InteractionCreateEvent;
+import org.javacord.api.event.interaction.SlashCommandCreateEvent;
 import org.javacord.api.interaction.SlashCommandInteraction;
 import org.javacord.api.interaction.SlashCommandInteractionOption;
 import org.jetbrains.annotations.NotNull;
 
 import java.lang.reflect.Method;
-import java.util.*;
+import java.util.Collection;
+import java.util.Collections;
+import java.util.List;
+import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
 
 /**
  * A {@link CommandManager} implementation for Javacord for slash commands.
@@ -37,10 +42,11 @@ import java.util.*;
  */
 public class SlashCommandManager
         extends AbstractJavacordCommandManager<
-                SlashCommandEvent,
+                    SlashCommandEvent,
                     SlashCommandExecutionContext,
-                SlashCommandConditionContext>
+                    SlashCommandConditionContext>
 {
+    protected final ConcurrentHashMap<String, SlashCommandRegistry> commandRegistry;
 
     public SlashCommandManager(@NotNull DiscordApi api) {
         this(api, new JavacordOptions());
@@ -51,14 +57,18 @@ public class SlashCommandManager
 
         this.contexts = new SlashCommandContexts(this);
         this.configProvider = options.slashConfigProvider;
+        this.commandRegistry = new ConcurrentHashMap<>();
 
         // Register slash command listener
-        api.addInteractionCreateListener(new JavacordInteractionListener(this));
+        api.addSlashCommandCreateListener(new JavacordSlashCommandListener(this));
     }
 
     @Override
     public void registerCommand(BaseCommand command) {
-        Preconditions.checkState(command instanceof SlashBaseCommand, "Command must be a SlashBaseCommand");
+        if (!(command instanceof SlashBaseCommand)) {
+            log(LogLevel.ERROR, "Error while registering command " + command.getClass().getName() + ": Class is not an instance of SlashBaseCommand.");
+            return;
+        }
         super.registerCommand(command);
     }
 
@@ -69,15 +79,15 @@ public class SlashCommandManager
 
     @Override
     public SlashCommandEvent getCommandIssuer(Object issuer) {
-        if (!(issuer instanceof InteractionCreateEvent)) {
+        if (!(issuer instanceof SlashCommandCreateEvent)) {
             throw new IllegalArgumentException("Issuer must be a InteractionCreateEvent");
         }
-        return new SlashCommandEvent(this, (InteractionCreateEvent) issuer);
+        return new SlashCommandEvent(this, (SlashCommandCreateEvent) issuer);
     }
 
     @Override
     public boolean isCommandIssuer(Class<?> type) {
-        return InteractionCreateEvent.class.isAssignableFrom(type);
+        return SlashCommandCreateEvent.class.isAssignableFrom(type);
     }
 
     @Override
@@ -108,6 +118,7 @@ public class SlashCommandManager
         return new SlashRegisteredCommand(command, cmdname, method, prefSubcommand);
     }
 
+    @SuppressWarnings("rawtypes")
     public SlashCommandExecutionContext createCommandContext(@NotNull SlashRegisteredCommand command, @NotNull CommandParameter parameter, @NotNull SlashCommandEvent event, @NotNull List<SlashCommandInteractionOption> args) {
         return new SlashCommandExecutionContext(command, parameter, event, args);
     }
@@ -117,9 +128,8 @@ public class SlashCommandManager
      *
      * @param event the {@code InteractionCreateEvent} to dispatch.
      */
-    void dispatchEvent(@NotNull InteractionCreateEvent event) {
-        //noinspection OptionalGetWithoutIsPresent
-        SlashCommandInteraction interaction = event.getSlashCommandInteraction().get();
+    void dispatchEvent(@NotNull SlashCommandCreateEvent event) {
+        SlashCommandInteraction interaction = event.getSlashCommandInteraction();
         String[] cmdArr = ACFPatterns.SPACE.split(interaction.getFullCommandName());
         String cmd = cmdArr[0];
         String cmdArgs = cmdArr.length > 1 ? ACFUtil.join(cmdArr, 1) : " ";

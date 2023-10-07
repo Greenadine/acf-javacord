@@ -80,7 +80,7 @@ public class SlashRegisteredCommand extends RegisteredCommand {
             final String parameterName = parameter.getName();
             final Class<?> type = parameter.getType();
             final ContextResolver resolver = parameter.getResolver();
-            SlashCommandExecutionContext context = ((SlashCommandManager) manager).createCommandContext(this, parameter, event, event.getArgs());
+            SlashCommandExecutionContext context = ((SlashCommandManager) manager).createCommandContext(this, parameter, event, event.getInteraction().getArguments());
             boolean requiresInput = parameter.requiresInput();
             if (requiresInput && remainingRequired > 0) {
                 remainingRequired--;
@@ -119,16 +119,7 @@ public class SlashRegisteredCommand extends RegisteredCommand {
                 }
             }
 
-            // TODO: implement command completions
-            // TODO: implement possible values
-//            if (parameter.getValues() != null) {
-//                SlashCommandInteractionOption arg = !args.isEmpty() ? args.get(0) : null;
-//
-//                // Do stuff
-//            }
-
             Object paramValue = resolver.getContext(context);
-
             manager.getCommandConditions().validateConditions(context, paramValue);
             passedArgs.put(parameterName, paramValue);
         }

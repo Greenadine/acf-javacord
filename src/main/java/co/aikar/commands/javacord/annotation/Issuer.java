@@ -22,7 +22,10 @@ import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
 
 /**
- * Used to signify that a parameter should be resolved through the issuer.
+ * The {@link Issuer} annotation is used to signify that a parameter should always be resolved through the issuer (the context).
+ * <p>
+ * For example, if a parameter of type {@link org.javacord.api.entity.user.User} is marked with the {@link Issuer} annotation,
+ * it will be resolved to the user that issued the command, regardless of the command input.
  *
  * @since 0.5.0
  */

@@ -14,23 +14,22 @@
  *  limitations under the License.
  */
 
-package co.aikar.commands.javacord.annotation;
+package bot;
 
-import java.lang.annotation.ElementType;
-import java.lang.annotation.Retention;
-import java.lang.annotation.RetentionPolicy;
-import java.lang.annotation.Target;
+import co.aikar.commands.CommandConfig;
+import org.jetbrains.annotations.NotNull;
 
-/**
- * The {@link ServerCommand} annotation is used to define a command as a server command.
- * <p>
- * Either a name or an ID of a server has to be provided. If both are defined, the ID will be prioritized.
- *
- * @since 0.5.0
- */
-@Target(ElementType.TYPE)
-@Retention(RetentionPolicy.RUNTIME)
-public @interface ServerCommand {
-    long value() default 0L;
-    String name() default "";
+import java.util.List;
+import java.util.concurrent.CopyOnWriteArrayList;
+
+public class TestCommandConfig implements CommandConfig {
+
+    @NotNull
+    private final List<String> commandPrefixes = new CopyOnWriteArrayList<>(new String[] {"j!"});
+
+    @NotNull
+    @Override
+    public List<String> getCommandPrefixes() {
+        return commandPrefixes;
+    }
 }

@@ -47,6 +47,10 @@ public enum JavacordMessageKeys implements MessageKeyProvider {
     COULD_NOT_FIND_UNICODE_EMOJI,
     PLEASE_SPECIFY_EMOJI,
     INVALID_CHANNEL_TYPE,
+
+    // Slash command-specific
+    PLEASE_SPECIFY_CHARACTER,
+
     ;
 
     private final MessageKey key = MessageKey.of("acf-javacord." + this.name().toLowerCase(Locale.ENGLISH));

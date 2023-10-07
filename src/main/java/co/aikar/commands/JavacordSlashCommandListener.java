@@ -16,26 +16,24 @@
 
 package co.aikar.commands;
 
-import org.javacord.api.event.interaction.InteractionCreateEvent;
-import org.javacord.api.listener.interaction.InteractionCreateListener;
+import org.javacord.api.event.interaction.SlashCommandCreateEvent;
+import org.javacord.api.listener.interaction.SlashCommandCreateListener;
 
 /**
  * @since 0.5.0
  */
-public class JavacordInteractionListener implements InteractionCreateListener {
+public class JavacordSlashCommandListener implements SlashCommandCreateListener {
 
     private final SlashCommandManager manager;
 
-    JavacordInteractionListener(SlashCommandManager manager) {
+    JavacordSlashCommandListener(SlashCommandManager manager) {
         this.manager = manager;
     }
 
     @Override
-    public void onInteractionCreate(InteractionCreateEvent event) {
-        if (!event.getSlashCommandInteraction().isPresent()) {
-            return;
-        }
-        if (!event.getSlashCommandInteraction().get().getChannel().isPresent()) {
+    public void onSlashCommandCreate(SlashCommandCreateEvent event) {
+        // Check if the command is from the bots instance
+        if (event.getSlashCommandInteraction().getApplicationId() != manager.getApi().getClientId()) {
             return;
         }
 

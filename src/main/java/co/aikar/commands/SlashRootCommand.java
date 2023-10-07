@@ -32,6 +32,7 @@ public class SlashRootCommand extends JavacordRootCommand {
         CommandRouter router = this.getManager().getRouter();
         CommandRouter.RouteSearch search = router.routeCommand(this, commandLabel, args, false);
         BaseCommand defCommand = this.getDefCommand();
+
         if (search != null) {
             CommandRouter.CommandRouteResult result = router.matchCommand(search, false);
             if (result != null) {
@@ -39,7 +40,7 @@ public class SlashRootCommand extends JavacordRootCommand {
                 scope.execute(sender, result);
                 return scope;
             }
-
+            //noinspection rawtypes
             RegisteredCommand firstElement = ACFUtil.getFirstElement(search.commands);
             if (firstElement != null) {
                 defCommand = firstElement.scope;
