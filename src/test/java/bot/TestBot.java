@@ -20,7 +20,6 @@ import co.aikar.commands.*;
 import org.javacord.api.DiscordApi;
 import org.javacord.api.DiscordApiBuilder;
 import org.javacord.api.entity.activity.ActivityType;
-import org.javacord.api.interaction.SlashCommand;
 
 import java.io.File;
 import java.io.IOException;
@@ -70,8 +69,9 @@ public class TestBot {
         registerCommandReplacements();
 
         // Register commands
-        COMMAND_MANAGER.registerCommand(new TestCommand());
-        COMMAND_MANAGER.registerCommand(new TestSlashCommand());
+        COMMAND_MANAGER.registerMessageCommand(new TestCommand());
+        COMMAND_MANAGER.registerSlashCommand(new TestSlashCommand());
+        COMMAND_MANAGER.registerSlashCommand(new AnotherTestSlashCommand());
     }
 
     /**

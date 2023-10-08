@@ -16,8 +16,11 @@
 
 package co.aikar.commands;
 
+import co.aikar.commands.annotation.CatchUnknown;
+import co.aikar.commands.annotation.Default;
 import co.aikar.commands.annotation.Description;
 import co.aikar.commands.annotation.Subcommand;
+import co.aikar.commands.javacord.exception.SlashCommandRegistryException;
 import com.google.common.base.Preconditions;
 import org.javacord.api.DiscordApi;
 import org.javacord.api.event.interaction.InteractionCreateEvent;
@@ -27,10 +30,7 @@ import org.javacord.api.interaction.SlashCommandInteractionOption;
 import org.jetbrains.annotations.NotNull;
 
 import java.lang.reflect.Method;
-import java.util.Collection;
-import java.util.Collections;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
 
 /**
@@ -65,11 +65,7 @@ public class SlashCommandManager
 
     @Override
     public void registerCommand(BaseCommand command) {
-        if (!(command instanceof SlashBaseCommand)) {
-            log(LogLevel.ERROR, "Error while registering command " + command.getClass().getName() + ": Class is not an instance of SlashBaseCommand.");
-            return;
-        }
-        super.registerCommand(command);
+        throw new UnsupportedOperationException("Use registerSlashCommand() instead, or use MessageCommandManager to register regular commands.");
     }
 
     @Override
@@ -113,14 +109,47 @@ public class SlashCommandManager
     @Override
     @SuppressWarnings("rawtypes")
     public RegisteredCommand createRegisteredCommand(BaseCommand command, String cmdname, Method method, String prefSubcommand) {
-        Preconditions.checkArgument(method.isAnnotationPresent(Subcommand.class), "Subcommand is missing @Subcommand annotation.");
-        Preconditions.checkArgument(method.isAnnotationPresent(Description.class), "Subcommand is missing @Description annotation.");
+        if (method.isAnnotationPresent(Subcommand.class)) {
+            Preconditions.checkArgument(method.isAnnotationPresent(Description.class), "Subcommand is missing @Description annotation.");
+        } else {
+            if (method.isAnnotationPresent(CatchUnknown.class)) {
+                throw new SlashCommandRegistryException("@CatchUnknown is not supported for slash commands.");
+            }
+            if (!method.isAnnotationPresent(Default.class)) {
+                throw new SlashCommandRegistryException("Method is missing a @Subcommand or @Default annotation.");
+            }
+        }
         return new SlashRegisteredCommand(command, cmdname, method, prefSubcommand);
     }
 
     @SuppressWarnings("rawtypes")
     public SlashCommandExecutionContext createCommandContext(@NotNull SlashRegisteredCommand command, @NotNull CommandParameter parameter, @NotNull SlashCommandEvent event, @NotNull List<SlashCommandInteractionOption> args) {
         return new SlashCommandExecutionContext(command, parameter, event, args);
+    }
+
+    /**
+     * Registers a {@link BaseCommand} as a slash command.
+     *
+     * @param command the command to register.
+     */
+    public void registerSlashCommand(BaseCommand command) {
+        super.registerCommand(command);
+
+        for (Map.Entry<String, RootCommand> entry : command.registeredCommands.entrySet()) {
+            String commandName = entry.getKey().toLowerCase(Locale.ENGLISH);
+            JavacordRootCommand rootCmd = (JavacordRootCommand) entry.getValue();
+            SlashCommandNode rootNode = new SlashCommandNode(rootCmd, command);
+            rootNode.register(this).thenAccept(registry -> {
+                commandRegistry.put(rootCmd.getCommandName(), registry);
+                if (!rootCmd.isRegistered) {
+                    rootCmd.isRegistered = true;
+                    commands.put(commandName, rootCmd);
+                }
+            }).exceptionally(throwable -> {
+                log(LogLevel.ERROR, "Failed to register slash command '" + rootCmd.getCommandName() + "'.", throwable);
+                return null;
+            });
+        }
     }
 
     /**
@@ -133,12 +162,8 @@ public class SlashCommandManager
         String[] cmdArr = ACFPatterns.SPACE.split(interaction.getFullCommandName());
         String cmd = cmdArr[0];
         String cmdArgs = cmdArr.length > 1 ? ACFUtil.join(cmdArr, 1) : " ";
-
         String[] args = ACFPatterns.SPACE.split(cmdArgs);
 
-        if (args.length == 0) {
-            return;
-        }
         executeRootCommand(event, cmd, args);
     }
 }

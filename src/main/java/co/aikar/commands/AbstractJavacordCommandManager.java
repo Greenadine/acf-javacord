@@ -68,6 +68,7 @@ public abstract class AbstractJavacordCommandManager<
         this.completions = new JavacordCommandCompletions(this);
         this.defaultConfig = options.defaultConfig != null ? new JavacordCommandConfig() : options.defaultConfig;
         this.permissionResolver = options.permissionResolver;
+        this.logger = Logger.getLogger(getClass().getSimpleName());
 
         initializeBotOwner();
         registerCommandConditions();

@@ -38,8 +38,8 @@ public class JavacordCommandManager {
     }
 
     public JavacordCommandManager(@NotNull DiscordApi api, @NotNull JavacordOptions options) {
-        messageCommandManager = new MessageCommandManager(api, options);
-        slashCommandManager = new SlashCommandManager(api, options);
+        messageCommandManager = options.createMessageManager(api);
+        slashCommandManager = options.createSlashManager(api);
     }
 
     /**
@@ -63,16 +63,21 @@ public class JavacordCommandManager {
     }
 
     /**
-     * Registers a new command to its respective manager.
+     * Registers a new message command to its manager.
      *
      * @param command the command to register.
      */
-    public void registerCommand(@NotNull BaseCommand command) {
-        if (command instanceof SlashBaseCommand) {
-            slashCommandManager.registerCommand(command);
-        } else {
-            messageCommandManager.registerCommand(command);
-        }
+    public void registerMessageCommand(@NotNull BaseCommand command) {
+        messageCommandManager.registerCommand(command);
+    }
+
+    /**
+     * Registers a new slash command to its manager.
+     *
+     * @param command the command to register.
+     */
+    public void registerSlashCommand(@NotNull BaseCommand command) {
+        slashCommandManager.registerSlashCommand(command);
     }
 
     /**

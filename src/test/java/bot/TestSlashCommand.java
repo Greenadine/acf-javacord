@@ -16,16 +16,16 @@
 
 package bot;
 
-import co.aikar.commands.SlashBaseCommand;
+import co.aikar.commands.BaseCommand;
 import co.aikar.commands.SlashCommandEvent;
-import co.aikar.commands.annotation.CommandAlias;
-import co.aikar.commands.annotation.Description;
-import co.aikar.commands.annotation.Optional;
-import co.aikar.commands.annotation.Subcommand;
+import co.aikar.commands.annotation.*;
 import co.aikar.commands.javacord.annotation.Choices;
 import co.aikar.commands.javacord.annotation.Issuer;
 import co.aikar.commands.javacord.context.Member;
-import org.javacord.api.entity.channel.*;
+import org.javacord.api.entity.channel.ServerChannel;
+import org.javacord.api.entity.channel.ServerForumChannel;
+import org.javacord.api.entity.channel.ServerTextChannel;
+import org.javacord.api.entity.channel.ServerThreadChannel;
 import org.javacord.api.entity.user.User;
 
 import java.util.StringJoiner;
@@ -33,7 +33,7 @@ import java.util.StringJoiner;
 @SuppressWarnings("all")
 @CommandAlias("slash")
 @Description("Various test commands.")
-public class TestSlashCommand extends SlashBaseCommand {
+public class TestSlashCommand extends BaseCommand {
 
     @Subcommand("ping")
     @Description("Test bot latency.")
@@ -157,7 +157,7 @@ public class TestSlashCommand extends SlashBaseCommand {
 
     @Subcommand("channel")
     @Description("Channel-related test commands.")
-    public class Channel extends SlashBaseCommand {
+    public class Channel extends BaseCommand {
 
         @Subcommand("any")
         @Description("Get the name of any type of server channel.")

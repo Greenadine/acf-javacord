@@ -75,7 +75,7 @@ public class SlashCommandNode {
      *
      * @throws SlashCommandRegistryException if an error occurs while creating the node and its children.
      */
-    SlashCommandNode(@NotNull RootCommand rootCommand, @NotNull SlashBaseCommand baseCommand) {
+    SlashCommandNode(@NotNull RootCommand rootCommand, @NotNull BaseCommand baseCommand) {
         this(SlashCommandNodeType.ROOT, rootCommand.getCommandName(), baseCommand.description, null);
 
         SlashCommandManager manager = (SlashCommandManager) rootCommand.getManager();
@@ -83,10 +83,11 @@ public class SlashCommandNode {
 
         // Process subcommands
         for (Map.Entry<String, RegisteredCommand> entry : subCommands.entrySet()) {
-            if (SlashCommandUtils.isNotOwnSubcommand(name, entry.getKey())) {
+            String key = entry.getKey();
+            if (key.equals("__default") || SlashCommandUtils.isNotOwnSubcommand(name, key)) {
                 continue;
             }
-            String subCommandName = SlashCommandUtils.getSubcommandName(entry.getKey());
+            String subCommandName = SlashCommandUtils.getSubcommandName(key);
             children.add(new SlashCommandNode(subCommandName, entry.getValue(), this));
             subCommands = SlashCommandUtils.splitRemoveFirstIf(subCommands, name);
         }
@@ -94,7 +95,7 @@ public class SlashCommandNode {
         // Process sub-scopes (subcommand groups)
         for (BaseCommand subScope : baseCommand.subScopes) {
             String name = manager.getAnnotations().getAnnotationValue(subScope.getClass(), Subcommand.class);
-            children.add(new SlashCommandNode(name, (SlashBaseCommand) subScope, this, subCommands));
+            children.add(new SlashCommandNode(name, subScope, this, subCommands));
         }
 
         // Process command options
@@ -136,7 +137,7 @@ public class SlashCommandNode {
      *
      * @param scope the subcommand group to create the node from.
      */
-    SlashCommandNode(@NotNull String name, @NotNull SlashBaseCommand scope, @NotNull SlashCommandNode parent, @NotNull Map<String, RegisteredCommand> subCommands) {
+    SlashCommandNode(@NotNull String name, @NotNull BaseCommand scope, @NotNull SlashCommandNode parent, @NotNull Map<String, RegisteredCommand> subCommands) {
         this(SlashCommandNodeType.SUBCOMMAND_GROUP, name, scope.description, parent);
         SlashCommandUtils.check(!scope.subCommands.isEmpty(), "Subcommand groups must have at least one subcommand.");
 

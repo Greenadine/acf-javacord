@@ -14,27 +14,20 @@
  *  limitations under the License.
  */
 
-package co.aikar.commands;
+package bot;
 
-public enum SlashCommandNodeType {
+import co.aikar.commands.BaseCommand;
+import co.aikar.commands.SlashCommandEvent;
+import co.aikar.commands.annotation.CommandAlias;
+import co.aikar.commands.annotation.Default;
+import co.aikar.commands.annotation.Description;
 
-    /**
-     * The root node of a slash command.
-     */
-    ROOT,
+@CommandAlias("purpose")
+@Description("Test slash command.")
+public class AnotherTestSlashCommand extends BaseCommand {
 
-    /**
-     * A subcommand group node of a slash command.
-     */
-    SUBCOMMAND_GROUP,
-
-    /**
-     * A subcommand node of a slash command.
-     */
-    SUBCOMMAND,
-
-    /**
-     * A subcommand parameter node of a slash command.
-     */
-    PARAMETER
+    @Default
+    public void onCommand(SlashCommandEvent event) {
+        event.respond("I ruin your sanity.");
+    }
 }
