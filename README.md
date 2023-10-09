@@ -10,7 +10,7 @@ ACF-Javacord allows the usage of the powerful command framework ACF for Javacord
 This implementation of ACF is not official, and the core of ACF has been marked as not stable enough for new implementations, however it has worked flawlessly for me thus far. Use this implementation at your own risk.
 
 ## Documentation
-* [Wiki]([https://docs.greenadine.dev/shelves/acf-javacord](https://github.com/Greenadine/acf-javacord/wiki))
+* [Wiki](https://docs.greenadine.dev/shelves/acf-javacord](https://github.com/Greenadine/acf-javacord/wiki))
 * [JavaDocs](https://javadocs.greenadine.dev/acf-javacord/0.4.0/)
 
 For ACF core documentation please consult the [ACF core wiki](https://github.com/aikar/commands/wiki).
