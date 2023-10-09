@@ -71,7 +71,6 @@ public class TestBot {
         // Register commands
         COMMAND_MANAGER.registerMessageCommand(new TestCommand());
         COMMAND_MANAGER.registerSlashCommand(new TestSlashCommand());
-        COMMAND_MANAGER.registerSlashCommand(new AnotherTestSlashCommand());
     }
 
     /**

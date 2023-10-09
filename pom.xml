@@ -5,6 +5,7 @@
     <properties>
         <!-- PLUGIN VERSIONS -->
         <maven-compiler-plugin.version>3.11.0</maven-compiler-plugin.version>
+        <maven-shade-plugin.version>3.2.4</maven-shade-plugin.version>
 
         <!-- OTHER PROPERTIES -->
         <java.version>1.8</java.version>
@@ -15,7 +16,7 @@
     <name>ACF Javacord</name>
     <description>A Javacord implementation of aikar's Annotation Command Framework (ACF).</description>
 
-    <groupId>dev.greenadine.acfjavacord</groupId>
+    <groupId>dev.greenadine</groupId>
     <artifactId>acf-javacord</artifactId>
     <version>0.5.0</version>
     <packaging>jar</packaging>
@@ -38,11 +39,11 @@
     <distributionManagement>
         <repository>
             <id>greenadinedev-public</id>
-            <url>http://repo.greenadine.dev/repository/maven-public/</url>
+            <url>https://repo.greenadine.dev/repository/maven-public/</url>
         </repository>
         <snapshotRepository>
             <id>greenadinedev-snapshot</id>
-            <url>http://repo.greenadine.dev/repository/maven-snapshots/</url>
+            <url>https://repo.greenadine.dev/repository/maven-snapshots/</url>
         </snapshotRepository>
     </distributionManagement>
 
@@ -50,7 +51,7 @@
         <plugins>
             <plugin>
                 <artifactId>maven-shade-plugin</artifactId>
-                <version>3.2.4</version>
+                <version>${maven-shade-plugin.version}</version>
                 <executions>
                     <execution>
                         <phase>package</phase>
@@ -103,6 +104,12 @@
             <artifactId>junit</artifactId>
             <version>4.13.2</version>
             <scope>test</scope>
+            <exclusions>
+                <exclusion>
+                    <artifactId>hamcrest-core</artifactId>
+                    <groupId>org.hamcrest</groupId>
+                </exclusion>
+            </exclusions>
         </dependency>
         <dependency>
             <groupId>org.javacord</groupId>
@@ -127,21 +134,25 @@
             <groupId>com.fasterxml.jackson.core</groupId>
             <artifactId>jackson-core</artifactId>
             <version>2.15.2</version>
+            <scope>compile</scope>
         </dependency>
         <dependency>
             <groupId>com.fasterxml.jackson.core</groupId>
             <artifactId>jackson-databind</artifactId>
             <version>2.15.2</version>
+            <scope>compile</scope>
         </dependency>
         <dependency>
             <groupId>com.fasterxml.jackson.datatype</groupId>
             <artifactId>jackson-datatype-jdk8</artifactId>
             <version>2.15.2</version>
+            <scope>compile</scope>
         </dependency>
         <dependency>
             <groupId>com.fasterxml.jackson.datatype</groupId>
             <artifactId>jackson-datatype-jsr310</artifactId>
             <version>2.15.2</version>
+            <scope>compile</scope>
         </dependency>
         <dependency>
             <groupId>com.google.guava</groupId>

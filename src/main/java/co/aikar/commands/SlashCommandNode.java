@@ -289,6 +289,7 @@ public class SlashCommandNode {
      *
      * @return {@code true} if the nodes are equal, {@code false} otherwise.
      */
+    @SuppressWarnings("BooleanMethodIsAlwaysInverted")
     boolean isEqual(@NotNull SlashCommandNode other) {
         // Compare node type
         if (this.type != other.type) {
