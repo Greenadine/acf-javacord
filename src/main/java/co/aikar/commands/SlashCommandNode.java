@@ -116,8 +116,8 @@ public class SlashCommandNode {
 
             Server server = null;
             // If an ID has been defined
-            if (serverCommand.value() != 0L) {
-                server = api.getServerById(serverCommand.value()).orElse(null);
+            if (serverCommand.id() != 0L) {
+                server = api.getServerById(serverCommand.id()).orElse(null);
             }
             // If a name has been defined
             else if (!serverCommand.name().isEmpty()) {

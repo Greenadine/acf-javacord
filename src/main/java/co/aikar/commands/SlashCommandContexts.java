@@ -24,7 +24,6 @@ import co.aikar.commands.javacord.context.UnicodeEmoji;
 import co.aikar.commands.javacord.exception.JavacordInvalidCommandArgument;
 import co.aikar.commands.javacord.util.StringUtils;
 import org.javacord.api.entity.channel.*;
-import org.javacord.api.entity.emoji.CustomEmoji;
 import org.javacord.api.entity.emoji.Emoji;
 import org.javacord.api.entity.emoji.KnownCustomEmoji;
 import org.javacord.api.entity.permission.Role;
@@ -286,29 +285,6 @@ public class SlashCommandContexts extends JavacordCommandContexts<SlashCommandEv
             }
             c.popNextArg(); // Consume input
             return UnicodeEmoji.from(arg);
-        });
-        registerOptionalContext(CustomEmoji.class, c -> {
-            if (!c.isNextString() && c.isOptional()) {
-                return null;
-            }
-            String arg = c.getNextString(); // Test input before consuming
-            KnownCustomEmoji emoji = null;
-            if (DiscordRegexPattern.CUSTOM_EMOJI.matcher(arg).matches()) {
-                String id = arg.replaceAll("[^0-9]", ""); // Extract non-negative integers to retrieve ID
-                emoji = api.getCustomEmojiById(id).orElse(null);
-            } else {
-                Collection<KnownCustomEmoji> emojis = api.getCustomEmojisByName(arg);
-                if (emojis.size() > 1) {
-                    throw new JavacordInvalidCommandArgument(JavacordMessageKeys.TOO_MANY_EMOJIS_WITH_NAME);
-                }
-                if (!emojis.isEmpty()) {
-                    emoji = ACFUtil.getFirstElement(emojis);
-                }
-            }
-            if (emoji == null) {
-                throw new JavacordInvalidCommandArgument(JavacordMessageKeys.COULD_NOT_FIND_EMOJI);
-            }
-            return emoji;
         });
         registerOptionalContext(KnownCustomEmoji.class, c -> {
             if (!c.isNextString() && c.isOptional()) {

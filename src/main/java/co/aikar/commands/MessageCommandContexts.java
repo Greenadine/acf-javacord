@@ -27,7 +27,6 @@ import co.aikar.commands.javacord.exception.JavacordInvalidCommandArgument;
 import com.google.common.collect.Iterables;
 import com.vdurmont.emoji.EmojiManager;
 import org.javacord.api.entity.channel.*;
-import org.javacord.api.entity.emoji.CustomEmoji;
 import org.javacord.api.entity.emoji.Emoji;
 import org.javacord.api.entity.emoji.KnownCustomEmoji;
 import org.javacord.api.entity.permission.Role;
@@ -286,6 +285,36 @@ public class MessageCommandContexts extends JavacordCommandContexts<MessageComma
             }
             return channel;
         });
+        registerIssuerAwareContext(ChannelCategory.class, c -> {
+            if (!c.issuer.isInServer()) {
+                throw new JavacordInvalidCommandArgument(JavacordMessageKeys.SERVER_ONLY);
+            }
+            if (!c.hasFlag("other")) {
+                return c.issuer.getChannel().asCategorizable().get().getCategory().get();
+            }
+
+            boolean isCrossServer = c.hasAnnotation(CrossServer.class);
+            String arg = c.getFirstArg(); // Test input
+            ChannelCategory category = null;
+            if (DiscordRegexPattern.CHANNEL_MENTION.matcher(arg).matches()) {
+                String id = arg.replaceAll("[^0-9]", ""); // Extract non-negative integers to retrieve ID
+                category = isCrossServer || !c.issuer.getServer().isPresent()
+                        ? api.getChannelCategoryById(id).isPresent()
+                        ? api.getChannelCategoryById(id).get() : null
+                        : c.issuer.getServer().get().getChannelCategoryById(id).isPresent()
+                        ? c.issuer.getServer().get().getChannelCategoryById(id).get() : null;
+            }
+
+            if (category != null) {
+                c.popFirstArg();
+            } else {
+                if (!c.isOptional()) {
+                    throw new JavacordInvalidCommandArgument(JavacordMessageKeys.COULD_NOT_FIND_CHANNEL);
+                }
+                category = c.issuer.getChannel().asCategorizable().get().getCategory().get();
+            }
+            return category;
+        });
         registerIssuerAwareContext(ServerTextChannel.class, c -> {
             if (!c.issuer.isInServer()) {
                 throw new JavacordInvalidCommandArgument(JavacordMessageKeys.SERVER_ONLY);
@@ -309,7 +338,7 @@ public class MessageCommandContexts extends JavacordCommandContexts<MessageComma
             if (channel != null) {
                 c.popFirstArg(); // Consume input
             } else {
-                if (!c.hasFlag("require")) {
+                if (!c.isOptional()) {
                     throw new JavacordInvalidCommandArgument(JavacordMessageKeys.COULD_NOT_FIND_CHANNEL);
                 }
                 channel = c.issuer.getChannel().asServerTextChannel().get();
@@ -368,7 +397,82 @@ public class MessageCommandContexts extends JavacordCommandContexts<MessageComma
             if (channel != null) {
                 c.popFirstArg();
             } else {
-                if (c.hasFlag("require")) {
+                if (!c.isOptional()) {
+                    throw new JavacordInvalidCommandArgument(JavacordMessageKeys.COULD_NOT_FIND_CHANNEL);
+                }
+            }
+            return channel;
+        });
+        registerContext(ServerForumChannel.class, c -> {
+            if (!c.isInServer()) {
+                throw new JavacordInvalidCommandArgument(JavacordMessageKeys.SERVER_ONLY);
+            }
+            boolean isCrossServer = c.hasAnnotation(CrossServer.class);
+            String arg = c.getFirstArg(); // Test input
+            ServerForumChannel channel = null;
+            if (DiscordRegexPattern.CHANNEL_MENTION.matcher(arg).matches()) {
+                String id = arg.replaceAll("[^0-9]", ""); // Extract non-negative integers to retrieve ID
+                channel = isCrossServer || !c.issuer.getServer().isPresent()
+                        ? api.getServerForumChannelById(id).isPresent()
+                        ? api.getServerForumChannelById(id).get() : null
+                        : c.issuer.getServer().get().getForumChannelById(id).isPresent()
+                        ? c.issuer.getServer().get().getForumChannelById(id).get() : null;
+            }
+
+            if (channel != null) {
+                c.popFirstArg();
+            } else {
+                if (!c.isOptional()) {
+                    throw new JavacordInvalidCommandArgument(JavacordMessageKeys.COULD_NOT_FIND_CHANNEL);
+                }
+            }
+            return channel;
+        });
+        registerContext(ServerThreadChannel.class, c -> {
+            if (!c.isInServer()) {
+                throw new JavacordInvalidCommandArgument(JavacordMessageKeys.SERVER_ONLY);
+            }
+            boolean isCrossServer = c.hasAnnotation(CrossServer.class);
+            String arg = c.getFirstArg(); // Test input
+            ServerThreadChannel channel = null;
+            if (DiscordRegexPattern.CHANNEL_MENTION.matcher(arg).matches()) {
+                String id = arg.replaceAll("[^0-9]", ""); // Extract non-negative integers to retrieve ID
+                channel = isCrossServer || !c.issuer.getServer().isPresent()
+                        ? api.getServerThreadChannelById(id).isPresent()
+                        ? api.getServerThreadChannelById(id).get() : null
+                        : c.issuer.getServer().get().getThreadChannelById(id).isPresent()
+                        ? c.issuer.getServer().get().getThreadChannelById(id).get() : null;
+            }
+
+            if (channel != null) {
+                c.popFirstArg();
+            } else {
+                if (!c.isOptional()) {
+                    throw new JavacordInvalidCommandArgument(JavacordMessageKeys.COULD_NOT_FIND_CHANNEL);
+                }
+            }
+            return channel;
+        });
+        registerContext(ServerStageVoiceChannel.class, c -> {
+            if (!c.isInServer()) {
+                throw new JavacordInvalidCommandArgument(JavacordMessageKeys.SERVER_ONLY);
+            }
+            boolean isCrossServer = c.hasAnnotation(CrossServer.class);
+            String arg = c.getFirstArg(); // Test input
+            ServerStageVoiceChannel channel = null;
+            if (DiscordRegexPattern.CHANNEL_MENTION.matcher(arg).matches()) {
+                String id = arg.replaceAll("[^0-9]", ""); // Extract non-negative integers to retrieve ID
+                channel = isCrossServer || !c.issuer.getServer().isPresent()
+                        ? api.getServerStageVoiceChannelById(id).isPresent()
+                        ? api.getServerStageVoiceChannelById(id).get() : null
+                        : c.issuer.getServer().get().getStageVoiceChannelById(id).isPresent()
+                        ? c.issuer.getServer().get().getStageVoiceChannelById(id).get() : null;
+            }
+
+            if (channel != null) {
+                c.popFirstArg();
+            } else {
+                if (!c.isOptional()) {
                     throw new JavacordInvalidCommandArgument(JavacordMessageKeys.COULD_NOT_FIND_CHANNEL);
                 }
             }
@@ -448,32 +552,6 @@ public class MessageCommandContexts extends JavacordCommandContexts<MessageComma
                 throw new JavacordInvalidCommandArgument(JavacordMessageKeys.COULD_NOT_FIND_UNICODE_EMOJI);
             }
             return UnicodeEmoji.from(arg);
-        });
-        registerContext(CustomEmoji.class, c -> {
-            String arg = c.popFirstArg();
-
-            if (!c.isOptional() && (arg == null || arg.isEmpty())) {
-                throw new JavacordInvalidCommandArgument(JavacordMessageKeys.PLEASE_SPECIFY_EMOJI);
-            }
-
-            KnownCustomEmoji emoji = null;
-            if (DiscordRegexPattern.CUSTOM_EMOJI.matcher(arg).matches()) {
-                String id = arg.replaceAll("[^0-9]", ""); // Extract non-negative integers to retrieve ID
-                emoji = api.getCustomEmojiById(id).orElse(null);
-            } else {
-                Collection<KnownCustomEmoji> emojis = api.getCustomEmojisByName(arg);
-                if (emojis.size() > 1) {
-                    throw new JavacordInvalidCommandArgument(JavacordMessageKeys.TOO_MANY_EMOJIS_WITH_NAME);
-                }
-                if (!emojis.isEmpty()) {
-                    emoji = ACFUtil.getFirstElement(emojis);
-                }
-            }
-
-            if (emoji == null) {
-                throw new JavacordInvalidCommandArgument(JavacordMessageKeys.COULD_NOT_FIND_EMOJI);
-            }
-            return emoji;
         });
         registerContext(KnownCustomEmoji.class, c -> {
             String arg = c.popFirstArg();
