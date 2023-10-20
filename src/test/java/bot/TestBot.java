@@ -69,7 +69,7 @@ public class TestBot {
         registerCommandReplacements();
 
         // Register commands
-        COMMAND_MANAGER.registerMessageCommand(new TestCommand());
+//        COMMAND_MANAGER.registerMessageCommand(new TestCommand());
         COMMAND_MANAGER.registerSlashCommand(new TestSlashCommand());
     }
 

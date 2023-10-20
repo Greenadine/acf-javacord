@@ -40,7 +40,7 @@ public class SlashCommandExecutionContext extends JavacordCommandExecutionContex
     SlashCommandExecutionContext(@NotNull SlashRegisteredCommand cmd, @NotNull CommandParameter parameter, @NotNull SlashCommandEvent event, @NotNull List<SlashCommandInteractionOption> args) {
         super(cmd, parameter, event, null, 0, null);
 
-        this.args = args;
+        this.args = new ArrayList<>(args);
     }
 
     /**

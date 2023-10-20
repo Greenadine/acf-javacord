@@ -165,4 +165,27 @@ public class SlashCommandEvent extends JavacordCommandEvent {
     public void respond(@NotNull String message, @NotNull List<EmbedBuilder> embeds) {
         newImmediateResponse().setContent(message).addEmbeds(embeds).respond();
     }
+
+    /**
+     * Responds to the interaction with a formatted message.
+     *
+     * @param message the message to respond with.
+     * @param replacements the replacements to apply to the message.
+     *
+     * @see String#format(String, Object...)
+     */
+    public void respondf(@NotNull String message, @NotNull Object... replacements) {
+        respond(String.format(message, replacements));
+    }
+
+    /**
+     * Responds to the interaction with a formatted message and an embed.
+     *
+     * @param embed the embed to respond with.
+     * @param message the message to respond with.
+     * @param replacements the replacements to apply to the message.
+     */
+    public void respondf(@NotNull EmbedBuilder embed, @NotNull String message, @NotNull Object... replacements) {
+        respond(String.format(message, replacements), embed);
+    }
 }
