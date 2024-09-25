@@ -11,6 +11,5 @@ This implementation of ACF is not official. The core of ACF has been marked as n
 
 ## Documentation
 * [Wiki](https://github.com/Greenadine/acf-javacord/wiki)
-* [JavaDocs](https://javadocs.greenadine.dev/acf-javacord/0.4.0/)
 
 For ACF core documentation please consult the [ACF core wiki](https://github.com/aikar/commands/wiki).
