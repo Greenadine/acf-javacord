@@ -1,5 +1,5 @@
 > [!IMPORTANT]
-> This project has been abandoned as I no longer have intentions to further develop it since I personally moved away from using Javacord. Anyone that would like to continue this project is free to do so.
+> This project has been abandoned as I no longer have intentions to further develop it since I personally moved away from using Javacord. Anyone that would like to continue this project feel free to contact me on GitHub.
 
 # ACF Javacord ![](https://img.shields.io/badge/version-v0.5.1--SNAPSHOT-blue?style=flat-square) [![](https://img.shields.io/badge/javacord-v3.8.0-blue?style=flat-square)](https://github.com/Javacord/Javacord) [![](https://img.shields.io/badge/acf-v0.5.1--SNAPSHOT-blue?style=flat-square)](https://github.com/aikar/commands) ![](https://img.shields.io/github/license/Greenadine/acf-javacord?style=flat-square)
 A [Javacord](https://github.com/Javacord/Javacord) implementation of [Aikar](https://github.com/aikar)'s [Annotation Command Framework (ACF)](https://github.com/aikar/commands).
